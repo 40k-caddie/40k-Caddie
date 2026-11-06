@@ -247,6 +247,9 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Your mates\' armies can now be their main army: load a Space Wolves, Dark Angels, Necron or Aeldari list through Other and tap "Make ... your main army". Each gets its own frame, words, battle cry and battle emblem, checked against the lore.',
+      'Vlka Fenryka: Fenris storm fading into the feast halls, the wolf badge as the emblem. Dark Angels: the Rock, stained glass, a lancet window emblem. The Infinite Empire: the tomb city, a monolith emblem, and dynasty colours to choose from. Asuryani: the craftworld, a spirit-stone emblem.',
+      'Each army is called by its own name by its own player (Vlka Fenryka, The Infinite Empire, Asuryani) and by its standard name when it is the foe.',
       'Your opponent\'s side now carries their own army\'s flavour, built from their lore: Space Wolves (Fenris winter, fur, runes, a cord of fangs and runestones), Dark Angels (the Rock, stained glass, a hidden shame), Necrons (tomb world dust, waking glyphs) and Aeldari (wraithbone, the infinity circuit, spirit stones).',
       'The band under the header splits: your chain on your half, their army\'s equivalent on theirs.',
       'Their headers carry their sigil, their own fonts and wording, and one slow living detail each.',
@@ -267,6 +270,10 @@
   const ARMY = {
     templars: { label: 'Black Templars', cls: 'army-templars', muster: 'Muster', eyebrow: 'BEFORE THE BATTLE', steps: ['I · Your Force', 'II · Your Foe', 'III · The Field'], fightingAs: 'Fighting as', cry: 'For the God-Emperor!', counsel: 'Counsel', log: 'Battle Log', vox: 'Vox Report', voxShort: 'VOX', armyQ: 'My Crusade', foeQ: 'The Foe', results: 'Reckoning', emblem: 'cross', oath: 'Your vow', oathText: 'Score before you slay', roll: 'Roll Call', end: 'End the battle', hist: 'Archives' },
     carcharodons: { label: 'Carcharodons', cls: 'army-carc', muster: 'The Gathering', eyebrow: 'BEFORE THE HUNT', steps: ['I · The Pack', 'II · The Prey', 'III · Hunting Grounds'], fightingAs: 'Hunting as', cry: "In Rangu's Name!", counsel: 'The Deep', log: 'The Wake', vox: 'Blood Scent', voxShort: 'SCENT', armyQ: 'The Pack', foeQ: 'The Prey', results: 'The Red Tithe', emblem: 'jaws', oath: 'Your oath', oathText: 'Feed on objectives first', roll: 'Count the Pack', end: 'End the hunt', hist: 'The Voyage' },
+    wolves: { label: 'Vlka Fenryka', cls: 'army-wolves', muster: 'The Fang', eyebrow: 'BEFORE THE HUNT', steps: ['I · The Great Company', 'II · The Quarry', 'III · The Hunting Ground'], fightingAs: 'Running with', cry: 'For Russ and the Allfather!', counsel: 'Rune Priest', log: 'The Saga', vox: 'Mark the Saga', voxShort: 'SAGA', armyQ: 'The Pack', foeQ: 'The Quarry', results: 'The Saga Told', emblem: 'ward', oath: 'Your saga', oathText: 'Earn a deed worth the telling', roll: 'Count the Pack', end: 'End the hunt', hist: 'The Sagas', lib: 'Space Wolves' },
+    dark: { label: 'Dark Angels', cls: 'army-dark', muster: 'The Rock', eyebrow: 'THE INNER CIRCLE CONVENES', steps: ['I · The Order', 'II · The Unrepentant', 'III · The Field of Battle'], fightingAs: 'Sworn to', cry: 'Repent! For tomorrow you die!', counsel: 'The Inner Circle', log: 'The Record', vox: 'Seal the Record', voxShort: 'SEAL', armyQ: 'The Order', foeQ: 'The Unrepentant', results: 'Judgement', emblem: 'lancet', oath: 'Your penance', oathText: 'Make the foe repent', roll: 'Call the Order', end: 'End the battle', hist: 'The Sealed Archive', lib: 'Dark Angels', libRe: /dab3|darkangel/ },
+    necron: { label: 'The Infinite Empire', short: 'Infinite Empire', cls: 'army-necron', muster: 'The Tomb', eyebrow: 'STASIS ENDED', steps: ['I · The Phalanx', 'II · The Lesser Race', 'III · The Battlefield'], fightingAs: 'Awakened as', cry: 'The stars are ours once more!', counsel: 'The Cryptek', log: 'Dynastic Record', vox: 'Record this', voxShort: 'RECORD', armyQ: 'The Phalanx', foeQ: 'The Lesser Race', results: 'The Reckoning of Ages', emblem: 'monolith', oath: 'Your directive', oathText: 'Reclaim what was ours', roll: 'Count the Legions', end: 'End the engagement', hist: 'The Eternal Archive', lib: 'Necrons' },
+    asuryani: { label: 'Asuryani', cls: 'army-asuryani', muster: 'The Craftworld', eyebrow: 'THE SEER COUNCIL GATHERS', steps: ['I · The Warhost', 'II · The Enemy', 'III · The Path of Battle'], fightingAs: 'Walking the path of', cry: 'By the light of Asuryan!', counsel: 'The Farseer', log: 'The Skeins', vox: 'Read the runes', voxShort: 'RUNES', armyQ: 'The Warhost', foeQ: 'The Enemy', results: 'The Weave of Fate', emblem: 'stone', oath: 'Your path', oathText: 'Spend no life that fate does not demand', roll: 'Count the Host', end: 'End the battle', hist: 'The Infinity Circuit', lib: 'Aeldari', libRe: /^eldar$/ },
     other: { label: 'Other', cls: 'army-other', muster: 'Setup', eyebrow: 'BEFORE THE GAME', steps: ['I · Your Army', 'II · Opponent', 'III · Mission'], fightingAs: 'Playing as', cry: 'Fight', counsel: 'Advice', log: 'Battle Log', vox: 'Mark moment', voxShort: 'MARK', armyQ: 'Your Army', foeQ: 'Opponent', results: 'Results', emblem: 'plain', oath: 'Your focus', oathText: 'Score before you kill', roll: 'Roll Call', end: 'End the game', hist: 'Battle history' }
   };
 
@@ -486,6 +493,7 @@
     const own = poolItem(S.slots['army:' + k]);
     if (own) return `<img src="${own.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
     if (k === 'templars') return `<svg aria-hidden="true" viewBox="-24 -24 560 560">${gi('iron-cross', 'fill="#0E0D0C" stroke="#E8E0CC" stroke-width="18" stroke-linejoin="round" paint-order="stroke"')}</svg>`;
+    if (ARMY[k] && ARMY[k].lib) { const it = POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && (nameMatches(fileKey(x.name), ARMY[k].lib) || (ARMY[k].libRe && ARMY[k].libRe.test(fileKey(x.name))))); if (it) return `<img src="${it.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`; }
     if (k === 'carcharodons') return `<svg aria-hidden="true" viewBox="0 0 512 512">${gi('shark-jaws', 'fill="#CDBE9C"')}</svg>`;
     return `<svg aria-hidden="true" viewBox="0 0 768 512"><g transform="translate(224 0) scale(0.6)">${gi('eagle-emblem', 'fill="#D9C27A"')}</g><g transform="translate(70 230) scale(0.52)">${gi('daemon-skull', 'fill="#C9473A"')}</g><g transform="translate(432 230) scale(0.52)">${gi('alien-skull', 'fill="#9CCB5A"')}</g></svg>`;
   }
@@ -567,7 +575,9 @@
   }
   // whose armies get their own buttons: the owner's two, or none for everyone else (they build theirs up through Other)
   const OWNER = /^f\.weir88@gmail\.com$/i;
-  const myArmies = () => (!STANDALONE || !Array.isArray(S.mine) ? ['templars', 'carcharodons'] : S.mine);
+  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani' };
+  const myArmies = () => (!Array.isArray(S.mine) ? ['templars'] : S.mine.filter((k) => ARMY[k] && k !== 'carcharodons'));
+  const mainFor = (L) => (L ? MAINABLE[listFaction(L)] || MAINABLE[L.subfaction] || MAINABLE[L.faction] || null : null);
   // a list loaded through Other is kept by its army: the last one per army, the two most recent armies
   function rememberFac(r) {
     const f = listFaction(r) || r.subfaction || r.faction || r.name; if (!f) return;
@@ -585,6 +595,32 @@
     st.setProperty('--line2', t[7]);
     st.setProperty('--accent', `color-mix(in srgb, ${t[2]}, #000 35%)`);
     st.setProperty('--accent-text', t[1]);
+  }
+  // ---------- Necron dynasty colours: the whole Infinite Empire frame is drawn in pink, then turned to the player's chosen hue ----------
+  const NEC_CSS = "/* ===== Necrons as YOUR army: the Infinite Empire. The tomb city above, the waking halls below, all lit in your dynasty's pink ===== */\nbody.army-necron {\n  --bg: #07050A; --panel: #130D12; --panel2: #170F15; --line: #3A1E2E; --line2: #8A2A58;\n  --text: #F3E6EE; --muted: #C2AAB8; --dim: #8E7A86; --accent: #F0287F; --accent-text: #FF8FC0; --gold: #FF8FC0; --good: #FF8FC0;\n  --head: 'Oxanium', 'Chakra Petch', sans-serif; --head-weight: 600; --head-size: 0.82;\n}\nbody.army-necron #void { display: block; background: #07050A; }\nbody.army-necron #void::before { content: \"\"; position: absolute; left: 0; right: 0; top: 0; height: 66%;\n  background: linear-gradient(rgba(7,5,10,0.45), rgba(7,5,10,0.4)), url(\"lib/pmwnec3.webp\") 50% 0 / cover no-repeat; filter: hue-rotate(__IMGROT__) saturate(0.95);\n  -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }\nbody.army-necron #void::after { content: \"\"; position: absolute; left: 0; right: 0; bottom: 0; height: 58%;\n  background: linear-gradient(rgba(7,5,10,0.55), rgba(7,5,10,0.6)), url(\"lib/pmwnec2.webp\") 50% 50% / cover no-repeat; filter: hue-rotate(__IMGROT__) saturate(0.95);\n  -webkit-mask-image: linear-gradient(transparent, #000 45%); mask-image: linear-gradient(transparent, #000 45%); }\n.emblem.monolith .nec-art { filter: hue-rotate(__IMGROT__) saturate(0.95) brightness(0.8); }\n.emblem.monolith .nec-edge { animation: necEdge 5s ease-in-out infinite; }\n@keyframes necEdge { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }\nbody.army-necron .band { padding-bottom: 34px !important; border-top-color: #F0287F; background-color: rgba(19,13,18,0.92);\n  background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='18' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%236E6158' stop-opacity='0'/%3E%3Cstop offset='0.55' stop-color='%235A4E46' stop-opacity='0.55'/%3E%3Cstop offset='1' stop-color='%233A322D' stop-opacity='0.85'/%3E%3C/linearGradient%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0 0.36 0 0 0 1.2 -0.45'/%3E%3CfeComposite in2='SourceGraphic' operator='in'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M0 18 L0 9 Q 40 4 80 8 T 160 7 T 240 9 T 320 9 L320 18 Z' fill='url(%23g)'/%3E%3Cpath d='M0 18 L0 9 Q 40 4 80 8 T 160 7 T 240 9 T 320 9 L320 18 Z' fill='%23000' filter='url(%23n)'/%3E%3C/svg%3E\"), var(--grime), var(--stain), linear-gradient(180deg, rgba(36,26,32,0.92), rgba(14,10,13,0.95));\n  background-size: 320px 14px, 180px 180px, 420px 420px, 100% 100%; background-position: -40px calc(100% - 28px), 0 0, 0 0, 0 0; background-repeat: repeat-x, repeat, repeat, no-repeat; }\nbody.army-necron .band::after { content: \"\"; position: absolute; left: 0; right: 0; bottom: 3px; height: 26px; pointer-events: none;\n  background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='26'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23332C31'/%3E%3Cstop offset='0.5' stop-color='%231B171A'/%3E%3Cstop offset='1' stop-color='%230B090B'/%3E%3C/linearGradient%3E%3Cfilter id='o'%3E%3CfeGaussianBlur stdDeviation='0.8' result='b'/%3E%3CfeMerge%3E%3CfeMergeNode in='b'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.26 0 0 0 0 0.23 0 0 0 1.4 -0.6'/%3E%3CfeComposite in2='SourceGraphic' operator='in'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='0' y='11' width='168' height='3' fill='%230A080A'/%3E%3Cg%3E%3Crect x='1' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='1' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='29' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='29' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='57' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='57' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='85' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='85' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='113' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='113' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='141' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='141' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3C/g%3E%3Cg filter='url(%23w)'%3E%3Crect x='1' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='1' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='29' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='29' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='57' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='57' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='85' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='85' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='113' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='113' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3Crect x='141' y='5' width='26' height='15' rx='1.5' fill='url(%23m)'/%3E%3Crect x='141' y='5' width='26' height='1' fill='%238A7A84' fill-opacity='0.3'/%3E%3C/g%3E%3Cg filter='url(%23o)' opacity='0.8'%3E%3Cg transform='translate(14 12.6) scale(0.8)' fill='none' stroke='%23FF7FB8' stroke-width='1.1' stroke-linecap='round'%3E%3Cpath d='M-3 -4 A4 4 0 1 0 3 -4'/%3E%3Cpath d='M0 -1 V7'/%3E%3Ccircle cx='0' cy='-5' r='0.9' fill='%23FF7FB8'/%3E%3C/g%3E%3Cg transform='translate(42 12.6) scale(0.8)' fill='none' stroke='%23FF7FB8' stroke-width='1.1' stroke-linecap='round'%3E%3Ccircle cx='0' cy='0' r='3.6'/%3E%3Cpath d='M0 -3.6 V3.6 M-3.6 6.5 H3.6'/%3E%3C/g%3E%3Cg transform='translate(70 12.6) scale(0.8)' fill='none' stroke='%23FF7FB8' stroke-width='1.1' stroke-linecap='round'%3E%3Ccircle cx='0' cy='-2' r='3'/%3E%3Cpath d='M0 1 V7 M-2.5 7 H2.5'/%3E%3C/g%3E%3Cg transform='translate(98 12.6) scale(0.8)' fill='none' stroke='%23FF7FB8' stroke-width='1.1' stroke-linecap='round'%3E%3Cpath d='M-3.2 2 A3.2 3.2 0 0 1 3.2 2'/%3E%3Cpath d='M0 -6 V7'/%3E%3C/g%3E%3Cg transform='translate(126 12.6) scale(0.8)' fill='none' stroke='%23FF7FB8' stroke-width='1.1' stroke-linecap='round'%3E%3Cpath d='M-3 -5 V7 M3 -5 V7'/%3E%3Ccircle cx='0' cy='1' r='1.8'/%3E%3C/g%3E%3Cg transform='translate(154 12.6) scale(0.8)' fill='none' stroke='%23FF7FB8' stroke-width='1.1' stroke-linecap='round'%3E%3Cpath d='M-3 -5 L0 -2 L3 -5 M0 -2 V7'/%3E%3Cpath d='M-2 3 H2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\") repeat-x 0 0 / 168px 26px; animation: necBand 5s ease-in-out infinite; }\nbody.army-necron .panel { position: relative; background-color: rgba(19,13,18,0.9);\n  background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='18' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%236E6158' stop-opacity='0'/%3E%3Cstop offset='0.55' stop-color='%235A4E46' stop-opacity='0.55'/%3E%3Cstop offset='1' stop-color='%233A322D' stop-opacity='0.85'/%3E%3C/linearGradient%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0 0.36 0 0 0 1.2 -0.45'/%3E%3CfeComposite in2='SourceGraphic' operator='in'/%3E%3C/filter%3E%3C/defs%3E%3Cpath d='M0 18 L0 9 Q 40 4 80 8 T 160 7 T 240 9 T 320 9 L320 18 Z' fill='url(%23g)'/%3E%3Cpath d='M0 18 L0 9 Q 40 4 80 8 T 160 7 T 240 9 T 320 9 L320 18 Z' fill='%23000' filter='url(%23n)'/%3E%3C/svg%3E\"), repeating-linear-gradient(90deg, rgba(240,40,127,0.45) 0 16px, rgba(20,6,12,0.9) 16px 19px),\n    url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' fill='none' stroke='%23FF4F9C' stroke-opacity='0.07' stroke-width='1.2'%3E%3Cpath d='M0 30H40V70H92M60 0V20H112M22 120V96H70V58M120 84H100V110'/%3E%3C/svg%3E\"),\n    var(--grime), var(--stain), linear-gradient(180deg, rgba(30,21,27,0.92), rgba(14,10,13,0.95));\n  background-size: 320px 12px, 100% 3px, 120px 120px, 180px 180px, 420px 420px, 100% 100%;\n  background-position: -100px bottom, top left, 0 0, 0 0, 0 0, 0 0; background-repeat: repeat-x, no-repeat, repeat, repeat, repeat, no-repeat; border-color: #4A2238; }\nbody.army-necron .eyebrow { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.12em; }\nbody.army-necron .banner { background-color: rgba(19,13,18,0.92); border-color: #8A2A58; background-image: var(--grime), linear-gradient(180deg, rgba(36,26,32,0.92), rgba(14,10,13,0.95)); background-size: 180px 180px, 100% 100%; }\nbody.army-necron .sheet { background: #0C080B; }\nbody.army-necron .clash .mine { background-image: var(--grime), linear-gradient(100deg, #3A1E2E, #160D13); background-size: 180px 180px, 100% 100%; }\nbody.army-necron .fight-btn { background-image: linear-gradient(180deg, #C21E66, #6A0E36); border-color: #FF8FC0; font-family: 'Oxanium', sans-serif; }\n";
+  const NEC_HUES = [['Sautekh green', 125], ['Pink', 333], ['Mephrit gold', 45], ['Novokh blood-red', 356], ['Nihilakh verdigris', 168], ['Void blue', 210], ['Purple', 280]];
+  const necHue = () => (S.hue && S.hue.necron !== undefined ? S.hue.necron : 125);
+  function hueShift(str, to) {
+    const turn = (r, g, b) => {
+      r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+      if (d < 0.08) return [r, g, b].map((v) => Math.round(v * 255));
+      const sat = d / (1 - Math.abs(2 * l - 1)); let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = h * 60;
+      h = (h - 333 + to + 720) % 360;
+      const c = (1 - Math.abs(2 * l - 1)) * sat, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+      const [a, bb, cc] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+      return [a + m, bb + m, cc + m].map((v) => Math.round(Math.min(1, Math.max(0, v)) * 255));
+    };
+    const hex = (v) => v.map((n) => n.toString(16).padStart(2, '0')).join('').toUpperCase();
+    return str.replace(/(#|%23)([0-9A-Fa-f]{6})\b/g, (m0, pre, h6) => pre + hex(turn(parseInt(h6.slice(0, 2), 16), parseInt(h6.slice(2, 4), 16), parseInt(h6.slice(4, 6), 16))))
+      .replace(/rgba\((\d+),\s*(\d+),\s*(\d+),/g, (m0, r, g, b) => 'rgba(' + turn(+r, +g, +b).join(',') + ',');
+  }
+  let necApplied = null;
+  function applyNecronTheme() {
+    let el = document.getElementById('nec-theme');
+    if (S.army !== 'necron') { if (el) el.textContent = ''; necApplied = null; return; }
+    const h = necHue(); if (necApplied === h && el && el.textContent) return;
+    if (!el) { el = document.createElement('style'); el.id = 'nec-theme'; document.head.appendChild(el); }
+    el.textContent = hueShift(NEC_CSS, h).replace(/__IMGROT__/g, ((h - 120 + 360) % 360) + 'deg'); necApplied = h;
   }
   let lastFoeVP = null;
   function foeScoredFx() {
@@ -604,12 +640,16 @@
     next: '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L16 12 L9 19"></path></svg>',
     close: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>',
     cross: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path d="M9 2 H15 L13.2 10.8 L22 9 V15 L13.2 13.2 L15 22 H9 L10.8 13.2 L2 15 V9 L10.8 10.8 Z" fill="currentColor"></path></svg>',
+    tear: '<svg aria-hidden="true" width="14" height="22" viewBox="0 0 14 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 1 C 9 7 13 11 13 15 A6 6 0 0 1 1 15 C 1 11 5 7 7 1 Z"></path><circle cx="7" cy="15" r="2" fill="currentColor"></circle></svg>',
+    glyph: '<svg aria-hidden="true" width="16" height="22" viewBox="-8 -11 16 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="0" cy="-3" r="4"></circle><path d="M0 1 V10 M-3.5 10 H3.5 M-6 -3 H-4 M4 -3 H6 M0 -9 V-7"></path></svg>',
+    blade: '<svg aria-hidden="true" width="14" height="24" viewBox="0 0 14 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M7 1 V5"></path><path d="M2 5.5 H12"></path><path d="M5.4 6 V17 L7.4 15.4 L6.2 18.4 L8.6 16.6 V6"></path><path d="M6.6 21 L7.6 20 L8 23.4 L7 25.6 L6.2 23 Z" fill="currentColor" fill-opacity="0.5"></path></svg>',
+    ward: '<svg aria-hidden="true" width="16" height="22" viewBox="0 0 16 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 1 L15 11 L8 21 L1 11 Z"></path><path d="M8 4 V18"></path><circle cx="8" cy="11" r="1.8" fill="currentColor"></circle></svg>',
     tooth: '<svg aria-hidden="true" width="16" height="20" viewBox="-9 -21 18 26"><path d="M-6.5 0 L-4.6 -5.4 L-2.9 -10.9 L-1.2 -16.3 L2.2 -19 L3.4 -13.6 L4.5 -8.1 L5.6 -2.7 L6.5 0 Q0 5 -6.5 0 Z" fill="currentColor"></path></svg>',
     vox: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="9" width="14" height="12" rx="1"></rect><path d="M8 13 H16 M8 16 H16 M12 9 V3 M9 4 L12 3 L15 4"></path></svg>',
     undo: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 10 L9 15"></path><path d="M4 10 H15 A5 5 0 0 1 15 20 H10"></path></svg>',
     list: '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 6 H20 M8 12 H20 M8 18 H20 M4 6 H4.5 M4 12 H4.5 M4 18 H4.5"></path></svg>'
   };
-  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : ICON.cross);
+  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : ICON.cross);
 
   // ---------- list parser (40k app text export) ----------
   function parseList(text) {
@@ -675,7 +715,7 @@
   // ---------- rules lookups ----------
   const norm = (s) => String(s || '').toLowerCase().replace(/➤/g, '').replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
   const sing = (s) => s.replace(/s$/, '');
-  function ds(name) { return D.units[name] || (S.army === 'other' && list() ? foeUnits(listFaction(list()))[name] : null) || null; }
+  function ds(name) { return D.units[name] || (S.army === 'other' && list() ? foeUnits(listFaction(list()))[name] : ARMY[S.army] && ARMY[S.army].lib ? foeUnits(ARMY[S.army].lib)[name] : null) || null; }
   function matchProfile(profiles, modelName) {
     const n = norm(modelName);
     return profiles.find((p) => norm(p.name) === n) || profiles.find((p) => norm(p.name).includes(n) || n.includes(norm(p.name))) || profiles.find((p) => !/sergeant|captain|champion/i.test(p.name) || /sergeant/i.test(modelName)) || profiles[0];
@@ -713,10 +753,17 @@
     if (!reqs.length) return true;
     return reqs.some((r) => kws.has(r) || kws.has(r + 'S'));
   }
+  // every stratagem your army has: Space Marine books for Astartes, the army's own book for anyone else, plus the core ones
+  function allMyStrats() {
+    const L = list(); const dets = (L && L.detachments) || [];
+    const lib = (ARMY[S.army] && ARMY[S.army].lib) || (S.army === 'other' ? listFaction(L) : ''); const fd = lib && FD(lib);
+    const own = !isAstartes() && fd ? fd.stratagems.filter((x) => dets.includes(x[0])).map((x) => ({ det: x[0], name: x[1], cp: x[2], turn: x[3], phases: x[4], effect: x[5], when: x[6] || '', target: x[7] || '' }))
+      : D.rulesSM.stratagems.filter((x) => dets.includes(x.det));
+    return own.concat(D.rulesSM.core.map((x) => ({ ...x, det: 'Core' })));
+  }
   function myStrats(phase, myTurn) {
-    const dets = (list() && list().detachments) || [];
     const kws = armyKeywords();
-    const all = D.rulesSM.stratagems.filter((s) => dets.includes(s.det)).concat(D.rulesSM.core.map((s) => ({ ...s, det: 'Core' })));
+    const all = allMyStrats();
     return all.filter((s) => (s.phases.includes(phase.toLowerCase()) || s.phases.includes('any')) && (s.turn === 'either' || (s.turn === 'yours') === myTurn) && stratUsable(s, kws));
   }
   function foeStrats(phase, myTurn) {
@@ -797,7 +844,7 @@
   }
   function buildUnits(L) {
     // Space Marine datasheets first, then the list's own army (any of the 25 other armies)
-    const fu = foeUnits(listFaction(L));
+    const fu = foeUnits(listFaction(L) || (ARMY[S.army] && ARMY[S.army].lib) || '');
     return L.units.map((u, i) => {
       const d = ds(u.name) || fu[u.name] || null;
       const profs = d ? d.m : [];
@@ -1171,7 +1218,7 @@
       </nav>
       <section class="stack" style="gap: 6px"><div class="eyebrow">${esc(a.fightingAs)}</div><div style="display: grid; gap: 8px; grid-template-columns: repeat(${myArmies().length + (S.facs || []).length + 1}, minmax(0, 1fr))">${armyBtns}</div>
 </section>
-      <section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}</section>
+      ${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Dynasty colours</div><div class="row" style="gap: 8px; flex-wrap: wrap">${NEC_HUES.map(([n, h]) => `<button class="hue-sw ${necHue() === h ? 'on' : ''}" data-act="necHue" data-k="${h}" aria-label="${esc(n)}" title="${esc(n)}" style="background: hsl(${h} 85% 55%)"></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc((NEC_HUES.find((x) => x[1] === necHue()) || ['Custom'])[0])}</p></section>` : ''}<section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}${S.army === 'other' && mainFor(L) && !myArmies().includes(mainFor(L)) ? `<button class="btn block" data-act="makeMain" style="border-color: var(--gold); color: var(--gold)">MAKE ${esc(ARMY[mainFor(L)].label.toUpperCase())} YOUR MAIN ARMY</button><p class="small muted" style="margin: 0">Gives ${esc(ARMY[mainFor(L)].label)} the full treatment on every screen: their own frame, words, battle emblem and button.</p>` : ''}</section>
       <button class="foe-panel row" data-act="overlay" data-k="foe" style="gap: 12px; padding: 10px 12px; text-align: left; color: var(--text); align-items: center">
         <span style="flex: 0 0 64px; width: 64px; height: 64px; display: block">${sigil(F.faction, F)}</span>
         <span class="stack" style="gap: 3px; flex: 1; min-width: 0">
@@ -1212,7 +1259,7 @@
         <svg class="maw-bot" aria-hidden="true" width="230" height="13" style="position: absolute; left: 0; bottom: 0"><defs><pattern id="fu" width="11" height="13" patternUnits="userSpaceOnUse" x="5.5"><path d="M0 13 L11 13 L5.5 0.5 Z" fill="#E6DDC8" stroke="#14110E" stroke-width="0.9"></path><path d="M3 10.8 L5.5 5 L8 10.8" fill="none" stroke="#14110E" stroke-width="0.8"></path></pattern></defs><rect width="230" height="13" fill="url(#fu)"></rect></svg>`;
     }
     return `<div class="clash" aria-label="${esc(A().label)} versus ${esc(fi.display)}">
-      <div class="mine" style="${S.army === 'templars' ? 'border-bottom: 3px solid var(--accent)' : ''}">${deco}${otherPic() ? `<img src="${otherPic().src}" alt="" style="position: relative; height: 44px; width: 44px; object-fit: contain; margin-right: 8px">` : ''}<span class="name">${esc(S.army === 'other' ? (list() ? list().subfaction || list().faction || 'You' : 'You') : A().label)}</span></div>
+      <div class="mine" style="${S.army === 'templars' ? 'border-bottom: 3px solid var(--accent)' : ''}">${deco}${otherPic() ? `<img src="${otherPic().src}" alt="" style="position: relative; height: 44px; width: 44px; object-fit: contain; margin-right: 8px">` : ''}<span class="name">${esc(S.army === 'other' ? (list() ? list().subfaction || list().faction || 'You' : 'You') : A().short || A().label)}</span></div>
       <div class="theirs foe-fill"><span class="name foe-font" style="font-family: var(--foe-font); font-weight: 700">${esc(fi.display)}</span></div>
       <div class="vs"><span>VS</span></div></div>`;
   }
@@ -1684,7 +1731,7 @@
   // ---------- Combat Doctrines (11th edition Space Marine army rule) and phase reminders ----------
   const DOCTRINES = { assault: ['Assault Doctrine', 'Units can still declare a charge after Advancing.'], devastator: ['Devastator Doctrine', 'Ranged weapons gain [ASSAULT].'], tactical: ['Tactical Doctrine', 'Units can still shoot and declare a charge after Falling Back.'] };
   function isAstartes() {
-    if (S.army !== 'other') return true;
+    if (S.army !== 'other') return ['templars', 'carcharodons', 'wolves', 'dark'].includes(S.army);
     const L = list(); return !!(L && /space marine|astartes|dark angels|blood angels|space wolves|deathwatch|templar|carcharodon/i.test((L.faction || '') + ' ' + (L.detachments || []).join(' ')));
   }
   function docLimits() {
@@ -1762,7 +1809,7 @@
     const phase = PHASES[B.phase];
     const mine = myStrats(phase, myTurn);
     const theirs = foeStrats(phase, myTurn);
-    const vowBanner = `<div class="banner">${S.army === 'carcharodons' ? ICON.tooth : ICON.cross}<div><div class="eyebrow" style="color: var(--accent-text)">${esc(a.oath)} this battle</div><div style="font-size: 16px; font-weight: 600">${esc(a.oathText)}</div></div></div>`;
+    const vowBanner = `<div class="banner">${cryIcon()}<div><div class="eyebrow" style="color: var(--accent-text)">${esc(a.oath)} this battle</div><div style="font-size: 16px; font-weight: 600">${esc(a.oathText)}</div></div></div>`;
     const tvow = list() && list().detachments.includes('Vow-sworn Crusaders') ? `<div class="small muted">Templar Vow: <b style="color: var(--text)">${esc(S.field.vow)}</b></div>` : '';
     const cl = B.cpLast && B.cpLast.r === B.round && B.cpLast.turn === B.turn ? B.cpLast : null; const rolls = cpRolls(B);
     const cmdTip = B.phase === 0 ? `<div class="panel stack" style="padding: 8px 12px; gap: 4px"><div class="row" style="justify-content: space-between; gap: 8px"><span class="small"><b>CP added</b>${cl ? `: you +${cl.me.reduce((t, x) => t + x[1], 0)}, them +${cl.foe.reduce((t, x) => t + x[1], 0)}` : ''}</span><button class="btn small" data-act="cpBoth" style="min-height: 34px">+1 EACH</button></div>
@@ -1812,7 +1859,7 @@
     }).join('');
     const army = isNec ? fd.army_rules.filter(Boolean).map((r) => `<details class="foe-panel" style="padding: 10px 12px"><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">${esc(W.army)}</span><br><b>${esc(r.name)}</b></summary><div class="small" style="white-space: pre-line; padding-top: 6px">${esc(r.text)}</div></details>`).join('') : '';
     const dets = isNec ? fd.detachments.filter((d) => F.detachments.includes(d.name)).map((d) => `<details class="foe-panel" style="padding: 10px 12px" open><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">${esc(W.det)} · ${esc(d.name)}</span></summary><div class="small" style="white-space: pre-line; padding-top: 4px">${esc(d.rule)}</div></details>`).join('') : `<p class="small muted" style="margin: 0">Full ${esc(fi.display)} rules are not in the app yet.</p>`;
-    const sigSrc = (() => { const it = poolItem(F.emblemId) || POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && nameMatches(fileKey(x.name), F.faction)); return it ? it.src : ''; })();
+    const sigSrc = (() => { const alias = Object.values(ARMY).find((x) => x.lib === F.faction && x.libRe); const it = poolItem(F.emblemId) || POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && (nameMatches(fileKey(x.name), F.faction) || (alias && alias.libRe.test(fileKey(x.name))))); return it ? it.src : ''; })();
     return `<div class="foe-fill foe-head" style="padding: 12px 14px">${sigSrc ? `<img class="foe-sigil" src="${sigSrc}" alt="">` : ''}<div class="eyebrow" style="color: inherit">${esc(A().foeQ)}${F.name ? ' · ' + esc(F.name) : ''}</div><div style="font-family: var(--foe-font); font-size: 28px; font-weight: 700; line-height: 1">${esc(fi.display)}</div><div class="small" style="font-weight: 600">${esc(F.detachments.join(', ') || 'Detachment not set')}${F.warlord ? ' · Warlord: ' + esc(F.warlord) : ''} · ${B.cp.foe} CP</div></div>
       ${F.notes ? `<div class="foe-panel" style="padding: 10px 12px"><span class="eyebrow foe-ink">Your notes</span><div class="small" style="font-style: italic">${esc(F.notes)}</div></div>` : ''}
       ${army}${dets}
@@ -1856,6 +1903,110 @@
         <button class="q" style="${pct(276, 300, 72, 244)}" data-act="view" data-k="foe" aria-label="Open ${esc(a.foeQ)}">${foeQ}</button>
         <button class="q" style="${pct(120, 347, 150, 150)}" data-act="view" data-k="counsel"><span class="eyebrow">${esc(a.counsel)}</span><span class="qt" style="font-size: 20px">Options now</span></button>
         <button class="q" style="${pct(60, 560, 270, 170)}; justify-content: flex-end" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${last}</button></div>`;
+    }
+    if (a.emblem === 'stone') {
+      // a spirit stone: a soul glowing inside a teardrop gem, held in a wraithbone setting
+      const jp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.6).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.6).toFixed(2)}%`;
+      const lastS = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const statusS = `<span class="eyebrow" style="font-size: clamp(8px, 2.6cqw, 11px)">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt" style="font-size: clamp(16px, 5.6cqw, 24px)">${PHASES[B.phase]}</span>
+        <span class="tnum" style="font-size: clamp(12px, 4cqw, 16px); font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span>`;
+      const O = 'M195 8 C 288 118 382 236 382 366 A187 187 0 0 1 8 366 C 8 236 102 118 195 8 Z', I = 'M195 44 C 274 144 352 250 352 366 A157 157 0 0 1 38 366 C 38 250 116 144 195 44 Z';
+      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
+      return `<div class="emblem jaws stone"><svg viewBox="0 0 390 560" aria-hidden="true"><defs>${grad}
+        <radialGradient id="sv" cx="0.5" cy="0.62" r="0.6"><stop offset="0.3" stop-color="#03141A" stop-opacity="0.15"></stop><stop offset="1" stop-color="#03141A" stop-opacity="0.85"></stop></radialGradient>
+        <linearGradient id="sh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E8FBFF" stop-opacity="0.22"></stop><stop offset="0.35" stop-color="#E8FBFF" stop-opacity="0"></stop></linearGradient>
+        <filter id="wb" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="4" seed="31" result="n"></feTurbulence><feDiffuseLighting in="n" surfaceScale="2.5" lighting-color="#E6DCC2" result="l"><feDistantLight azimuth="230" elevation="45"></feDistantLight></feDiffuseLighting><feComposite in="l" in2="SourceGraphic" operator="in"></feComposite></filter>
+        <filter id="glo"><feGaussianBlur stdDeviation="4" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+        <clipPath id="si"><path d="${I}"></path></clipPath></defs>
+        <g clip-path="url(#si)"><rect width="390" height="560" fill="#03141A"></rect><image href="${img('aeldari-soul')}" x="20" y="40" width="350" height="500" preserveAspectRatio="xMidYMid slice" style="filter: brightness(0.7) saturate(0.9)"></image>
+          <rect width="390" height="560" fill="#0A6A78" opacity="0.28" style="mix-blend-mode: color"></rect><rect width="390" height="560" fill="url(#sv)"></rect>
+          <path d="M195 300 H352 V392 H195 Z" fill="url(#fg)" opacity="0.5" style="mix-blend-mode: color"></path><path d="M195 300 H352 V392 H195 Z" fill="url(#fg)" opacity="0.14"></path>
+          <rect width="390" height="560" fill="url(#sh)"></rect><ellipse cx="195" cy="380" rx="120" ry="130" fill="#8FF2FF" fill-opacity="0.07" class="as-soul"></ellipse></g>
+        <path d="M195 300 V392 M38 300 H352 M38 392 H352" stroke="#CFC4A6" stroke-width="1.4" opacity="0.4"></path>
+        <path d="${O} ${I}" fill="#fff" fill-rule="evenodd" filter="url(#wb)"></path><path d="${O} ${I}" fill="#2A2418" fill-rule="evenodd" opacity="0.62"></path>
+        <path d="${I}" fill="none" stroke="#8FF2FF" stroke-width="1.6" opacity="0.7" filter="url(#glo)" class="as-soul"></path><path d="${O}" fill="none" stroke="#0C0A06" stroke-width="2"></path>
+        <circle cx="195" cy="168" r="38" fill="#03141A" fill-opacity="0.6" stroke="#CFC4A6" stroke-width="2" opacity="0.9"></circle></svg>
+        <button class="q jw" style="${jp(161, 134, 68, 68)}; border-radius: 50%" data-act="view" data-k="counsel"><span class="eyebrow" style="font-size: 7px">${esc(a.counsel)}</span><span class="qt" style="font-size: 12px; line-height: 1.1">Options<br>now</span></button>
+        <button class="q jw" style="${jp(84, 210, 222, 86)}" data-act="view" data-k="counsel">${statusS}</button>
+        <button class="q jw" style="${jp(50, 302, 140, 88)}" data-act="view" data-k="army">${armyQ}</button>
+        <button class="q jw" style="${jp(200, 302, 140, 88)}; text-shadow: none" data-act="view" data-k="foe">${foeQ.split(t[4]).join(t[5])}</button>
+        <button class="q jw jw-wake" style="${jp(70, 398, 250, 112)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastS}</button></div>`;
+    }
+    if (a.emblem === 'monolith') {
+      // the monolith: a tapering slab of black necrodermis carved with glyphs, the tomb city glowing through it, the beam's crystal above
+      const jp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.6).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.6).toFixed(2)}%`;
+      const lastM = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const statusM = `<span class="eyebrow" style="font-size: clamp(8px, 2.6cqw, 11px)">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt" style="font-size: clamp(16px, 5.6cqw, 24px)">${PHASES[B.phase]}</span>
+        <span class="tnum" style="font-size: clamp(12px, 4cqw, 16px); font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span>`;
+      const O = 'M8 556 L98 22 L292 22 L382 556 Z', I = 'M40 530 L120 50 L270 50 L350 530 Z';
+      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
+      return hueShift(`<div class="emblem jaws monolith"><svg viewBox="0 0 390 560" aria-hidden="true"><defs>__GRAD__
+        <radialGradient id="mv" cx="0.5" cy="0.35" r="0.75"><stop offset="0.25" stop-color="#05030A" stop-opacity="0.2"></stop><stop offset="1" stop-color="#05030A" stop-opacity="0.85"></stop></radialGradient>
+        <filter id="carve" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.05 0.07" numOctaves="5" seed="21" result="n"></feTurbulence><feDiffuseLighting in="n" surfaceScale="3.5" lighting-color="#7A707A" result="l"><feDistantLight azimuth="225" elevation="40"></feDistantLight></feDiffuseLighting><feComposite in="l" in2="SourceGraphic" operator="in"></feComposite></filter>
+        <filter id="glo"><feGaussianBlur stdDeviation="3" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+        <clipPath id="mi"><path d="${I}"></path></clipPath></defs>
+        <g clip-path="url(#mi)"><rect width="390" height="560" fill="#05030A"></rect><image href="${img('necrons-tomb-city')}" x="0" y="0" width="390" height="560" preserveAspectRatio="xMidYMin slice" class="nec-art"></image>
+          <rect width="390" height="560" fill="url(#mv)"></rect><path d="M195 268 H350 V368 H195 Z" fill="url(#fg)" opacity="0.5" style="mix-blend-mode: color"></path><path d="M195 268 H350 V368 H195 Z" fill="url(#fg)" opacity="0.14"></path></g>
+        <path d="M195 268 V368 M66 268 H324 M58 368 H332" stroke="#120D14" stroke-width="7"></path><path d="M195 268 V368 M66 268 H324 M58 368 H332" stroke="#FF4F9C" stroke-width="1" opacity="0.55" filter="url(#glo)"></path>
+        <path d="${O} ${I}" fill="#fff" fill-rule="evenodd" filter="url(#carve)"></path><path d="${O} ${I}" fill="#0C0A0E" fill-rule="evenodd" opacity="0.8"></path><path d="${O} ${I}" fill="none" stroke="#020103" stroke-width="2"></path>
+        <path d="${I}" fill="none" stroke="#FF4F9C" stroke-width="1.6" opacity="0.7" filter="url(#glo)" class="nec-edge"></path>
+        <g fill="none" stroke="#FF6FAE" stroke-width="1.3" stroke-linecap="round" opacity="0.55" filter="url(#glo)">${[120, 190, 260, 330, 400, 470].map((y, k) => { const xl = 24 + (y - 22) * 0.165, xr = 366 - (y - 22) * 0.165; const g = (x) => [`<circle cx="${x}" cy="${y - 4}" r="4"></circle><path d="M${x} ${y} V${y + 10} M${x - 3} ${y + 10} H${x + 3}"></path>`, `<path d="M${x - 4} ${y - 6} L${x} ${y - 2} L${x + 4} ${y - 6} M${x} ${y - 2} V${y + 10}"></path>`, `<path d="M${x - 4} ${y} A4 4 0 0 1 ${x + 4} ${y} M${x} ${y - 8} V${y + 10}"></path>`][k % 3]; return g(xl) + g(xr); }).join('')}</g>
+        <circle cx="195" cy="118" r="40" fill="#0C0A0E" fill-opacity="0.6" stroke="#120D14" stroke-width="8"></circle><circle cx="195" cy="118" r="40" fill="none" stroke="#FF4F9C" stroke-width="1.4" opacity="0.8" filter="url(#glo)" class="nec-edge"></circle></svg>
+        <button class="q jw" style="${jp(159, 82, 72, 72)}; border-radius: 50%" data-act="view" data-k="counsel"><span class="eyebrow" style="font-size: 7px">${esc(a.counsel)}</span><span class="qt" style="font-size: 12px; line-height: 1.1">Options<br>now</span></button>
+        <button class="q jw" style="${jp(96, 168, 198, 90)}" data-act="view" data-k="counsel">${statusM}</button>
+        <button class="q jw" style="${jp(70, 276, 120, 86)}" data-act="view" data-k="army">${armyQ}</button>
+        <button class="q jw" style="${jp(200, 276, 120, 86)}; text-shadow: none" data-act="view" data-k="foe">__FOEQ__</button>
+        <button class="q jw jw-wake" style="${jp(66, 378, 258, 140)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastM}</button></div>`, necHue()).replace('__GRAD__', grad).replace('__FOEQ__', foeQ.split(t[4]).join(t[5]));
+    }
+    if (a.emblem === 'lancet') {
+      // a lancet window of the Rock: carved dark stone, two lights divided by a mullion, a rose window above, old glass glowing with candlelight from below
+      const jp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.6).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.6).toFixed(2)}%`;
+      const lastL = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const statusL = `<span class="eyebrow" style="font-size: clamp(8px, 2.6cqw, 11px)">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt" style="font-size: clamp(16px, 5.6cqw, 24px)">${PHASES[B.phase]}</span>
+        <span class="tnum" style="font-size: clamp(12px, 4cqw, 16px); font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span>`;
+      const O = 'M14 556 V236 Q14 66 195 8 Q376 66 376 236 V556 Z', I = 'M42 532 V240 Q42 92 195 38 Q348 92 348 240 V532 Z';
+      return `<div class="emblem jaws lancet"><svg viewBox="0 0 390 560" aria-hidden="true"><defs>${grad}
+        <linearGradient id="stn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A4A3E"></stop><stop offset="0.5" stop-color="#1E2A22"></stop><stop offset="1" stop-color="#0C120E"></stop></linearGradient>
+        <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E2D8BE"></stop><stop offset="1" stop-color="#9C907A"></stop></linearGradient>
+        <radialGradient id="cdl" cx="0.5" cy="1" r="0.75"><stop offset="0" stop-color="#FFB060" stop-opacity="0.18"></stop><stop offset="1" stop-color="#FFB060" stop-opacity="0"></stop></radialGradient>
+        <filter id="grit"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="5"></feTurbulence><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 -0.22"></feColorMatrix><feComposite in2="SourceGraphic" operator="in"></feComposite></filter>
+        <radialGradient id="vig" cx="0.5" cy="0.42" r="0.7"><stop offset="0.35" stop-color="#030604" stop-opacity="0.25"></stop><stop offset="1" stop-color="#030604" stop-opacity="0.85"></stop></radialGradient><filter id="carve" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.045 0.06" numOctaves="5" seed="9" result="n"></feTurbulence><feDiffuseLighting in="n" surfaceScale="4" lighting-color="#8E9A90" result="l"><feDistantLight azimuth="235" elevation="38"></feDistantLight></feDiffuseLighting><feComposite in="l" in2="SourceGraphic" operator="in"></feComposite></filter><clipPath id="li"><path d="${I}"></path></clipPath></defs>
+        <g clip-path="url(#li)"><rect width="390" height="560" fill="#050906"></rect><image href="${(POOL.find((x) => x.name === 'dark-angels-glass-3') || {}).src || ''}" x="42" y="14" width="306" height="545" preserveAspectRatio="xMidYMid slice" style="filter: saturate(0.85) brightness(0.8)"></image><rect width="390" height="560" fill="url(#vig)"></rect>
+          <path d="M195 264 H348 V362 H195 Z" fill="url(#fg)" opacity="0.55" style="mix-blend-mode: color"></path><path d="M195 264 H348 V362 H195 Z" fill="url(#fg)" opacity="0.18"></path><rect width="390" height="560" fill="url(#cdl)" class="ln-candle"></rect></g>
+        <path d="M195 166 V362" stroke="#1C2820" stroke-width="12"></path><path d="M195 166 V362" stroke="#BDB29A" stroke-width="1.6" opacity="0.6"></path><path d="M42 364 H348" stroke="#1C2820" stroke-width="9"></path><path d="M42 364 H348" stroke="#BDB29A" stroke-width="1.2" opacity="0.5"></path>
+        <path d="M42 262 H348" stroke="#1C2820" stroke-width="9"></path><path d="M42 262 H348" stroke="#BDB29A" stroke-width="1.2" opacity="0.5"></path>
+        <path d="${O} ${I}" fill="#fff" fill-rule="evenodd" filter="url(#carve)"></path><path d="${O} ${I}" fill="#0A110D" fill-rule="evenodd" opacity="0.78"></path><path d="${O} ${I}" fill="none" stroke="#020403" stroke-width="2"></path><path d="${O} ${I}" fill="#000" fill-rule="evenodd" filter="url(#grit)" opacity="0.5"></path>
+        <path d="${I}" fill="none" stroke="url(#bone)" stroke-width="2.5" opacity="0.75"></path>
+        <circle cx="195" cy="128" r="42" fill="none" stroke="#000" stroke-opacity="0.6" stroke-width="12"></circle><circle cx="195" cy="128" r="42" fill="none" stroke="#3A443C" stroke-width="7"></circle><circle cx="195" cy="128" r="36" fill="#040705" fill-opacity="0.55"></circle><circle cx="195" cy="128" r="45.5" fill="none" stroke="#BDB29A" stroke-width="1" opacity="0.45"></circle></svg>
+        <button class="q jw" style="${jp(159, 92, 72, 72)}; border-radius: 50%" data-act="view" data-k="counsel"><span class="eyebrow" style="font-size: 7px">${esc(a.counsel)}</span><span class="qt" style="font-size: 12px; line-height: 1.1">Options<br>now</span></button>
+        <button class="q jw" style="${jp(62, 176, 266, 82)}" data-act="view" data-k="counsel">${statusL}</button>
+        <button class="q jw" style="${jp(52, 274, 136, 80)}" data-act="view" data-k="army">${armyQ}</button>
+        <button class="q jw" style="${jp(202, 274, 136, 80)}; text-shadow: none" data-act="view" data-k="foe">${foeQ.split(t[4]).join(t[5])}</button>
+        <button class="q jw jw-wake" style="${jp(56, 372, 278, 136)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastL}</button></div>`;
+    }
+    if (a.emblem === 'ward') {
+      // the ward of aversion: a carved iron diamond with a line through its heart, rimed with frost, snow lying on its upper edges
+      const jp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.6).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.6).toFixed(2)}%`;
+      const lastW = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const statusW = `<span class="eyebrow" style="font-size: clamp(8px, 2.6cqw, 11px)">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt" style="font-size: clamp(16px, 5.6cqw, 24px)">${PHASES[B.phase]}</span>
+        <span class="tnum" style="font-size: clamp(12px, 4cqw, 16px); font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span>`;
+      const O = 'M195 12 L382 280 L195 548 L8 280 Z', I = 'M195 48 L349 280 L195 512 L41 280 Z';
+      const snowL = 'M8 280 L195 12 L195 20 C 170 40 160 52 150 66 C 128 92 120 104 104 124 C 86 150 70 172 58 194 C 44 216 30 240 16 268 Z';
+      const snowR = 'M382 280 L195 12 L195 20 C 214 36 232 58 244 70 C 266 98 276 112 292 132 C 310 158 322 178 336 200 C 350 224 362 246 372 268 Z';
+      return `<div class="emblem jaws ward"><svg viewBox="0 0 390 560" aria-hidden="true"><defs>${grad}
+        <linearGradient id="iron" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5E6E7C"></stop><stop offset="0.5" stop-color="#2E3A45"></stop><stop offset="1" stop-color="#161D24"></stop></linearGradient>
+        <linearGradient id="snw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F5F8"></stop><stop offset="1" stop-color="#9FB2C2"></stop></linearGradient>
+        <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E2D8BE"></stop><stop offset="1" stop-color="#9C907A"></stop></linearGradient>
+        <filter id="grit"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="4"></feTurbulence><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 -0.25"></feColorMatrix><feComposite in2="SourceGraphic" operator="in"></feComposite></filter>
+        <filter id="rime"><feTurbulence type="fractalNoise" baseFrequency="0.05 0.08" numOctaves="4" seed="8"></feTurbulence><feColorMatrix values="0 0 0 0 0.9 0 0 0 0 0.95 0 0 0 0 1 0 0 0 2 -1.05"></feColorMatrix><feComposite in2="SourceGraphic" operator="in"></feComposite></filter>
+        <clipPath id="wi"><path d="${I}"></path></clipPath>
+        <path id="rl" d="M52 262 L188 66"></path><path id="rr" d="M202 66 L338 262"></path><path id="rb" d="M60 300 L188 486"></path></defs>
+        <image href="${(POOL.find((x) => x.name === 'wolves-badge') || {}).src || ''}" x="-6" y="40" width="402" height="456" preserveAspectRatio="xMidYMid meet" style="filter: brightness(0.5) saturate(0.85) contrast(1.05)"></image><path d="M195 52 L360 280 L195 508 L30 280 Z" fill="url(#fg)" opacity="0.0"></path><g clip-path="url(#wi)"><path d="M195 280 L420 120 L420 440 Z" fill="url(#fg)" opacity="0.4" style="mix-blend-mode: color"></path></g><radialGradient id="wv" cx="0.5" cy="0.5" r="0.6"><stop offset="0.3" stop-color="#05080B" stop-opacity="0.15"></stop><stop offset="1" stop-color="#05080B" stop-opacity="0.75"></stop></radialGradient><rect x="0" y="0" width="390" height="560" fill="url(#wv)" clip-path="url(#wi)"></rect><circle cx="195" cy="280" r="40" fill="#05080B" fill-opacity="0.72" stroke="#0A0E12" stroke-width="5"></circle><circle cx="195" cy="280" r="40" fill="none" stroke="#C9962E" stroke-width="1.2" opacity="0.55"></circle></svg>
+        <button class="q jw" style="${jp(120, 148, 150, 96)}" data-act="view" data-k="counsel">${statusW}</button>
+        <button class="q jw" style="${jp(54, 250, 92, 60)}" data-act="view" data-k="army">${armyQ}</button>
+        <button class="q jw" style="${jp(244, 250, 92, 60)}; text-shadow: none" data-act="view" data-k="foe">${foeQ}</button>
+        <button class="q jw" style="${jp(161, 246, 68, 68)}; border-radius: 50%" data-act="view" data-k="counsel"><span class="eyebrow" style="font-size: 8px">${esc(a.counsel)}</span><span class="qt" style="font-size: 12px; line-height: 1.1">Options<br>now</span></button>
+        <button class="q jw jw-wake" style="${jp(108, 322, 174, 86)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastW}</button></div>`;
     }
     if (a.emblem === 'jaws') {
       // the jaw spread wide: bone ring, teeth graded big at the front and small at the hinges, every panel sized to sit inside the mouth
@@ -1927,7 +2078,7 @@
     const sh = UI.sheet; if (!sh) return '';
     const B = S.battle;
     if (sh.type === 'strat') {
-      const s = D.rulesSM.stratagems.concat(D.rulesSM.core.map((x) => ({ ...x, det: 'Core' }))).find((x) => x.name === sh.name && x.det === sh.det);
+      const s = allMyStrats().find((x) => x.name === sh.name && x.det === sh.det);
       if (!s) return '';
       return sheet(s.name, `<div class="row" style="gap: 8px; flex-wrap: wrap"><span class="chip">${esc(s.det)}</span><span class="chip">${s.cp} CP</span><span class="chip">${s.turn === 'either' ? 'Either turn' : s.turn === 'yours' ? 'Your turn' : "Opponent's turn"}</span></div>
         <div><div class="eyebrow">When</div><div>${esc(s.when)}</div></div><div><div class="eyebrow">Target</div><div>${esc(s.target)}</div></div><div><div class="eyebrow">Effect</div><div style="font-size: 17px">${esc(s.effect)}</div></div>
@@ -2074,8 +2225,8 @@
 
   // ---------- render ----------
   function render() {
-    if (STANDALONE && S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
-    document.body.className = ARMY[S.army].cls; applyArmyTheme();
+    if (S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
+    document.body.className = ARMY[S.army].cls; applyArmyTheme(); applyNecronTheme();
     if (S.army === 'other' && list()) { const lf = listFaction(list()); if (lf && !FOES[lf]) loadFaction(lf); }
     if (S.foeKey && foe()) { const fn = foe().faction; if (!FD(fn)) loadFaction(fn); else if (!factionTried[fn]) { factionTried[fn] = true; checkFaction(fn); } }
     applyFoeTheme();
@@ -2088,6 +2239,7 @@
     else if (S.screen === 'results' && S.battle) root.innerHTML = renderResults();
     else root.innerHTML = renderMuster();
     const gl = document.getElementById('glimpse'); if (gl) gl.hidden = S.screen !== 'home';
+    const vd = document.getElementById('void'); if (vd && S.army === 'wolves' && !vd.querySelector('.wolf-snow')) vd.insertAdjacentHTML('beforeend', '<div class="wolf-snow"></div>');
     if (scored) document.body.classList.add('foe-scored'); foeScoredFx();
     const sb = document.querySelector('#overlay .sheet-body'); const sKey = JSON.stringify([UI.overlay, UI.sheet && UI.sheet.type, UI.sheet && UI.sheet.r]);
     const keep = sb && sb.dataset.key === sKey ? sb.scrollTop : 0;
@@ -2125,6 +2277,13 @@
     emInvert() { stashFoeInputs(); const R = foe(); R.emblemInvert = !R.emblemInvert; },
     emClear() { stashFoeInputs(); delete foe().emblemId; toast('Image moved back to the library'); },
     army(k) { S.army = k; if (k === 'other') { S.facKey = null; S.lists.other = null; } if (k === 'other' || !list()) UI.overlay = 'paste'; },
+    necHue(k) { S.hue = S.hue || {}; S.hue.necron = +k; },
+    makeMain() {
+      const L = list(); const k = mainFor(L); if (!k || !L) return;
+      S.mine = myArmies().filter((x) => x !== k).concat(k); S.lists[k] = L; S.army = k;
+      S.facs = (S.facs || []).filter((x) => !MAINABLE[x.f] || MAINABLE[x.f] !== k); S.facKey = null; S.lists.other = null;
+      toast(ARMY[k].label + ' is now one of your main armies.'); window.scrollTo(0, 0); return 'top';
+    },
     armyFac(k) { const x = (S.facs || []).find((y) => y.f === k); if (!x) return; S.army = 'other'; S.facKey = k; S.lists.other = x.list; S.facs = [x].concat(S.facs.filter((y) => y !== x)); },
     library(k) { UI.overlay = 'library'; UI.sheet = null; UI.assign = k || null; UI.libPick = null; if (k && k.startsWith('rival:')) stashFoeInputs(); },
     poolPick(k) { if (UI.assign) { assignSlot(UI.assign, k); const back = UI.assign.startsWith('rival:') ? 'foedetail' : UI.assign === 'list:other' ? 'paste' : null; if (UI.assign.startsWith('rival:')) S.foeKey = UI.assign.slice(6); toast('Placed on ' + slotLabel(UI.assign)); UI.assign = null; UI.overlay = back; } else UI.libPick = UI.libPick === k ? null : k; },
@@ -2276,7 +2435,7 @@
     foeWlDead() { S.battle.foeWarlordDead = !S.battle.foeWarlordDead; toast(S.battle.foeWarlordDead ? 'Their Warlord is down. No more CP from them.' : 'Their Warlord counts again.'); },
     strat(k, el) { UI.sheet = { type: 'strat', name: k, det: el.dataset.d }; },
     fstrat(k, el) { UI.sheet = { type: 'fstrat', name: k, det: el.dataset.d }; },
-    useStrat() { const B = S.battle; const s = D.rulesSM.stratagems.concat(D.rulesSM.core.map((x) => ({ ...x, det: 'Core' }))).find((x) => x.name === UI.sheet.name && x.det === UI.sheet.det); B.cp.me = Math.max(0, B.cp.me - s.cp); addLog('You used ' + s.name + ' (' + s.cp + ' CP).', 'cp'); UI.sheet = null; toast(s.name + ' used'); },
+    useStrat() { const B = S.battle; const s = allMyStrats().find((x) => x.name === UI.sheet.name && x.det === UI.sheet.det); B.cp.me = Math.max(0, B.cp.me - s.cp); addLog('You used ' + s.name + ' (' + s.cp + ' CP).', 'cp'); UI.sheet = null; toast(s.name + ' used'); },
     foeUsed() { const B = S.battle; const s = FD(foe().faction).stratagems.find((x) => x[1] === UI.sheet.name && x[0] === UI.sheet.det); B.cp.foe = Math.max(0, B.cp.foe - s[2]); addLog('They used ' + s[1] + ' (' + s[2] + ' CP).', 'cp'); UI.sheet = null; },
     unit(k) { UI.sheet = { type: 'unit', id: k }; UI.math = { w: 0, t: S.battle.spotted.length ? 's0' : '' }; },
     hurt(k) { const u = S.battle.units.find((x) => x.id === k); const m = u.models.find((x) => x.wl > 0 && x.wl < x.W) || u.models.find((x) => x.wl > 0); if (!m) return; m.wl--; if (m.wl === 0) { addLog(u.name + ' lost a model (' + alive(u) + ' left).', 'event'); if (!alive(u)) addLog(u.name + ' destroyed.', 'event'); } },
@@ -2502,7 +2661,7 @@
         if (ru > lu || (ru === lu && richness(remote) > richness(S))) adoptRemote(remote);
       }
       SYNC.on = true;
-      if (ownerHere && !(S.mine || []).length) { S.mine = ['templars', 'carcharodons']; save(); }
+      if (ownerHere && !(S.mine || []).includes('templars')) { S.mine = ['templars'].concat((S.mine || []).filter((k) => k !== 'templars' && k !== 'carcharodons')); save(); }
       else if (STANDALONE && !ownerHere && !Array.isArray(S.mine)) { S.mine = []; save(); }
       // images sitting unplaced in the library go back on their buttons when their names say where
       const used = new Set(allSlots().map(slotId).filter(Boolean)); let placed = 0;
@@ -2601,7 +2760,7 @@
     else out.push('GAME: not started. Questions are about list building, deployment or rules.');
     // my army
     if (L) {
-      const lf = listFaction(L); const sm = S.army !== 'other' || (FD(lf) && FD(lf).base === 'SM') || /Space Marines|Adeptus Astartes/i.test(L.faction || '');
+      const lf = listFaction(L) || (ARMY[S.army] && ARMY[S.army].lib) || ''; const sm = isAstartes() || (FD(lf) && FD(lf).base === 'SM') || /Space Marines|Adeptus Astartes/i.test(L.faction || '');
       out.push(`\nMY ARMY: ${L.name} (${[L.subfaction, L.faction].filter(Boolean).join(', ')}). Detachments: ${(L.detachments || []).join(', ') || 'none listed'}.`);
       if (sm) D.rulesSM.detachments.filter((d) => (L.detachments || []).includes(d.name)).forEach((d) => out.push(`Detachment rule (${d.name}): ${(d.rules || [d.rule]).map((r) => r.name + ': ' + cut(r.text, 600)).join(' | ')}`));
       else if (FD(lf)) FD(lf).detachments.filter((d) => (L.detachments || []).includes(d.name)).forEach((d) => out.push(`Detachment rule (${d.name}): ${cut(typeof d.rule === 'string' ? d.rule : JSON.stringify(d.rule), 600)}`));
