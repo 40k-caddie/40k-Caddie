@@ -1062,7 +1062,6 @@
         <span class="orb" aria-hidden="true"></span><span class="w-name">${esc(name)}</span><span class="w-label">${esc(label)}</span>${sub ? `<span class="w-sub">${esc(sub)}</span>` : ''}${soon ? '<span class="w-soon">Coming</span>' : ''}</button>`;
     return `
     <header class="wrap" style="padding-block: 14px 0; text-align: center; position: relative; z-index: 2">
-      <div class="eyebrow">${esc(a.label === 'Other' ? (L ? L.subfaction || L.faction || 'Your army' : 'Your army') : a.label)} · The Imperium</div>
       <h1 class="h" style="font-size: calc(40px * var(--head-size))">40k Caddie</h1>
     </header>
     <main class="sol" aria-label="Main page">
@@ -2017,10 +2016,11 @@
     if (S.battle && S.battle.rounds) syncScores();
     const y = window.scrollY;
     const root = document.getElementById('root');
-    if (S.screen === 'home') { root.innerHTML = renderHome(); layoutNet(); }
+    if (S.screen === 'home') { root.innerHTML = renderHome(); layoutNet(); if (!GL.t) GL.t = setTimeout(glimpseTick, 4000); }
     else if (S.screen === 'battle' && S.battle) root.innerHTML = renderBattle();
     else if (S.screen === 'results' && S.battle) root.innerHTML = renderResults();
     else root.innerHTML = renderMuster();
+    const gl = document.getElementById('glimpse'); if (gl) gl.hidden = S.screen !== 'home';
     const sb = document.querySelector('#overlay .sheet-body'); const sKey = JSON.stringify([UI.overlay, UI.sheet && UI.sheet.type, UI.sheet && UI.sheet.r]);
     const keep = sb && sb.dataset.key === sKey ? sb.scrollTop : 0;
     const last = UI.undo[UI.undo.length - 1];
@@ -2447,6 +2447,67 @@
       }, () => {});
       SYNC.poolRef.onSnapshot((snap) => { if (snap.exists && !snap.metadata.hasPendingWrites && mergePool(snap.data())) render(); }, () => {});
     } catch (e) { SYNC.why = 'error: ' + ((e && (e.code || e.message)) || 'unknown'); setSync('local'); }
+  }
+
+
+  // ---------- glimpses: now and then something vast and distant passes behind the worlds ----------
+  // Only images from the library whose names start "bg-". Small, faint and slow, like a trick of the eye.
+  // The tendrils image is different: it reaches out of a corner towards one of the worlds, then withdraws.
+  const GL = { t: 0, last: '', lastTendril: 0 };
+  function glimpseLayer() {
+    let el = document.getElementById('glimpse');
+    if (!el) { el = document.createElement('div'); el.id = 'glimpse'; el.setAttribute('aria-hidden', 'true'); document.body.insertBefore(el, document.getElementById('root')); }
+    return el;
+  }
+  function glimpseTick() {
+    clearTimeout(GL.t);
+    GL.t = setTimeout(glimpseTick, 15000 + Math.random() * 15000);
+    if (reduceMotion || document.hidden || S.screen !== 'home' || UI.overlay || UI.sheet) return;
+    const sol = document.querySelector('.sol'); if (!sol) return;
+    const pics = LIB.items.filter((x) => /^bg-/i.test(x.name) && x.glimpse && x.glimpse !== 'off'); if (!pics.length) return;
+    const tendril = pics.find((x) => x.glimpse === 'reach');
+    const r = sol.getBoundingClientRect(); const layer = glimpseLayer();
+    Object.assign(layer.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    const P = { solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], terra: [50, 45] };
+    if (tendril && Date.now() - GL.lastTendril > 50000 && Math.random() < 0.35) { GL.lastTendril = Date.now(); return reach(tendril, r, layer, P); }
+    const pool = pics.filter((x) => x !== tendril && x.id !== GL.last); const it = pool[Math.floor(Math.random() * pool.length)]; if (!it) return; GL.last = it.id;
+    // somewhere empty: well clear of every world
+    let x = 0, y = 0;
+    for (let k = 0; k < 30; k++) { x = 6 + Math.random() * 88; y = 6 + Math.random() * 88; if (Object.values(P).every(([px, py]) => Math.hypot((px - x) * r.width / 100, (py - y) * r.height / 100) > 95)) break; }
+    const w = /rift/i.test(it.name) ? 46 + Math.random() * 30 : 64 + Math.random() * 46;
+    const img = new Image(); img.src = it.file; img.alt = ''; img.className = 'gl-pic ' + (it.glimpse === 'rift' ? 'gl-rift' : 'gl-ship');
+    img.style.width = w + 'px'; img.style.left = (x * r.width / 100 - w / 2) + 'px'; img.style.top = (y * r.height / 100 - w / 3) + 'px';
+    if (Math.random() < 0.5) img.style.transform = 'scaleX(-1)';
+    layer.appendChild(img);
+    const dx = (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 40), dy = (Math.random() - 0.5) * 18;
+    const flip = img.style.transform || '';
+    const peak = 0.2 + Math.random() * 0.12, dur = 16000 + Math.random() * 8000;
+    const a = img.animate([{ opacity: 0, transform: flip + ' translate(0, 0)' }, { opacity: peak, offset: 0.35 }, { opacity: peak, offset: 0.65 }, { opacity: 0, transform: flip + ` translate(${dx}px, ${dy}px)` }], { duration: dur, easing: 'linear', fill: 'forwards' });
+    a.onfinish = () => img.remove();
+  }
+  function reach(it, r, layer, P) {
+    // pick a corner and the world nearest to it
+    const corners = [[0, 0, 'astro'], [100, 0, 'solemnace'], [0, 100, 'macragge'], [100, 100, 'webway']];
+    const [cx0, cy0, target] = corners[Math.floor(Math.random() * corners.length)];
+    const C = [cx0 * r.width / 100, cy0 * r.height / 100], T = [P[target][0] * r.width / 100, P[target][1] * r.height / 100];
+    const d = Math.hypot(T[0] - C[0], T[1] - C[1]); const u = [(T[0] - C[0]) / d, (T[1] - C[1]) / d];
+    const h = Math.min(300, Math.max(170, d * 0.9)), w = h * 0.56;
+    const stop = d - 34; // the tips stop just short of the world
+    const tipEnd = [C[0] + u[0] * stop, C[1] + u[1] * stop], tipStart = [C[0] - u[0] * 12, C[1] - u[1] * 12];
+    const cEnd = [tipEnd[0] - u[0] * h / 2, tipEnd[1] - u[1] * h / 2], cStart = [tipStart[0] - u[0] * h / 2, tipStart[1] - u[1] * h / 2];
+    const ang = Math.atan2(u[1], u[0]) * 180 / Math.PI - 90; // the image's tips point down
+    const img = new Image(); img.src = it.file; img.alt = ''; img.className = 'gl-pic gl-reach';
+    Object.assign(img.style, { width: w + 'px', height: h + 'px', left: -w / 2 + 'px', top: -h / 2 + 'px' });
+    layer.appendChild(img);
+    const at = (c, extra) => `translate(${c[0]}px, ${c[1]}px) rotate(${ang + (extra || 0)}deg)`;
+    const a = img.animate([
+      { opacity: 0, transform: at(cStart) },
+      { opacity: 0.42, transform: at(cEnd, -2), offset: 0.42, easing: 'ease-in-out' },
+      { opacity: 0.42, transform: at(cEnd, 2.5), offset: 0.55, easing: 'ease-in-out' },
+      { opacity: 0.4, transform: at(cEnd, -1), offset: 0.62 },
+      { opacity: 0, transform: at(cStart) },
+    ], { duration: 17000, easing: 'ease-out', fill: 'forwards' });
+    a.onfinish = () => img.remove();
   }
 
   // ---------- the Cogitator: questions about the battle in front of you, answered from the real rules ----------

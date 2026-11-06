@@ -346,6 +346,12 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 .cog-q { align-self: flex-end; max-width: 85%; background: var(--panel2); border: 1px solid var(--line2); border-radius: 12px 12px 2px 12px; padding: 8px 12px; }
 .cog-a { max-width: 95%; border-left: 2px solid var(--gold); padding: 4px 0 4px 12px; line-height: 1.5; }
 .cog-a.err { border-left-color: var(--accent-text); color: var(--muted); }
+#glimpse { position: fixed; z-index: 0; pointer-events: none; overflow: hidden; }
+#glimpse .gl-pic { position: absolute; opacity: 0; will-change: transform, opacity; }
+#glimpse .gl-ship { filter: blur(0.4px) saturate(0.7) brightness(0.75); }
+#glimpse .gl-rift { filter: blur(0.6px) saturate(0.8) brightness(0.8); mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(closest-side, #000 50%, transparent 100%); mask-image: radial-gradient(closest-side, #000 50%, transparent 100%); }
+#glimpse .gl-reach { object-fit: contain; filter: blur(0.3px) saturate(0.85) brightness(0.9); }
 </style>
 </head>
 <body>
@@ -357,11 +363,11 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=53"></script>
-<script src="lib-v6.js?v=53"></script>
-<script src="data.js?v=53"></script>
-<script src="foes.js?v=53"></script>
-<script src="app.js?v=53"></script>
+<script src="sb.js?v=54"></script>
+<script src="lib-v7.js?v=54"></script>
+<script src="data.js?v=54"></script>
+<script src="foes.js?v=54"></script>
+<script src="app.js?v=54"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
