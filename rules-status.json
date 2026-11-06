@@ -1,0 +1,10 @@
+{
+ "checked": "2026-11-06T03:53:00+00:00",
+ "factions": {
+  "aeldari": "1.4 October 2026",
+  "necrons": "2.8.1 October 2026",
+  "space-marines": "2.8.1 October 2026"
+ },
+ "errors": {},
+ "note": "Seeded from the check run in the Claude app on 6 Nov 2026. The weekly job fills in every army."
+}
