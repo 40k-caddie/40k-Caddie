@@ -246,6 +246,11 @@
 
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
+    { d: '7 Nov 2026', items: [
+      'Your opponent\'s side now carries their own army\'s flavour, built from their lore: Space Wolves (Fenris winter, fur, runes, a cord of fangs and runestones), Dark Angels (the Rock, stained glass, a hidden shame), Necrons (tomb world dust, waking glyphs) and Aeldari (wraithbone, the infinity circuit, spirit stones).',
+      'The band under the header splits: your chain on your half, their army\'s equivalent on theirs.',
+      'Their headers carry their sigil, their own fonts and wording, and one slow living detail each.',
+    ] },
     { d: '6 Nov 2026', items: [
       'The ships between the worlds follow your army: the Gloriana for the Imperium, the Nicor for Carcharodons, and their own vessels for Aeldari, Necrons, Tyranids and Drukhari.',
       'Army buttons are your own: new players start with Other, and each army they load gets a button (the last two, plus Other).',
@@ -268,7 +273,7 @@
   const FOE_THEMES = {
     necron: ['#FFE0EC', '#FF8FC0', '#FF4F9C', '#F0287F', '#1A0510', '#FF8FC0', '#1E0C15', '#8A2A58'],
     da: ['#D6F5E2', '#7FD6A2', '#2E8A57', '#14492C', '#06170D', '#9FE0B8', '#0D1A12', '#2E6B47'],
-    sw: ['#E4EFF7', '#9EC3DE', '#5A7891', '#2C3B48', '#0B1218', '#B9D3E6', '#121820', '#4B6378'],
+    sw: ['#DCE6EE', '#9AB4C9', '#6A8BA6', '#3D566B', '#0A1016', '#BFD2E2', '#111920', '#56728A'],
     ae: ['#DDFCFF', '#8FF2FF', '#2DB3C4', '#0F5F6A', '#04191C', '#A6F4FF', '#08191C', '#227A86'],
     custodes: ['#FFF4CC', '#E8C766', '#B88A2E', '#7A5A1A', '#1A1205', '#E8C766', '#1C160A', '#8A6A2A'],
     ultra: ['#E3ECFF', '#8FB0F0', '#3A5BA0', '#1E3366', '#060D1C', '#9FBAF2', '#0D1424', '#3A5BA0'],
@@ -581,8 +586,15 @@
     st.setProperty('--accent', `color-mix(in srgb, ${t[2]}, #000 35%)`);
     st.setProperty('--accent-text', t[1]);
   }
+  let lastFoeVP = null;
+  function foeScoredFx() {
+    const v = S.battle && !S.battle.ended ? S.battle.vp.foe : null;
+    if (v !== null && lastFoeVP !== null && v > lastFoeVP && !reduceMotion) { document.body.classList.remove('foe-scored'); void document.body.offsetWidth; document.body.classList.add('foe-scored'); clearTimeout(foeScoredFx.t); foeScoredFx.t = setTimeout(() => document.body.classList.remove('foe-scored'), 1600); }
+    lastFoeVP = v;
+  }
   function applyFoeTheme() {
-    const t = FOE_THEMES[factionInfo(foe().faction).theme] || FOE_THEMES.loyal;
+    const key = factionInfo(foe().faction).theme; const t = FOE_THEMES[key] || FOE_THEMES.loyal;
+    document.body.dataset.foe = key; // the opponent's texture pack (panels, bars, living detail)
     const r = document.documentElement.style;
     ['--foe-a', '--foe-b', '--foe-c', '--foe-d', '--foe-text', '--foe-soft', '--foe-deep', '--foe-line'].forEach((k, i) => r.setProperty(k, t[i]));
   }
@@ -1787,8 +1799,10 @@
       <div class="pips" aria-label="${n} of ${tot} models alive">${pips}</div>
       <div class="unit-actions"><button data-act="hurt" data-k="${u.id}" ${n ? '' : 'disabled'}>−1 WOUND</button><button data-act="kill" data-k="${u.id}" ${n ? '' : 'disabled'}>MODEL LOST</button><button data-act="heal" data-k="${u.id}">UNDO</button></div></div>`;
   }
+  // small in-world wording on the opponent's side (their screens keep plain words otherwise)
+  const FOE_WORDS = { sw: { army: 'Law of the Pack', det: 'Saga', spotted: 'Wolves sighted' }, necron: { army: 'Protocol', det: 'Dynastic directive', spotted: 'Phalanxes detected' }, da: { army: 'Rite of the Order', det: 'Edict', spotted: 'Marked by the Watch' }, ae: { army: 'Path', det: 'Host', spotted: 'Seen in the mists' } };
   function renderFoeView() {
-    const F = foe(), fi = factionInfo(F.faction), B = S.battle;
+    const F = foe(), fi = factionInfo(F.faction), B = S.battle; const W = FOE_WORDS[fi.theme] || { army: 'Army rule', det: 'Detachment', spotted: 'Spotted so far' };
     const fd = FD(F.faction); const isNec = !!fd;
     const spotted = B.spotted.map((s, i) => {
       const d = isNec ? foeUnits(F.faction)[s.name] : null;
@@ -1796,16 +1810,17 @@
       return `<div class="strat foe" style="cursor: default"><button data-act="spot" data-k="${i}" style="border: 0; background: transparent; color: var(--text); text-align: left; padding: 0; flex: 1; min-width: 0; min-height: 44px"><span class="nm">${esc(s.name)}</span><br><span class="ds">${p ? `T${esc(p.T)} · Sv ${esc(p.Sv)}${p.InSv ? ' · ' + esc(p.InSv) + ' inv' : ''} · W${esc(p.W)} · OC${esc(p.OC)}` : 'Spotted'}</span></button>
         <span class="row" style="gap: 0"><button class="icon-btn" data-act="spotN" data-k="${i}" data-d="-1" aria-label="One fewer model">−</button><b class="tnum" style="min-width: 22px; text-align: center">${s.n}</b><button class="icon-btn" data-act="spotN" data-k="${i}" data-d="1" aria-label="One more model">+</button></span></div>`;
     }).join('');
-    const army = isNec ? fd.army_rules.filter(Boolean).map((r) => `<details class="foe-panel" style="padding: 10px 12px"><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">Army rule</span><br><b>${esc(r.name)}</b></summary><div class="small" style="white-space: pre-line; padding-top: 6px">${esc(r.text)}</div></details>`).join('') : '';
-    const dets = isNec ? fd.detachments.filter((d) => F.detachments.includes(d.name)).map((d) => `<details class="foe-panel" style="padding: 10px 12px" open><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">Detachment · ${esc(d.name)}</span></summary><div class="small" style="white-space: pre-line; padding-top: 4px">${esc(d.rule)}</div></details>`).join('') : `<p class="small muted" style="margin: 0">Full ${esc(fi.display)} rules are not in the app yet.</p>`;
-    return `<div class="foe-fill" style="padding: 12px 14px"><div class="eyebrow" style="color: inherit">${esc(A().foeQ)}${F.name ? ' · ' + esc(F.name) : ''}</div><div style="font-family: var(--foe-font); font-size: 28px; font-weight: 700; line-height: 1">${esc(fi.display)}</div><div class="small" style="font-weight: 600">${esc(F.detachments.join(', ') || 'Detachment not set')}${F.warlord ? ' · Warlord: ' + esc(F.warlord) : ''} · ${B.cp.foe} CP</div></div>
+    const army = isNec ? fd.army_rules.filter(Boolean).map((r) => `<details class="foe-panel" style="padding: 10px 12px"><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">${esc(W.army)}</span><br><b>${esc(r.name)}</b></summary><div class="small" style="white-space: pre-line; padding-top: 6px">${esc(r.text)}</div></details>`).join('') : '';
+    const dets = isNec ? fd.detachments.filter((d) => F.detachments.includes(d.name)).map((d) => `<details class="foe-panel" style="padding: 10px 12px" open><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">${esc(W.det)} · ${esc(d.name)}</span></summary><div class="small" style="white-space: pre-line; padding-top: 4px">${esc(d.rule)}</div></details>`).join('') : `<p class="small muted" style="margin: 0">Full ${esc(fi.display)} rules are not in the app yet.</p>`;
+    const sigSrc = (() => { const it = poolItem(F.emblemId) || POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && nameMatches(fileKey(x.name), F.faction)); return it ? it.src : ''; })();
+    return `<div class="foe-fill foe-head" style="padding: 12px 14px">${sigSrc ? `<img class="foe-sigil" src="${sigSrc}" alt="">` : ''}<div class="eyebrow" style="color: inherit">${esc(A().foeQ)}${F.name ? ' · ' + esc(F.name) : ''}</div><div style="font-family: var(--foe-font); font-size: 28px; font-weight: 700; line-height: 1">${esc(fi.display)}</div><div class="small" style="font-weight: 600">${esc(F.detachments.join(', ') || 'Detachment not set')}${F.warlord ? ' · Warlord: ' + esc(F.warlord) : ''} · ${B.cp.foe} CP</div></div>
       ${F.notes ? `<div class="foe-panel" style="padding: 10px 12px"><span class="eyebrow foe-ink">Your notes</span><div class="small" style="font-style: italic">${esc(F.notes)}</div></div>` : ''}
       ${army}${dets}
       ${F.warlord && isNec && foeUnits(F.faction)[F.warlord] ? `<details class="foe-panel" style="padding: 10px 12px"><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">Warlord</span><br><b>${esc(F.warlord)}</b></summary><div style="padding-top: 6px">${warlordCard(F.faction, F.warlord, true)}</div></details>` : ''}
       ${(B.foeUnits || []).length ? `<section class="stack" style="gap: 6px"><span class="eyebrow foe-ink">Their army · live from their phone</span>
         ${B.foeUnits.map((u) => { const al = u.models.filter((m) => m.wl > 0).length; const w = u.models.reduce((t, m) => t + m.wl, 0), W = u.models.reduce((t, m) => t + m.W, 0);
           return `<div class="strat foe" style="cursor: default; ${al ? '' : 'opacity: 0.45'}"><span style="min-width: 0; flex: 1"><span class="nm">${esc(u.name)}${u.warlord ? ' · Warlord' : ''}</span><br><span class="ds">${al ? al + ' of ' + u.models.length + ' models · ' + w + ' of ' + W + ' wounds' : 'Destroyed'}</span></span></div>`; }).join('')}</section>` : ''}
-      <section class="stack" style="gap: 6px" ${(B.foeUnits || []).length ? 'hidden' : ''}><div class="row" style="justify-content: space-between"><span class="eyebrow foe-ink">Spotted so far</span>${isNec ? `<button class="btn small" data-act="addSpot" style="border-color: var(--foe-line)">+ ADD UNIT</button>` : ''}</div>${spotted || '<p class="small muted" style="margin: 0">Add their units as you see them. The maths uses their real stats.</p>'}</section>
+      <section class="stack" style="gap: 6px" ${(B.foeUnits || []).length ? 'hidden' : ''}><div class="row" style="justify-content: space-between"><span class="eyebrow foe-ink">${esc(W.spotted)}</span>${isNec ? `<button class="btn small" data-act="addSpot" style="border-color: var(--foe-line)">+ ADD UNIT</button>` : ''}</div>${spotted || '<p class="small muted" style="margin: 0">Add their units as you see them. The maths uses their real stats.</p>'}</section>
       <button class="btn block" data-act="openFoeDetail" style="border-color: var(--foe-line)">Edit foe details</button>`;
   }
   function renderLog() {
@@ -1822,7 +1837,8 @@
   function renderEmblem() {
     const B = S.battle, a = A();
     const units = B.units, standing = units.filter((u) => alive(u) > 0).length;
-    const t = FOE_THEMES[factionInfo(foe().faction).theme] || FOE_THEMES.loyal;
+    const key = factionInfo(foe().faction).theme; const t = FOE_THEMES[key] || FOE_THEMES.loyal;
+    document.body.dataset.foe = key; // the opponent's texture pack (panels, bars, living detail)
     const grad = `<linearGradient id="fg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${t[0]}"><animate attributeName="stop-color" values="${t[0]};${t[2]};${t[0]}" dur="9s" repeatCount="indefinite"></animate></stop><stop offset="0.5" stop-color="${t[1]}"><animate attributeName="stop-color" values="${t[1]};${t[3]};${t[1]}" dur="9s" repeatCount="indefinite"></animate></stop><stop offset="1" stop-color="${t[2]}"><animate attributeName="stop-color" values="${t[2]};${t[0]};${t[2]}" dur="9s" repeatCount="indefinite"></animate></stop></linearGradient>`;
     const last = B.log.slice(-3).reverse().map((e) => `<span class="small" style="opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
     const status = `<span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt" style="font-size: calc(34px * var(--head-size))">${PHASES[B.phase]}</span>
@@ -2064,6 +2080,7 @@
     if (S.foeKey && foe()) { const fn = foe().faction; if (!FD(fn)) loadFaction(fn); else if (!factionTried[fn]) { factionTried[fn] = true; checkFaction(fn); } }
     applyFoeTheme();
     if (S.battle && S.battle.rounds) syncScores();
+    const scored = document.body.classList.contains('foe-scored');
     const y = window.scrollY;
     const root = document.getElementById('root');
     if (S.screen === 'home') { root.innerHTML = renderHome(); layoutNet(); if (!GL.t) GL.t = setTimeout(glimpseTick, 4000); }
@@ -2071,6 +2088,7 @@
     else if (S.screen === 'results' && S.battle) root.innerHTML = renderResults();
     else root.innerHTML = renderMuster();
     const gl = document.getElementById('glimpse'); if (gl) gl.hidden = S.screen !== 'home';
+    if (scored) document.body.classList.add('foe-scored'); foeScoredFx();
     const sb = document.querySelector('#overlay .sheet-body'); const sKey = JSON.stringify([UI.overlay, UI.sheet && UI.sheet.type, UI.sheet && UI.sheet.r]);
     const keep = sb && sb.dataset.key === sKey ? sb.scrollTop : 0;
     const last = UI.undo[UI.undo.length - 1];
