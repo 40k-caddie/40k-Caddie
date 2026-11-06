@@ -333,7 +333,7 @@
   // outside Claude (the installed app), account storage is Supabase; inside Claude it is the artifact's own
   const STANDALONE = !(window.claude && window.claude.use) && window.CADDIE_SB ? window.CADDIE_SB : null;
   const assetSrc = (id) => (id && id.startsWith('sb:') && window.CADDIE_SB ? window.CADDIE_SB.publicUrl(id.slice(3)) : '/_blob/' + id);
-  const LIVE = { on: false, id: '', role: '', ch: null, me: Math.random().toString(36).slice(2, 10), seq: 0, lastShared: '', pt: 0, other: null, err: '' };
+  const LIVE = { on: false, id: '', role: '', ch: null, me: Math.random().toString(36).slice(2, 10), clock: 0, snap: null, pt: 0, other: null, err: '' };
   const SYNC = { on: false, db: null, assets: null, appRef: null, poolRef: null, st: 0, pt: 0, busyS: false, busyP: false, again: { s: false, p: false }, deleted: [] };
   try { SYNC.deleted = JSON.parse(localStorage.getItem(POOL_KEY + '-deleted')) || []; } catch (e) { SYNC.deleted = []; }
   let POOL = (() => { try { return JSON.parse(localStorage.getItem(POOL_KEY)) || []; } catch (e) { return []; } })();
@@ -2448,10 +2448,35 @@
     return x;
   }
   const LOCAL_ONLY = ['log', 'cpDone', 'cpLast', 'foeWarlordDead', 'spotted', 'doctrine', 'link'];
-  const sharedOf = (b) => JSON.stringify({ r: b.round, p: b.phase, t: b.turn, e: !!b.ended, R: Object.fromEntries(Object.entries(b.rounds || {}).map(([k, R]) => [k, [R.obj, R.grid, R.quarters, R.kills]])) });
+  // the shared board, piece by piece: game flow, each objective, each table square, each quarter, kills per round.
+  // Every piece carries a counter of when it last changed, so two people changing different pieces never clash.
+  function boardItems(b) {
+    const out = { flow: [b.round, b.phase, b.turn, !!b.ended], on: b.objNames };
+    Object.entries(b.rounds || {}).forEach(([r, R]) => {
+      (R.obj || []).forEach((v, i) => { out['o:' + r + ':' + i] = v; });
+      (R.grid || []).forEach((v, i) => { out['g:' + r + ':' + i] = v; });
+      (R.quarters || []).forEach((v, i) => { out['q:' + r + ':' + i] = v; });
+      out['k:' + r] = R.kills;
+    });
+    return out;
+  }
+  function setItem(b, k, v) {
+    if (k === 'flow') { [b.round, b.phase, b.turn, b.ended] = v; return; }
+    if (k === 'on') { b.objNames = v; return; }
+    const [t, r, i] = k.split(':'); const R = b.rounds && b.rounds[r]; if (!R) return;
+    if (t === 'k') R.kills = v; else { const arr = t === 'o' ? 'obj' : t === 'g' ? 'grid' : 'quarters'; if (R[arr]) R[arr][+i] = v; }
+  }
+  // stamp whatever changed on this phone since the last look
+  function stampLocal() {
+    const B = S.battle; if (!B) return; B.stamp = B.stamp || {};
+    const cur = boardItems(B); const snap = LIVE.snap || {};
+    Object.keys(cur).forEach((k) => { if (JSON.stringify(cur[k]) !== JSON.stringify(snap[k])) B.stamp[k] = ++LIVE.clock; });
+    LIVE.snap = cur;
+  }
+  function liveBaseline(b) { b.stamp = b.stamp || {}; LIVE.clock = Math.max(LIVE.clock || 0, ...Object.values(b.stamp), 0); LIVE.snap = boardItems(b); }
   // fold the other phone's copy (already turned to this phone's point of view) into ours
-  function mergeLive(local, remote, remoteSeq) {
-    const base = JSON.parse(JSON.stringify(remoteSeq > LIVE.seq ? remote : local));
+  function mergeLive(local, remote) {
+    const base = JSON.parse(JSON.stringify(local));
     const own = (b, side) => ({ cp: b.cp[side], vp: b.vp[side], obj: b.obj && b.obj[side], primary: b.primary && b.primary[side], cards: b.cards[side], ready: b.ready && b.ready[side], deck: b.deck && b.deck[side], tac: side === 'me' ? b.tactical : b.foeTactical, units: side === 'me' ? b.units : b.foeUnits,
       pri: Object.fromEntries(Object.entries(b.rounds || {}).map(([k, R]) => [k, R.pri && R.pri[side]])), sec: Object.fromEntries(Object.entries(b.rounds || {}).map(([k, R]) => [k, R.sec && R.sec[side]])) });
     const put = (b, side, o) => {
@@ -2461,6 +2486,9 @@
     };
     // every round either phone has opened exists on both
     Object.keys(local.rounds || {}).concat(Object.keys(remote.rounds || {})).forEach((k) => { if (!base.rounds[k]) base.rounds[k] = JSON.parse(JSON.stringify((local.rounds || {})[k] || remote.rounds[k])); });
+    const ls = local.stamp || {}, rs = remote.stamp || {}; const ri = boardItems(remote); base.stamp = Object.assign({}, ls);
+    Object.keys(ri).forEach((k) => { if ((rs[k] || 0) > (ls[k] || 0)) { setItem(base, k, JSON.parse(JSON.stringify(ri[k]))); base.stamp[k] = rs[k]; } });
+    LIVE.clock = Math.max(LIVE.clock || 0, ...Object.values(rs), 0);
     put(base, 'me', own(local, 'me')); put(base, 'foe', own(remote, 'foe'));
     LOCAL_ONLY.forEach((k) => { if (local[k] !== undefined) base[k] = local[k]; else delete base[k]; });
     return base;
@@ -2478,13 +2506,13 @@
     const host = LIVE.role === 'host'; const L = list();
     const wl = L && (L.units || []).find((u) => u.warlord);
     const mine = { name: (L && L.name) || '', faction: (L && L.faction) || A().name, sub: (L && L.subfaction) || '', dets: (L && L.detachments) || [], warlord: wl ? wl.name : '', at: new Date().toISOString() };
-    return { b: host ? b : flipBattle(b), first: host ? S.field.first : swapSide(S.field.first), seq: LIVE.seq, writer: LIVE.me,
+    return { b: host ? b : flipBattle(b), first: host ? S.field.first : swapSide(S.field.first), writer: LIVE.me,
       host: host ? mine : (LIVE.other || {}), guest: host ? (LIVE.other || null) : mine, mode: S.field.mode || 'comp' };
   }
   function livePush(now) {
     if (!LIVE.on) return; clearTimeout(LIVE.pt);
     LIVE.pt = setTimeout(async () => {
-      const sh = sharedOf(S.battle); if (sh !== LIVE.lastShared) { LIVE.seq++; LIVE.lastShared = sh; }
+      stampLocal();
       try { const { error } = await LIVE.sb.from('live_games').update({ data: liveDoc(), updated_at: new Date().toISOString() }).eq('id', LIVE.id); if (error) throw error; LIVE.err = ''; }
       catch (e) { LIVE.err = 'Not reaching the Webway. Changes will send when the signal is back.'; }
     }, now ? 0 : 350);
@@ -2496,9 +2524,9 @@
     if (LIVE.other && LIVE.other.at !== was) { liveRival(LIVE.other); if (host && !was) toast((LIVE.other.name || 'Your opponent') + ' joined through the Webway.'); }
     const remote = host ? d.b : flipBattle(d.b);
     const B0 = S.battle; const wasR = B0.round, wasT = B0.turn;
-    const merged = mergeLive(B0, remote, d.seq || 0);
-    if ((d.seq || 0) > LIVE.seq) LIVE.seq = d.seq;
-    S.battle = merged; LIVE.lastShared = sharedOf(merged);
+    stampLocal(); // changes made here but not sent yet keep their place in line
+    const merged = mergeLive(S.battle, remote);
+    S.battle = merged; LIVE.snap = boardItems(merged);
     if (merged.round !== wasR || merged.turn !== wasT) { autoCP(merged, merged.round !== wasR); if (merged.turn === 'me') toast('Your turn. Command phase.'); }
     if (merged.ended && !B0.ended) { S.screen = 'results'; toast('They ended the battle.'); }
     save(); if (!UI.overlay || UI.overlay === 'webway') render();
@@ -2516,10 +2544,10 @@
   async function liveOpen() {
     UI.liveBusy = true; LIVE.err = ''; render();
     try {
-      const sb = await liveAuth(); LIVE.sb = sb; LIVE.role = 'host'; LIVE.id = liveCode(); LIVE.seq = 1; LIVE.other = null;
+      const sb = await liveAuth(); LIVE.sb = sb; LIVE.role = 'host'; LIVE.id = liveCode(); LIVE.clock = 0; S.battle.stamp = {}; LIVE.other = null;
       S.battle.link = { id: LIVE.id, role: 'host' };
       const { error } = await sb.from('live_games').insert({ id: LIVE.id, data: liveDoc() }); if (error) throw new Error(error.message);
-      LIVE.on = true; LIVE.lastShared = sharedOf(S.battle); await liveListen(); save();
+      liveBaseline(S.battle); LIVE.on = true; await liveListen(); save();
     } catch (e) { LIVE.err = e.message; delete S.battle.link; }
     UI.liveBusy = false; render();
   }
@@ -2538,7 +2566,7 @@
       const sb = await liveAuth(); LIVE.sb = sb;
       const { data, error } = await sb.from('live_games').select('data').eq('id', id).maybeSingle();
       if (error) throw new Error(error.message); if (!data || !data.data || !data.data.b) throw new Error('No battle with that code. Check it with your opponent.');
-      const d = data.data; LIVE.id = id; LIVE.role = 'guest'; LIVE.other = d.host; LIVE.seq = d.seq || 1;
+      const d = data.data; LIVE.id = id; LIVE.role = 'guest'; LIVE.other = d.host;
       if (S.battle && !S.battle.ended && S.screen === 'battle' && !(S.battle.link && S.battle.link.id === id)) archiveBattle('unfinished');
       const b = flipBattle(d.b);
       // my side comes from my own list; theirs is already in the shared copy
@@ -2551,7 +2579,7 @@
       // CP already handed out this game: the host's phone gave both sides the same amount
       b.cpDone[b.round + '-' + b.turn] = true;
       addLog('Joined ' + ((d.host && d.host.name) || 'the battle') + ' through the Webway.', 'event');
-      LIVE.on = true; LIVE.lastShared = sharedOf(b); S.screen = 'battle'; UI.view = 'emblem'; UI.overlay = null; UI.sheet = null;
+      liveBaseline(b); LIVE.on = true; S.screen = 'battle'; UI.view = 'emblem'; UI.overlay = null; UI.sheet = null;
       await liveListen(); livePush(true); save(); void keep;
       location.hash = '';
       toast('Linked. You run your side; they run theirs.');
@@ -2565,7 +2593,7 @@
   // a battle that was linked when the app closed picks the link back up
   async function liveResume() {
     const L = S.battle && !S.battle.ended && S.battle.link; if (!L || !STANDALONE) return;
-    try { LIVE.sb = await liveAuth(); LIVE.id = L.id; LIVE.role = L.role; LIVE.on = true; LIVE.lastShared = sharedOf(S.battle); await liveListen(); await liveFetch(); } catch (e) { LIVE.on = false; }
+    try { LIVE.sb = await liveAuth(); LIVE.id = L.id; LIVE.role = L.role; liveBaseline(S.battle); LIVE.on = true; await liveListen(); await liveFetch(); } catch (e) { LIVE.on = false; }
   }
   const liveGuard = (act, el) => {
     if (!LIVE.on || !S.battle) return '';
