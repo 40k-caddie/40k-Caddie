@@ -1294,12 +1294,8 @@
       if (signed) return sheet('Your account', `<p style="margin: 0">Signed in as <b>${esc(SYNC.email)}</b>.</p>
         <p class="small muted" style="margin: 0">Your armies, images, setup and battle history are saved to this account. Sign in with the same email on any other phone or computer and it all follows you.</p>${msg}`,
         `<div class="grid2"><button class="btn" data-act="accOut">SIGN OUT</button><button class="btn solid" data-act="closeAll">DONE</button></div>`);
-      const sent = !!UI.accSent;
-      return sheet('Sign in to sync', `<p class="small muted" style="margin: 0">Everything already saves on this phone. Sign in to keep it in your account too, so it follows you to other devices. No password: we email you a 6 digit code.</p>
-        <label class="field"><span class="eyebrow">Email</span><input id="acc-email" type="email" autocomplete="email" inputmode="email" value="${esc(UI.accEmail || '')}" placeholder="you@example.com"></label>
-        ${sent ? `<label class="field"><span class="eyebrow">Code from the email</span><input id="acc-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></label>` : ''}${msg}`,
-        sent ? `<div class="grid2"><button class="btn" data-act="accSend" ${UI.accBusy ? 'disabled' : ''}>SEND AGAIN</button><button class="btn solid" data-act="accVerify" ${UI.accBusy ? 'disabled' : ''}>SIGN IN</button></div>`
-          : `<button class="btn solid block" data-act="accSend" ${UI.accBusy ? 'disabled' : ''}>EMAIL ME A CODE</button>`);
+      return sheet('Sign in to sync', `<p class="small muted" style="margin: 0">Everything already saves on this phone. Sign in to keep it in your account too, so it follows you to other devices. You'll go to Google and come straight back.</p>${msg}`,
+        `<button class="btn solid block" data-act="accGoogle" ${UI.accBusy ? 'disabled' : ''}>SIGN IN WITH GOOGLE</button>`);
     }
     if (o === 'news') {
       const items = (NEWS && NEWS.items) || [];
@@ -2038,6 +2034,10 @@
     layoutPick(k) { stashField(); S.field.layout = k; },
     dice() { UI.overlay = 'dice'; UI.sheet = null; },
     account() { if (!STANDALONE) return; UI.overlay = 'account'; UI.sheet = null; UI.accMsg = ''; },
+    async accGoogle() {
+      UI.accBusy = true; UI.accMsg = ''; render();
+      try { await STANDALONE.signInGoogle(); } catch (e) { UI.accErr = true; UI.accMsg = 'Could not open Google sign-in: ' + e.message; UI.accBusy = false; render(); }
+    },
     async accSend() {
       const el = document.getElementById('acc-email'); const email = ((el && el.value) || '').trim();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { UI.accMsg = 'That email does not look right.'; UI.accErr = true; return; }

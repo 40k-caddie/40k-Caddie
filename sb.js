@@ -86,6 +86,7 @@
     // sign in with a 6 digit code sent by email (works inside a home-screen app, where links open elsewhere)
     async sendCode(email) { const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: location.origin + location.pathname } }); if (error) throw err(error); },
     async verifyCode(email, token) { const { error } = await sb.auth.verifyOtp({ email, token, type: 'email' }); if (error) throw err(error); },
+    async signInGoogle() { const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } }); if (error) throw err(error); },
     async signOut() { await sb.auth.signOut(); },
     uid,
   };
