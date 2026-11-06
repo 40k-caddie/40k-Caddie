@@ -1071,7 +1071,7 @@
       <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span><span class="w-sub">Opens Warhammer Community</span></a>
       ${world('macragge', 'rulesInfo', 15, 61, 60, 'Macragge', 'Rules data', 'As of ' + RULES_ASOF, false)}
       ${world('prospero', 'gloss', 47, 79, 52, 'Prospero', 'Rules glossary', 'Every rule word explained', false)}
-      ${world('webway', 'webway', 84, 80, 36, 'The Webway', 'Link a device', 'Two phones, one game', true)}
+      ${world('webway', 'webway', 84, 80, 36, 'The Webway', 'Link a device', 'Two phones, one game', !STANDALONE)}
     </main>
     ${B ? `<div class="wrap"><button class="btn block" data-act="endBattle" style="border-color: var(--accent-text); color: var(--accent-text)">${esc(a.end.toUpperCase())} · ROUND ${roman(B.round)}, ${B.vp.me}–${B.vp.foe}</button></div>` : ''}
     <footer class="wrap stack" style="gap: 6px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); align-items: center">
