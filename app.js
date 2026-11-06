@@ -244,6 +244,19 @@
       ${zone('a')}${zone('b')}${cells}${lbl('a')}${lbl('b')}${objs}</svg>`;
   }
 
+  // what's new, newest first (shown on Ulthwé)
+  const UPDATES = [
+    { d: '6 Nov 2026', items: [
+      'Ulthwé joins the worlds: what has changed in the app, newest first.',
+      'Glimpses: now and then a distant ship or rift drifts behind the worlds.',
+      'The Cogitator on Mars: ask about the battle in front of you, answered from both armies\' real rules.',
+      'The Webway: link your opponent\'s phone. They scan a QR code (no app needed) or type a code, then each of you runs your own side live.',
+      'Any army you load gets its real datasheets and wounds, not just Space Marines.',
+      'The installed app: home screen icon, works offline, Google sign-in keeps everything in your account.',
+      'A weekly check reads every army\'s book version on Wahapedia and flags anything that has changed.',
+      'Pre-game sequence: the 12 Chapter Approved steps with ticks and your army\'s extras.',
+    ] },
+  ];
   const ARMY = {
     templars: { label: 'Black Templars', cls: 'army-templars', muster: 'Muster', eyebrow: 'BEFORE THE BATTLE', steps: ['I · Your Force', 'II · Your Foe', 'III · The Field'], fightingAs: 'Fighting as', cry: 'For the God-Emperor!', counsel: 'Counsel', log: 'Battle Log', vox: 'Vox Report', voxShort: 'VOX', armyQ: 'My Crusade', foeQ: 'The Foe', results: 'Reckoning', emblem: 'cross', oath: 'Your vow', oathText: 'Score before you slay', roll: 'Roll Call', end: 'End the battle', hist: 'Archives' },
     carcharodons: { label: 'Carcharodons', cls: 'army-carc', muster: 'The Gathering', eyebrow: 'BEFORE THE HUNT', steps: ['I · The Pack', 'II · The Prey', 'III · Hunting Grounds'], fightingAs: 'Hunting as', cry: "In Rangu's Name!", counsel: 'The Deep', log: 'The Wake', vox: 'Blood Scent', voxShort: 'SCENT', armyQ: 'The Pack', foeQ: 'The Prey', results: 'The Red Tithe', emblem: 'jaws', oath: 'Your oath', oathText: 'Feed on objectives first', roll: 'Count the Pack', end: 'End the hunt', hist: 'The Voyage' },
@@ -473,7 +486,7 @@
   // ---------- state ----------
   function fresh() {
     return {
-      v: 1, screen: 'home', army: 'templars',
+      v: 1, screen: 'home', army: STANDALONE ? 'other' : 'templars', mine: STANDALONE ? [] : undefined, facs: [],
       lists: { templars: D.rosters.templars, carcharodons: D.rosters.carcharodons, other: null },
       foeKey: 'necrons',
       rivals: {
@@ -544,6 +557,14 @@
     const hit = [L.subfaction, L.faction].map((n) => FACTIONS.find((x) => x[0] === n)).find(Boolean);
     if (hit) return FOE_THEMES[hit[1]];
     return /space marine|astartes/i.test(L.faction || '') ? FOE_THEMES.loyal : null;
+  }
+  // whose armies get their own buttons: the owner's two, or none for everyone else (they build theirs up through Other)
+  const OWNER = /^f\.weir88@gmail\.com$/i;
+  const myArmies = () => (!STANDALONE || !Array.isArray(S.mine) ? ['templars', 'carcharodons'] : S.mine);
+  // a list loaded through Other is kept by its army: the last one per army, the two most recent armies
+  function rememberFac(r) {
+    const f = listFaction(r) || r.subfaction || r.faction || r.name; if (!f) return;
+    S.facs = [{ f, list: r }].concat((S.facs || []).filter((x) => x.f !== f)).slice(0, 2); S.facKey = f;
   }
   const otherPic = () => (S.army === 'other' ? poolItem(S.slots['list:other']) : null);
   function applyArmyTheme() {
@@ -1058,8 +1079,8 @@
     const w = games.filter((g) => g.result === 'Victory').length, l = games.filter((g) => g.result === 'Defeat').length, d = games.filter((g) => g.result === 'Draw').length;
     const top = NEWS && NEWS.items && NEWS.items[0];
     // the Sol system: Terra is the battle, the other worlds are everything else
-    const world = (cls, act, x, y, size, name, label, sub, soon) => `<button class="world ${cls} ${soon ? 'soon' : ''}" data-fx="${cls}" data-act="${act}" data-k="${esc(label)}" style="left: ${x}%; top: ${y}%; --s: ${size}px" aria-label="${esc(name)}: ${esc(label)}${soon ? ', coming soon' : ''}">
-        <span class="orb" aria-hidden="true"></span><span class="w-name">${esc(name)}</span><span class="w-label">${esc(label)}</span>${sub ? `<span class="w-sub">${esc(sub)}</span>` : ''}${soon ? '<span class="w-soon">Coming</span>' : ''}</button>`;
+    const world = (cls, act, x, y, size, name, label, sub, soon, art) => `<button class="world ${cls} ${soon === true ? 'soon' : ''}" data-fx="${cls}" data-act="${act}" data-k="${esc(label)}" style="left: ${x}%; top: ${y}%; --s: ${size}px" aria-label="${esc(name)}: ${esc(label)}${soon === true ? ', coming soon' : soon ? ', ' + esc(soon) : ''}">
+        <span class="orb" aria-hidden="true">${art ? `<img class="orb-art" src="${art}" alt="">` : ''}</span><span class="w-name">${esc(name)}</span><span class="w-label">${esc(label)}</span>${sub ? `<span class="w-sub">${esc(sub)}</span>` : ''}${soon ? `<span class="w-soon">${soon === true ? 'Coming' : esc(soon)}</span>` : ''}</button>`;
     return `
     <header class="wrap" style="padding-block: 14px 0; text-align: center; position: relative; z-index: 2">
       <h1 class="h" style="font-size: calc(40px * var(--head-size))">40k Caddie</h1>
@@ -1067,9 +1088,9 @@
     <main class="sol" aria-label="Main page">
       ${(() => {
         // the worlds as one network: Terra to every world, plus an outer ring between neighbours
-        const P = { terra: [50, 45], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80] };
-        const E = [['terra', 'solemnace'], ['terra', 'mars'], ['terra', 'astro'], ['terra', 'macragge'], ['terra', 'prospero'], ['terra', 'webway'],
-          ['astro', 'solemnace'], ['solemnace', 'mars'], ['mars', 'webway'], ['webway', 'prospero'], ['prospero', 'macragge'], ['macragge', 'astro']];
+        const P = { terra: [50, 45], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], ulthwe: [49, 11] };
+        const E = [['terra', 'solemnace'], ['terra', 'mars'], ['terra', 'astro'], ['terra', 'macragge'], ['terra', 'prospero'], ['terra', 'webway'], ['terra', 'ulthwe'],
+          ['astro', 'ulthwe'], ['ulthwe', 'solemnace'], ['solemnace', 'mars'], ['mars', 'webway'], ['webway', 'prospero'], ['prospero', 'macragge'], ['macragge', 'astro']];
         const line = (e, cls, i) => `<line class="${cls}" x1="${P[e[0]][0]}" y1="${P[e[0]][1]}" x2="${P[e[1]][0]}" y2="${P[e[1]][1]}" data-a="${e[0]}" data-b="${e[1]}" style="animation-delay: ${(-i * 0.7).toFixed(1)}s"></line>`;
         return `<svg class="net" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${E.map((e, i) => line(e, e[0] === 'terra' ? 'spoke' : 'ring', i)).join('')}</svg><div class="fleet" aria-hidden="true"></div>`;
       })()}
@@ -1077,6 +1098,7 @@
       <button class="world terra" data-fx="terra" data-act="terra" style="left: 50%; top: 45%; --s: 124px" aria-label="Terra: ${B ? 'resume the battle in progress' : 'battle'}">
         <span class="orb" aria-hidden="true"><span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span></span>
         <span class="w-name">Terra</span><span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>
+      ${world('ulthwe', 'updates', 49, 11, 32, 'Ulthwé', 'App updates', '', S.seenUpd === UPDATES[0].d ? false : 'New', (() => { const it = POOL.find((x) => /ulthwe|craftworld/.test(fileKey(x.name))); return it ? it.src : ''; })())}
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
       ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', '', !UI.cogOK)}
       <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span></a>
@@ -1095,7 +1117,11 @@
   function renderMuster() {
     const a = A(), L = list(), F = foe(), fi = factionInfo(F.faction);
     const myDisp = S.field.myDisp || (L && L.force_disposition) || '';
-    const armyBtns = ['templars', 'carcharodons', 'other'].map((k) => `<button class="army-btn ${S.army === k ? 'on' : ''}" data-act="army" data-k="${k}" aria-label="${esc(k === 'other' ? 'Any other army' : ARMY[k].label)}" aria-pressed="${S.army === k}" title="${esc(k === 'other' ? 'Any other army' : ARMY[k].label)}">${herald(k)}</button>`).join('');
+    // your own armies, then the last two factions you loaded, then Other for anything new
+    const facOn = (f) => S.army === 'other' && S.facKey === f;
+    const armyBtns = myArmies().map((k) => `<button class="army-btn ${S.army === k ? 'on' : ''}" data-act="army" data-k="${k}" aria-label="${esc(ARMY[k].label)}" aria-pressed="${S.army === k}" title="${esc(ARMY[k].label)}">${herald(k)}</button>`).join('')
+      + (S.facs || []).map((x) => { const pic = POOL.find((it) => nameMatches(fileKey(it.name), x.f)); return `<button class="army-btn ${facOn(x.f) ? 'on' : ''}" data-act="armyFac" data-k="${esc(x.f)}" aria-label="${esc(x.f)}" aria-pressed="${facOn(x.f)}" title="${esc(x.f)}">${pic ? `<img src="${pic.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">` : `<span class="fac-txt">${esc(x.f)}</span>`}</button>`; }).join('')
+      + `<button class="army-btn ${S.army === 'other' && !S.facKey ? 'on' : ''}" data-act="army" data-k="other" aria-label="Any other army" aria-pressed="${S.army === 'other' && !S.facKey}" title="Any other army">${herald('other')}</button>`;
     const listCard = L
       ? `<div class="panel row" style="justify-content: space-between; padding: 6px 4px 6px 12px">${otherPic() ? `<img src="${otherPic().src}" alt="" style="flex: 0 0 48px; width: 48px; height: 48px; object-fit: contain">` : ''}<div style="min-width: 0; flex: 1"><div style="font-size: 16px; font-weight: 600">${esc(L.name)}</div><div class="small muted">${L.units.length} units · ${L.points_total.toLocaleString()} pts · ${esc(L.detachments.join(', '))}</div></div><button class="btn small" data-act="overlay" data-k="paste">PASTE NEW</button></div>`
       : `<button class="btn block" data-act="overlay" data-k="paste">Paste your list from the 40k app</button>`;
@@ -1112,7 +1138,7 @@
         <button class="step-btn" data-act="overlay" data-k="foe" style="border-color: var(--foe-line)"><b>${esc(a.steps[1])}</b><span class="foe-ink">${esc(fi.display)}</span></button>
         <button class="step-btn" data-act="overlay" data-k="field"><b>${esc(a.steps[2])}</b><span>${primaries() && S.field.deployment ? 'Set' : 'Not set'}</span></button>
       </nav>
-      <section class="stack" style="gap: 6px"><div class="eyebrow">${esc(a.fightingAs)}</div><div class="grid3">${armyBtns}</div>
+      <section class="stack" style="gap: 6px"><div class="eyebrow">${esc(a.fightingAs)}</div><div style="display: grid; gap: 8px; grid-template-columns: repeat(${myArmies().length + (S.facs || []).length + 1}, minmax(0, 1fr))">${armyBtns}</div>
 </section>
       <section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}</section>
       <button class="foe-panel row" data-act="overlay" data-k="foe" style="gap: 12px; padding: 10px 12px; text-align: left; color: var(--text); align-items: center">
@@ -1350,6 +1376,10 @@
         <label class="field"><span class="eyebrow">Your question</span><textarea id="cog-q" rows="3" placeholder="Their Wraiths are charging my Crusaders. What stratagem helps?"></textarea></label>
         <p class="small muted" style="margin: 0">${UI.cogLeft === null || UI.cogLeft === undefined ? 'No daily limit on your account.' : UI.cogLeft + ' questions left in the last 24 hours.'}</p>`,
         `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="cogAsk" ${UI.cogBusy ? 'disabled' : ''}>${UI.cogBusy ? 'THINKING…' : 'ASK'}</button></div>`);
+    }
+    if (o === 'updates') {
+      return sheet('Ulthwé · App updates', UPDATES.map((u) => `<section class="panel stack" style="padding: 10px 12px; gap: 6px"><span class="eyebrow">${esc(u.d)}</span><ul class="small" style="margin: 0; padding-left: 18px; line-height: 1.5">${u.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`).join(''),
+        '<button class="btn solid block" data-act="closeAll">DONE</button>');
     }
     if (o === 'account') {
       const signed = SYNC.on && SYNC.email;
@@ -2009,6 +2039,7 @@
 
   // ---------- render ----------
   function render() {
+    if (STANDALONE && S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
     document.body.className = ARMY[S.army].cls; applyArmyTheme();
     if (S.army === 'other' && list()) { const lf = listFaction(list()); if (lf && !FOES[lf]) loadFaction(lf); }
     if (S.foeKey && foe()) { const fn = foe().faction; if (!FD(fn)) loadFaction(fn); else if (!factionTried[fn]) { factionTried[fn] = true; checkFaction(fn); } }
@@ -2056,7 +2087,8 @@
     emTint(k) { stashFoeInputs(); foe().emblemTint = k === '1'; },
     emInvert() { stashFoeInputs(); const R = foe(); R.emblemInvert = !R.emblemInvert; },
     emClear() { stashFoeInputs(); delete foe().emblemId; toast('Image moved back to the library'); },
-    army(k) { S.army = k; if (k === 'other' || !list()) UI.overlay = 'paste'; },
+    army(k) { S.army = k; if (k === 'other') { S.facKey = null; S.lists.other = null; } if (k === 'other' || !list()) UI.overlay = 'paste'; },
+    armyFac(k) { const x = (S.facs || []).find((y) => y.f === k); if (!x) return; S.army = 'other'; S.facKey = k; S.lists.other = x.list; S.facs = [x].concat(S.facs.filter((y) => y !== x)); },
     library(k) { UI.overlay = 'library'; UI.sheet = null; UI.assign = k || null; UI.libPick = null; if (k && k.startsWith('rival:')) stashFoeInputs(); },
     poolPick(k) { if (UI.assign) { assignSlot(UI.assign, k); const back = UI.assign.startsWith('rival:') ? 'foedetail' : UI.assign === 'list:other' ? 'paste' : null; if (UI.assign.startsWith('rival:')) S.foeKey = UI.assign.slice(6); toast('Placed on ' + slotLabel(UI.assign)); UI.assign = null; UI.overlay = back; } else UI.libPick = UI.libPick === k ? null : k; },
     poolUse(k) { assignSlot(k, UI.libPick); toast('Placed on ' + slotLabel(k)); },
@@ -2067,7 +2099,7 @@
     closeAll() { UI.overlay = null; UI.sheet = null; },
     parse() {
       try {
-        const r = parseList(val('paste-text')); S.lists[S.army] = r; UI.overlay = null;
+        const r = parseList(val('paste-text')); S.lists[S.army] = r; UI.overlay = null; if (S.army === 'other') rememberFac(r);
         let pic = '';
         if (S.army === 'other') {
           // put the matching library picture on the Other button; a picture for a different army goes back to the library
@@ -2143,7 +2175,7 @@
     wwJoin() {
       const code = (document.getElementById('ww-code') || {}).value || ''; UI.wwCode = code;
       if (!list() || document.getElementById('paste-text')) {
-        try { S.army = 'other'; S.lists.other = parseList(val('paste-text')); UI.wwPasted = true; }
+        try { S.army = 'other'; S.lists.other = parseList(val('paste-text')); rememberFac(S.lists.other); UI.wwPasted = true; }
         catch (e) { const el = document.getElementById('paste-err'); if (el) el.textContent = e.message; return 'skip'; }
       }
       liveJoin(code); return 'skip';
@@ -2155,6 +2187,7 @@
       UI.overlay = 'cog'; UI.sheet = null; if (UI.cogOK === undefined) cogCheck();
     },
     cogAsk() { cogAsk(); return 'skip'; },
+    updates() { UI.overlay = 'updates'; UI.sheet = null; S.seenUpd = UPDATES[0].d; },
     account() { if (!STANDALONE) return; UI.overlay = 'account'; UI.sheet = null; UI.accMsg = ''; },
     async accGoogle() {
       UI.accBusy = true; UI.accMsg = ''; render();
@@ -2421,6 +2454,7 @@
       if (!user || !db) { SYNC.why = framed ? 'account storage not allowed in this window' : 'opened outside Claude'; return setSync('local'); }
       const uid = await user.id(); if (!uid) { SYNC.why = 'not signed in'; return setSync('local'); }
       if (STANDALONE) { try { SYNC.email = await user.email(); } catch (e) { SYNC.email = ''; } }
+      const ownerHere = STANDALONE && OWNER.test(SYNC.email || '');
       SYNC.db = db; SYNC.assets = await HOST.use('assets');
       SYNC.appRef = db.doc('data/users/' + uid + '/app'); SYNC.poolRef = db.doc('data/users/' + uid + '/pool');
       try { SYNC.histRef = db.doc('data/users/' + uid + '/hist'); SYNC.histCol = SYNC.histRef.collection('games'); } catch (e) { SYNC.histCol = null; }
@@ -2431,6 +2465,8 @@
         if (ru > lu || (ru === lu && richness(remote) > richness(S))) adoptRemote(remote);
       }
       SYNC.on = true;
+      if (ownerHere && !(S.mine || []).length) { S.mine = ['templars', 'carcharodons']; save(); }
+      else if (STANDALONE && !ownerHere && !Array.isArray(S.mine)) { S.mine = []; save(); }
       // images sitting unplaced in the library go back on their buttons when their names say where
       const used = new Set(allSlots().map(slotId).filter(Boolean)); let placed = 0;
       POOL.filter((x) => !used.has(x.id)).forEach((x) => { const sl = autoSlot(x.name + '.png'); if (sl) { assignSlot(sl, x.id); placed++; } });
@@ -2468,7 +2504,7 @@
     const tendril = pics.find((x) => x.glimpse === 'reach');
     const r = sol.getBoundingClientRect(); const layer = glimpseLayer();
     Object.assign(layer.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-    const P = { solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], terra: [50, 45] };
+    const P = { ulthwe: [49, 11], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], terra: [50, 45] };
     if (tendril && Date.now() - GL.lastTendril > 50000 && Math.random() < 0.35) { GL.lastTendril = Date.now(); return reach(tendril, r, layer, P); }
     const pool = pics.filter((x) => x !== tendril && x.id !== GL.last); const it = pool[Math.floor(Math.random() * pool.length)]; if (!it) return; GL.last = it.id;
     // somewhere empty: well clear of every world

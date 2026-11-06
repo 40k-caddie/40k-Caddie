@@ -321,11 +321,13 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 @keyframes fxBeam { 0% { transform: rotate(-60deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: rotate(240deg); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .sol .fleet { display: none; } }
 /* each world breathes in the colour of its own light */
-.world.mars .orb, .world.macragge .orb, .world.prospero .orb, .world.webway .orb, .world.solemnace .orb { animation: worldPulse var(--pd, 5s) ease-in-out infinite; animation-delay: var(--pl, 0s); }
+.world.mars .orb, .world.macragge .orb, .world.prospero .orb, .world.webway .orb, .world.solemnace .orb, .world.ulthwe .orb { animation: worldPulse var(--pd, 5s) ease-in-out infinite; animation-delay: var(--pl, 0s); }
 .world.mars .orb { --gc: 255, 84, 40; --pd: 4.6s; --pl: -1.2s; }
 .world.macragge .orb { --gc: 90, 140, 255; --gc2: 232, 199, 102; --pd: 5.4s; --pl: -2.6s; }
 .world.prospero .orb { --gc: 240, 220, 160; --pd: 6.2s; --pl: -0.4s; }
 .world.webway .orb { --gc: 130, 225, 255; --gc2: 185, 140, 255; --pd: 3.8s; --pl: -1.9s; }
+.world.ulthwe .orb { --gc: 236, 226, 200; --gc2: 120, 200, 170; --pd: 5.8s; --pl: -0.9s; background: radial-gradient(circle at 34% 30%, #F2EAD6 0%, #A89C82 18%, #2A2722 52%, #0B0A09 78%); overflow: hidden; }
+.world .orb .orb-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .world.solemnace .orb { --gc: 40, 255, 130; --pd: 4.2s; --pl: -3.1s; }
 @keyframes worldPulse {
   0%, 100% { box-shadow: inset -10px -8px 18px rgba(0,0,0,0.7), 0 0 8px 1px rgba(var(--gc), 0.3), 0 0 0 0 rgba(var(--gc2, var(--gc)), 0); }
@@ -352,6 +354,7 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 #glimpse .gl-rift { filter: blur(0.6px) saturate(0.8) brightness(0.8); mix-blend-mode: screen;
   -webkit-mask-image: radial-gradient(closest-side, #000 50%, transparent 100%); mask-image: radial-gradient(closest-side, #000 50%, transparent 100%); }
 #glimpse .gl-reach { object-fit: contain; filter: blur(0.3px) saturate(0.85) brightness(0.9); }
+.fac-txt { font: 700 12px/1.15 'Barlow Condensed', Arial, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); text-align: center; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -363,11 +366,11 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=54"></script>
-<script src="lib-v7.js?v=54"></script>
-<script src="data.js?v=54"></script>
-<script src="foes.js?v=54"></script>
-<script src="app.js?v=54"></script>
+<script src="sb.js?v=55"></script>
+<script src="lib-v7.js?v=55"></script>
+<script src="data.js?v=55"></script>
+<script src="foes.js?v=55"></script>
+<script src="app.js?v=55"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
