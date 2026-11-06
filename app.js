@@ -1745,7 +1745,10 @@
       ${F.notes ? `<div class="foe-panel" style="padding: 10px 12px"><span class="eyebrow foe-ink">Your notes</span><div class="small" style="font-style: italic">${esc(F.notes)}</div></div>` : ''}
       ${army}${dets}
       ${F.warlord && isNec && foeUnits(F.faction)[F.warlord] ? `<details class="foe-panel" style="padding: 10px 12px"><summary style="cursor: pointer; min-height: 32px"><span class="eyebrow foe-ink">Warlord</span><br><b>${esc(F.warlord)}</b></summary><div style="padding-top: 6px">${warlordCard(F.faction, F.warlord, true)}</div></details>` : ''}
-      <section class="stack" style="gap: 6px"><div class="row" style="justify-content: space-between"><span class="eyebrow foe-ink">Spotted so far</span>${isNec ? `<button class="btn small" data-act="addSpot" style="border-color: var(--foe-line)">+ ADD UNIT</button>` : ''}</div>${spotted || '<p class="small muted" style="margin: 0">Add their units as you see them. The maths uses their real stats.</p>'}</section>
+      ${(B.foeUnits || []).length ? `<section class="stack" style="gap: 6px"><span class="eyebrow foe-ink">Their army · live from their phone</span>
+        ${B.foeUnits.map((u) => { const al = u.models.filter((m) => m.wl > 0).length; const w = u.models.reduce((t, m) => t + m.wl, 0), W = u.models.reduce((t, m) => t + m.W, 0);
+          return `<div class="strat foe" style="cursor: default; ${al ? '' : 'opacity: 0.45'}"><span style="min-width: 0; flex: 1"><span class="nm">${esc(u.name)}${u.warlord ? ' · Warlord' : ''}</span><br><span class="ds">${al ? al + ' of ' + u.models.length + ' models · ' + w + ' of ' + W + ' wounds' : 'Destroyed'}</span></span></div>`; }).join('')}</section>` : ''}
+      <section class="stack" style="gap: 6px" ${(B.foeUnits || []).length ? 'hidden' : ''}><div class="row" style="justify-content: space-between"><span class="eyebrow foe-ink">Spotted so far</span>${isNec ? `<button class="btn small" data-act="addSpot" style="border-color: var(--foe-line)">+ ADD UNIT</button>` : ''}</div>${spotted || '<p class="small muted" style="margin: 0">Add their units as you see them. The maths uses their real stats.</p>'}</section>
       <button class="btn block" data-act="openFoeDetail" style="border-color: var(--foe-line)">Edit foe details</button>`;
   }
   function renderLog() {
@@ -2473,7 +2476,8 @@
   function liveDoc() {
     const B = S.battle; const b = {}; Object.keys(B).forEach((k) => { if (!LOCAL_ONLY.includes(k)) b[k] = B[k]; });
     const host = LIVE.role === 'host'; const L = list();
-    const mine = { name: (L && L.name) || '', faction: (L && L.faction) || A().name, sub: (L && L.subfaction) || '', at: new Date().toISOString() };
+    const wl = L && (L.units || []).find((u) => u.warlord);
+    const mine = { name: (L && L.name) || '', faction: (L && L.faction) || A().name, sub: (L && L.subfaction) || '', dets: (L && L.detachments) || [], warlord: wl ? wl.name : '', at: new Date().toISOString() };
     return { b: host ? b : flipBattle(b), first: host ? S.field.first : swapSide(S.field.first), seq: LIVE.seq, writer: LIVE.me,
       host: host ? mine : (LIVE.other || {}), guest: host ? (LIVE.other || null) : mine, mode: S.field.mode || 'comp' };
   }
@@ -2488,7 +2492,8 @@
   function liveReceive(d) {
     if (!d || !d.b || d.writer === LIVE.me || !S.battle) return;
     const host = LIVE.role === 'host';
-    LIVE.other = host ? d.guest : d.host;
+    const was = LIVE.other && LIVE.other.at; LIVE.other = host ? d.guest : d.host;
+    if (LIVE.other && LIVE.other.at !== was) { liveRival(LIVE.other); if (host && !was) toast((LIVE.other.name || 'Your opponent') + ' joined through the Webway.'); }
     const remote = host ? d.b : flipBattle(d.b);
     const B0 = S.battle; const wasR = B0.round, wasT = B0.turn;
     const merged = mergeLive(B0, remote, d.seq || 0);
@@ -2518,6 +2523,13 @@
     } catch (e) { LIVE.err = e.message; delete S.battle.link; }
     UI.liveBusy = false; render();
   }
+  function liveRival(o) {
+    if (!o) return; const known = (n) => n && (FACTION_FILES[n] || FOES[n]);
+    const faction = [o.sub, o.faction].find(known) || o.faction || 'Space Marines';
+    const prev = S.rivals.webway || {};
+    S.rivals.webway = { faction, name: o.name || 'Webway opponent', detachments: o.dets || [], warlord: o.warlord || '', notes: prev.faction === faction ? prev.notes || '' : '', record: prev.record || [0, 0] };
+    S.foeKey = 'webway'; if (!FOES[faction]) loadFaction(faction);
+  }
   async function liveJoin(code) {
     UI.liveBusy = true; LIVE.err = ''; render();
     try {
@@ -2534,9 +2546,7 @@
       await ensureFaction(listFaction(list()));
       const keep = S.battle; S.battle = b; b.log = []; b.cpDone = {}; b.spotted = []; b.units = buildUnits(list());
       // the host's army becomes this phone's opponent
-      const h = d.host || {}; const known = (n) => n && (FACTION_FILES[n] || FOES[n]);
-      S.rivals.webway = { faction: [h.sub, h.faction].find(known) || h.faction || 'Space Marines', name: h.name || 'Webway opponent', detachments: [], warlord: '', notes: '', record: [0, 0] };
-      S.foeKey = 'webway'; ensureRound(b.round);
+      liveRival(d.host); ensureRound(b.round);
       b.link = { id, role: 'guest' }; b.cp.me = b.cp.me || 0;
       // CP already handed out this game: the host's phone gave both sides the same amount
       b.cpDone[b.round + '-' + b.turn] = true;
