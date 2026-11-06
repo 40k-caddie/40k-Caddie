@@ -337,7 +337,7 @@
       if (SYNC.deleted.includes(li.id)) return;
       const mine = POOL.find((x) => x.id === li.id || (li.assetId && x.assetId === li.assetId));
       if (!mine) { POOL.push({ id: li.id, name: li.name, assetId: li.assetId, mono: li.mono, src: li.file, lib: true }); changed = true; }
-      else if (mine.src !== li.file && (!mine.src || mine.src.startsWith('/_blob/'))) { mine.src = li.file; mine.lib = true; changed = true; }
+      else if (mine.src !== li.file && (!mine.src || mine.src.startsWith('/_blob/') || mine.src.startsWith('data:'))) { mine.src = li.file; mine.lib = true; changed = true; }
     });
     if (changed) { try { localStorage.setItem(POOL_KEY, JSON.stringify(POOL)); } catch (e) { /* the library still shows this visit */ } }
   })();
@@ -2104,7 +2104,7 @@
         (d.hist || []).forEach((g) => { if (!HIST.some((x) => x.id === g.id)) HIST.push(g); });
         HIST = HIST.filter((x) => !HIST_DEL.includes(x.id)); histSave();
         d.state.updatedAt = Date.now(); adoptRemote(d.state); save();
-        if (SYNC.on) { for (const it of POOL.filter((x) => !x.assetId)) await uploadImage(it); await pushPool(); await pushState(); if (SYNC.histCol) await syncHistory(); }
+        if (SYNC.on) { for (const it of POOL.filter((x) => !x.assetId && !x.lib)) await uploadImage(it); await pushPool(); await pushState(); if (SYNC.histCol) await syncHistory(); }
         UI.overlay = null; S.screen = 'home'; toast('Setup loaded: ' + HIST.length + ' battles, ' + Object.keys(S.rivals || {}).length + ' opponents.');
       } catch (e) { UI.moveErr = true; UI.moveMsg = 'Could not read that setup (' + e.message + '). Copy it again and paste the whole thing.'; }
       render();
@@ -2371,7 +2371,7 @@
     ? `<button class="dim" id="sync-state" data-act="account" style="margin: 0; font-size: 11px; text-align: center; border: 0; background: transparent; text-decoration: underline; min-height: 28px; color: inherit">${syncLabel()}</button>`
     : `<p class="dim" id="sync-state" style="margin: 0; font-size: 11px; text-align: center">${syncLabel()}</p>`;
   function setSync(st) { SYNC.status = st; const el = document.getElementById('sync-state'); if (el) el.textContent = syncLabel(); }
-  const syncLabel = () => (SYNC.status === 'upfail' ? `Settings synced, but ${POOL.filter((x) => !x.assetId).length} image(s) could not upload (${SYNC.upErr})` : SYNC.status === 'synced' ? 'Synced to your account' + (POOL.some((x) => !x.assetId) ? `, ${POOL.filter((x) => !x.assetId).length} image(s) still uploading` : '') : SYNC.status === 'retry' ? 'Saved on this device, will sync when online' : 'Saved on this device only' + (SYNC.why ? ' (' + SYNC.why + ')' : ''));
+  const syncLabel = () => (SYNC.status === 'upfail' ? `Settings synced, but ${POOL.filter((x) => !x.assetId && !x.lib).length} image(s) could not upload (${SYNC.upErr})` : SYNC.status === 'synced' ? 'Synced to your account' + (POOL.some((x) => !x.assetId && !x.lib) ? `, ${POOL.filter((x) => !x.assetId && !x.lib).length} image(s) still uploading` : '') : SYNC.status === 'retry' ? 'Saved on this device, will sync when online' : 'Saved on this device only' + (SYNC.why ? ' (' + SYNC.why + ')' : ''));
   // headlines live in one shared document that a scheduled refresh keeps current; every viewer can read it
   async function loadNews(db) {
     try {
@@ -2404,7 +2404,7 @@
       POOL.filter((x) => !used.has(x.id)).forEach((x) => { const sl = autoSlot(x.name + '.png'); if (sl) { assignSlot(sl, x.id); placed++; } });
       if (fixTerra()) placed++;
       if (placed) save();
-      for (const it of POOL.filter((x) => !x.assetId)) await uploadImage(it);
+      for (const it of POOL.filter((x) => !x.assetId && !x.lib)) await uploadImage(it);
       if (SYNC.upErr) setSync('upfail');
       await pushPool(); await pushState();
       if (SYNC.histCol) { try { await syncHistory(); } catch (e) { /* history catches up next visit */ } }
