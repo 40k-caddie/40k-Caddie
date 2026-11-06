@@ -340,6 +340,9 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 .undo-fab small { font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .toast { position: fixed; z-index: 60; left: 50%; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 10px 14px; background: var(--panel2); border: 1px solid var(--gold); color: var(--text); font-weight: 600; max-width: 90%; }
 @media (prefers-reduced-motion: reduce) { .sigil-mask, body.army-templars .band::after, .foe-fill, .chain, .maw-top, .maw-bot, .maw-dark, #void svg, .anim { animation: none !important; } }
+.ww-qr { width: min(70vw, 260px); background: #fff; padding: 6px; border-radius: 8px; }
+.ww-qr svg { display: block; width: 100%; height: auto; }
+.ww-code { font: 700 34px/1 'Chakra Petch', monospace; letter-spacing: 0.25em; color: var(--gold); }
 </style>
 </head>
 <body>
@@ -350,11 +353,12 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 <div id="toast" class="toast" role="status" hidden></div>
 
 <script src="vendor/supabase-2.118.0.js"></script>
-<script src="sb.js?v=44"></script>
-<script src="lib-v6.js?v=44"></script>
-<script src="data.js?v=44"></script>
-<script src="foes.js?v=44"></script>
-<script src="app.js?v=44"></script>
+<script src="vendor/qrcode-1.4.4.js"></script>
+<script src="sb.js?v=46"></script>
+<script src="lib-v6.js?v=46"></script>
+<script src="data.js?v=46"></script>
+<script src="foes.js?v=46"></script>
+<script src="app.js?v=46"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

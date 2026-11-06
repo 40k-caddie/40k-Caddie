@@ -323,6 +323,7 @@
   // outside Claude (the installed app), account storage is Supabase; inside Claude it is the artifact's own
   const STANDALONE = !(window.claude && window.claude.use) && window.CADDIE_SB ? window.CADDIE_SB : null;
   const assetSrc = (id) => (id && id.startsWith('sb:') && window.CADDIE_SB ? window.CADDIE_SB.publicUrl(id.slice(3)) : '/_blob/' + id);
+  const LIVE = { on: false, id: '', role: '', ch: null, me: Math.random().toString(36).slice(2, 10), seq: 0, lastShared: '', pt: 0, other: null, err: '' };
   const SYNC = { on: false, db: null, assets: null, appRef: null, poolRef: null, st: 0, pt: 0, busyS: false, busyP: false, again: { s: false, p: false }, deleted: [] };
   try { SYNC.deleted = JSON.parse(localStorage.getItem(POOL_KEY + '-deleted')) || []; } catch (e) { SYNC.deleted = []; }
   let POOL = (() => { try { return JSON.parse(localStorage.getItem(POOL_KEY)) || []; } catch (e) { return []; } })();
@@ -517,7 +518,7 @@
   let lastSaved = '';
   function save() {
     const body = JSON.stringify(Object.assign({}, S, { updatedAt: 0 }));
-    if (body !== lastSaved) { if (lastSaved) S.updatedAt = Date.now(); lastSaved = body; scheduleStatePush(); }
+    if (body !== lastSaved) { if (lastSaved) S.updatedAt = Date.now(); lastSaved = body; scheduleStatePush(); if (LIVE.on) livePush(); }
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ }
   }
 
@@ -749,9 +750,8 @@
     const g = archiveBattle(B.round >= 5 ? 'finished' : 'ended early');
     if (g && !B.recorded && g.result !== 'Draw') { foe().record[g.result === 'Victory' ? 0 : 1]++; B.recorded = true; }
   }
-  function newBattle() {
-    const L = list();
-    const units = L.units.map((u, i) => {
+  function buildUnits(L) {
+    return L.units.map((u, i) => {
       const d = ds(u.name);
       const profs = d ? d.m : [];
       const models = [];
@@ -762,6 +762,10 @@
       });
       return { id: 'u' + i, name: u.name, pts: u.points, group: u.attached_group, role: u.role, warlord: u.warlord, enh: u.enhancements, models };
     });
+  }
+  function newBattle() {
+    const L = list(); if (LIVE.on) liveClose();
+    const units = buildUnits(L);
     const p = primaries();
     S.battle = { round: 1, turn: S.field.first, phase: 0, cp: { me: 0, foe: 0 }, vp: { me: 0, foe: 0 }, obj: { me: 0, foe: 0 }, units, spotted: [], log: [], ended: false,
       primary: p || { me: '', foe: '' }, tactical: secTactical(), foeTactical: foeSecTactical(), rounds: {}, cards: { me: [], foe: [] }, ready: { me: false, foe: false },
@@ -841,6 +845,7 @@
     }
     if (B.turn === 'me') (B.units || []).filter((u) => alive(u) > 0).forEach((u) => cpOf(u.name).filter((e) => e.k === 'cmd').forEach((e) => gain.me.push([u.name + ', ' + e.a, 1])));
     else if (foeWl && foeAlive) cpOf(foeWl).filter((e) => e.k === 'cmd').forEach((e) => gain.foe.push([foeWl + ', ' + e.a, 1]));
+    if (B.link) gain.foe = []; // linked: their phone adds their own
     const sum = (a) => a.reduce((t, x) => t + x[1], 0);
     B.cp.me += sum(gain.me); B.cp.foe += sum(gain.foe);
     B.cpLast = { r: B.round, turn: B.turn, me: gain.me, foe: gain.foe };
@@ -1066,7 +1071,7 @@
       <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span><span class="w-sub">Opens Warhammer Community</span></a>
       ${world('macragge', 'rulesInfo', 15, 61, 60, 'Macragge', 'Rules data', 'As of ' + RULES_ASOF, false)}
       ${world('prospero', 'gloss', 47, 79, 52, 'Prospero', 'Rules glossary', 'Every rule word explained', false)}
-      ${world('webway', 'soon', 84, 80, 36, 'The Webway', 'Link a device', 'Two phones, one game', true)}
+      ${world('webway', 'webway', 84, 80, 36, 'The Webway', 'Link a device', 'Two phones, one game', true)}
     </main>
     ${B ? `<div class="wrap"><button class="btn block" data-act="endBattle" style="border-color: var(--accent-text); color: var(--accent-text)">${esc(a.end.toUpperCase())} · ROUND ${roman(B.round)}, ${B.vp.me}–${B.vp.foe}</button></div>` : ''}
     <footer class="wrap stack" style="gap: 6px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); align-items: center">
@@ -1297,6 +1302,35 @@
       return sheet('Bring my setup', `<p class="small muted" style="margin: 0">In the Claude version of 40k Caddie, tap <b>Move to the app</b> at the bottom of the main screen, then <b>COPY MY SETUP</b>. Paste it here. It replaces what is in this app now.</p>
         <label class="field"><span class="eyebrow">Paste here</span><textarea id="move-code" rows="5" placeholder="CADDIE1:..."></textarea></label>${msg}`,
         `<button class="btn solid block" data-act="moveLoad">LOAD</button>`);
+    }
+    if (o === 'webway') {
+      const B = S.battle && !S.battle.ended ? S.battle : null;
+      const err = LIVE.err ? `<div class="panel small" style="padding: 10px 12px; border-color: var(--accent-text)">${esc(LIVE.err)}</div>` : '';
+      if (!B) return sheet('The Webway', `<p style="margin: 0">Link your opponent's phone to this battle, so you each run your own side and see the other's live.</p>
+        <p class="small muted" style="margin: 0">Start the battle first (Terra), then open the Webway from the WEBWAY button at the top of the battle screen. Joining someone else's battle? Use <b>Join a battle</b>.</p>`,
+        `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="wwJoinOpen">JOIN A BATTLE</button></div>`);
+      if (!LIVE.on) return sheet('The Webway', `<p style="margin: 0">Link your opponent's phone to this battle. You each run your own side (CP, VP, secondaries, units) and see the other's live. Whoever's turn it is moves the game on.</p>
+        <p class="small muted" style="margin: 0">They don't need the app: they scan a QR code and paste their list in their browser. If they have the app, they type a 6 letter code.</p>${err}`,
+        `<button class="btn solid block" data-act="wwOpen" ${UI.liveBusy ? 'disabled' : ''}>${UI.liveBusy ? 'OPENING…' : 'OPEN THE WEBWAY'}</button>`);
+      const link = liveLink(LIVE.id);
+      let qr = ''; try { if (window.qrcode) { const q = window.qrcode(0, 'M'); q.addData(link); q.make(); qr = q.createSvgTag({ cellSize: 5, margin: 3, scalable: true }); } } catch (e) { qr = ''; }
+      const who = LIVE.other ? `<div class="panel small" style="padding: 10px 12px; border-color: var(--gold)"><b style="color: var(--gold)">Linked</b> with ${esc(LIVE.other.name || 'your opponent')}${LIVE.other.faction ? ' (' + esc(LIVE.other.faction) + ')' : ''}.</div>` : `<div class="panel small" style="padding: 10px 12px">Waiting for your opponent to join…</div>`;
+      return sheet('The Webway', `${who}${err}
+        ${LIVE.role === 'host' ? `<div class="stack" style="align-items: center; gap: 8px">${qr ? `<div class="ww-qr" aria-label="QR code to join">${qr}</div>` : ''}
+          <div class="ww-code" aria-label="Join code">${esc(LIVE.id)}</div>
+          <p class="small muted" style="margin: 0; text-align: center">No app: scan the code with the phone camera. With the app: Webway, then Join a battle, then type the code.</p>
+          <button class="btn small" data-act="wwShare">SHARE THE LINK</button></div>` : `<p class="small muted" style="margin: 0">Battle code ${esc(LIVE.id)}.</p>`}`,
+        `<div class="grid2"><button class="btn" data-act="wwClose">UNLINK</button><button class="btn solid" data-act="closeAll">DONE</button></div>`);
+    }
+    if (o === 'wwjoin') {
+      const err = LIVE.err ? `<div class="panel small" style="padding: 10px 12px; border-color: var(--accent-text)">${esc(LIVE.err)}</div>` : '';
+      // someone joining from a link in their browser always brings their own list (this phone's saved armies are not theirs)
+      const L = UI.wwNeedList && !(S.army === 'other' && list() && UI.wwPasted) ? null : list();
+      return sheet('Join a battle', `<label class="field"><span class="eyebrow">Battle code</span><input id="ww-code" autocapitalize="characters" autocomplete="off" maxlength="7" value="${esc(UI.wwCode || '')}" placeholder="ABC123" style="font-size: 22px; letter-spacing: 0.2em; text-transform: uppercase"></label>
+        ${L ? `<p class="small" style="margin: 0">You'll play <b>${esc(L.name)}</b>${L.faction ? ' (' + esc(L.faction) + ')' : ''}. <button class="linkish" data-act="wwNewList">Use a different list</button></p>`
+          : `<p class="small muted" style="margin: 0">In the Warhammer 40,000 app, open your army, choose Share, then Copy as text, and paste it here.</p>
+        <label class="field"><span class="eyebrow">Your army list</span><textarea id="paste-text" rows="7" placeholder="Paste the full export"></textarea></label><div id="paste-err" class="small" style="color: var(--accent-text)"></div>`}${err}`,
+        `<button class="btn solid block" data-act="wwJoin" ${UI.liveBusy ? 'disabled' : ''}>${UI.liveBusy ? 'JOINING…' : 'JOIN THE BATTLE'}</button>`);
     }
     if (o === 'account') {
       const signed = SYNC.on && SYNC.email;
@@ -1560,7 +1594,7 @@
       <div class="row" style="justify-content: space-between">
         <button class="icon-btn" data-act="toMuster" aria-label="Back to the main page">${ICON.back}</button>
         <span class="eyebrow tnum">ROUND ${roman(B.round)} · <span style="color: ${myTurn ? 'var(--text)' : 'var(--foe-soft)'}">${myTurn ? 'YOUR TURN' : 'THEIR TURN'}</span></span>
-        <span class="row" style="gap: 6px"><button class="btn small" data-act="maps" aria-label="Maps" style="min-height: 40px; padding: 0 10px">MAP</button><button class="btn small" data-act="dice" aria-label="Dice odds and calculator" style="min-height: 40px; padding: 0 10px">DICE</button><button class="btn small gold" data-act="vox" aria-label="${esc(a.vox)}: mark this moment">${ICON.vox} ${esc(a.voxShort)}</button></span>
+        <span class="row" style="gap: 6px"><button class="btn small" data-act="maps" aria-label="Maps" style="min-height: 40px; padding: 0 ${STANDALONE ? 8 : 10}px">MAP</button><button class="btn small" data-act="dice" aria-label="Dice odds and calculator" style="min-height: 40px; padding: 0 ${STANDALONE ? 8 : 10}px">DICE</button>${STANDALONE ? `<button class="btn small ${LIVE.on ? 'gold' : ''}" data-act="webway" aria-label="Webway: link your opponent's phone" style="min-height: 40px; padding: 0 8px">${LIVE.on ? (LIVE.other ? 'LINKED' : 'LINK…') : 'LINK'}</button>` : ''}<button class="btn small gold" data-act="vox" aria-label="${esc(a.vox)}: mark this moment" ${STANDALONE ? 'style="min-height: 40px; padding: 0 8px"' : ''}>${ICON.vox}${STANDALONE ? '' : ' ' + esc(a.voxShort)}</button></span>
       </div>
       <div class="phase-row"><button class="icon-btn" data-act="phase" data-k="-1" aria-label="Previous phase">${ICON.back}</button><span class="phase-name">${PHASES[B.phase]}</span><button class="icon-btn" data-act="phase" data-k="1" aria-label="Next phase">${ICON.next}</button></div>
     </header>
@@ -2075,6 +2109,20 @@
       } catch (e) { UI.moveErr = true; UI.moveMsg = 'Could not read that setup (' + e.message + '). Copy it again and paste the whole thing.'; }
       render();
     },
+    webway() { if (!STANDALONE) { toast('The Webway works in the installed app, not inside Claude.'); return 'skip'; } LIVE.err = ''; if (S.battle && !S.battle.ended) UI.overlay = 'webway'; else UI.overlay = 'webway'; UI.sheet = null; },
+    wwJoinOpen() { LIVE.err = ''; UI.overlay = 'wwjoin'; },
+    wwOpen() { liveOpen(); return 'skip'; },
+    wwClose() { liveClose(); UI.overlay = null; toast('Unlinked. The battle carries on, on this phone only.'); },
+    async wwShare() { const url = liveLink(LIVE.id); try { if (navigator.share) await navigator.share({ title: '40k Caddie battle', text: 'Join my battle: code ' + LIVE.id, url }); else { await navigator.clipboard.writeText(url); toast('Link copied'); } } catch (e) { /* closed */ } return 'skip'; },
+    wwNewList() { UI.wwCode = (document.getElementById('ww-code') || {}).value || UI.wwCode; S.army = 'other'; delete S.lists.other; },
+    wwJoin() {
+      const code = (document.getElementById('ww-code') || {}).value || ''; UI.wwCode = code;
+      if (!list() || document.getElementById('paste-text')) {
+        try { S.army = 'other'; S.lists.other = parseList(val('paste-text')); UI.wwPasted = true; }
+        catch (e) { const el = document.getElementById('paste-err'); if (el) el.textContent = e.message; return 'skip'; }
+      }
+      liveJoin(code); return 'skip';
+    },
     account() { if (!STANDALONE) return; UI.overlay = 'account'; UI.sheet = null; UI.accMsg = ''; },
     async accGoogle() {
       UI.accBusy = true; UI.accMsg = ''; render();
@@ -2211,6 +2259,7 @@
       if (!el.dataset.fxGo) { if (fxBusy) return; fxBusy = true; el.dataset.fxGo = '1'; playFx(el, () => { fxBusy = false; el.click(); }); return; }
       delete el.dataset.fxGo;
     }
+    const blocked = liveGuard(el.dataset.act, el); if (blocked) { toast(blocked); return; }
     const lab = UNDO_LABEL[el.dataset.act]; const before = lab && S.battle && S.screen === 'battle' ? JSON.stringify(S.battle) : null;
     const r = fn(el.dataset.k, el);
     if (before) undoMark(lab, before);
@@ -2367,8 +2416,145 @@
       SYNC.poolRef.onSnapshot((snap) => { if (snap.exists && !snap.metadata.hasPendingWrites && mergePool(snap.data())) render(); }, () => {});
     } catch (e) { SYNC.why = 'error: ' + ((e && (e.code || e.message)) || 'unknown'); setSync('local'); }
   }
+  // ---------- the Webway: two phones, one battle ----------
+  // The game lives in one shared row (Supabase "live_games"), written from the host's point of view.
+  // Each phone owns its own side (CP, VP, cards, units); the shared board (round, phase, turn, objectives)
+  // belongs to whoever changed it last. A guest's phone flips everything so "me" is always the person holding it.
+  const swapSide = (v) => (v === 'me' ? 'foe' : v === 'foe' ? 'me' : v);
+  function flipBattle(b) {
+    const x = JSON.parse(JSON.stringify(b));
+    const sw = (o) => { if (o && typeof o === 'object' && 'me' in o && 'foe' in o) { const t = o.me; o.me = o.foe; o.foe = t; } };
+    ['cp', 'vp', 'obj', 'primary', 'cards', 'ready', 'deck'].forEach((k) => sw(x[k]));
+    x.turn = swapSide(x.turn);
+    [x.units, x.foeUnits] = [x.foeUnits || [], x.units || []];
+    [x.tactical, x.foeTactical] = [x.foeTactical, x.tactical];
+    Object.values(x.rounds || {}).forEach((R) => { sw(R.pri); sw(R.sec); if (R.obj) R.obj = R.obj.map(swapSide); if (R.grid) R.grid = R.grid.map(swapSide); });
+    return x;
+  }
+  const LOCAL_ONLY = ['log', 'cpDone', 'cpLast', 'foeWarlordDead', 'spotted', 'doctrine', 'link'];
+  const sharedOf = (b) => JSON.stringify({ r: b.round, p: b.phase, t: b.turn, e: !!b.ended, R: Object.fromEntries(Object.entries(b.rounds || {}).map(([k, R]) => [k, [R.obj, R.grid, R.quarters, R.kills]])) });
+  // fold the other phone's copy (already turned to this phone's point of view) into ours
+  function mergeLive(local, remote, remoteSeq) {
+    const base = JSON.parse(JSON.stringify(remoteSeq > LIVE.seq ? remote : local));
+    const own = (b, side) => ({ cp: b.cp[side], vp: b.vp[side], obj: b.obj && b.obj[side], primary: b.primary && b.primary[side], cards: b.cards[side], ready: b.ready && b.ready[side], deck: b.deck && b.deck[side], tac: side === 'me' ? b.tactical : b.foeTactical, units: side === 'me' ? b.units : b.foeUnits,
+      pri: Object.fromEntries(Object.entries(b.rounds || {}).map(([k, R]) => [k, R.pri && R.pri[side]])), sec: Object.fromEntries(Object.entries(b.rounds || {}).map(([k, R]) => [k, R.sec && R.sec[side]])) });
+    const put = (b, side, o) => {
+      b.cp[side] = o.cp; b.vp[side] = o.vp; if (b.obj) b.obj[side] = o.obj; if (b.primary) b.primary[side] = o.primary; b.cards[side] = o.cards || []; if (b.ready) b.ready[side] = o.ready; if (b.deck && o.deck) b.deck[side] = o.deck;
+      if (side === 'me') { b.tactical = o.tac; b.units = o.units || []; } else { b.foeTactical = o.tac; b.foeUnits = o.units || []; }
+      Object.keys(o.pri).forEach((k) => { if (!b.rounds[k]) return; if (b.rounds[k].pri) b.rounds[k].pri[side] = o.pri[k] || 0; if (b.rounds[k].sec) b.rounds[k].sec[side] = o.sec[k] || 0; });
+    };
+    // every round either phone has opened exists on both
+    Object.keys(local.rounds || {}).concat(Object.keys(remote.rounds || {})).forEach((k) => { if (!base.rounds[k]) base.rounds[k] = JSON.parse(JSON.stringify((local.rounds || {})[k] || remote.rounds[k])); });
+    put(base, 'me', own(local, 'me')); put(base, 'foe', own(remote, 'foe'));
+    LOCAL_ONLY.forEach((k) => { if (local[k] !== undefined) base[k] = local[k]; else delete base[k]; });
+    return base;
+  }
+  const liveCode = () => { const A = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 6; i++) s += A[Math.floor(Math.random() * A.length)]; return s; };
+  const liveLink = (id) => location.origin + location.pathname + '#ww=' + id;
+  async function liveAuth() {
+    const sb = STANDALONE && STANDALONE.client; if (!sb) throw new Error('The Webway works in the installed app or in a browser, not inside Claude.');
+    if (await STANDALONE.uid()) return sb;
+    const { error } = await sb.auth.signInAnonymously(); if (error) throw new Error('Could not open the Webway (' + error.message + ').');
+    return sb;
+  }
+  function liveDoc() {
+    const B = S.battle; const b = {}; Object.keys(B).forEach((k) => { if (!LOCAL_ONLY.includes(k)) b[k] = B[k]; });
+    const host = LIVE.role === 'host'; const L = list();
+    const mine = { name: (L && L.name) || '', faction: (L && L.faction) || A().name, sub: (L && L.subfaction) || '', at: new Date().toISOString() };
+    return { b: host ? b : flipBattle(b), first: host ? S.field.first : swapSide(S.field.first), seq: LIVE.seq, writer: LIVE.me,
+      host: host ? mine : (LIVE.other || {}), guest: host ? (LIVE.other || null) : mine, mode: S.field.mode || 'comp' };
+  }
+  function livePush(now) {
+    if (!LIVE.on) return; clearTimeout(LIVE.pt);
+    LIVE.pt = setTimeout(async () => {
+      const sh = sharedOf(S.battle); if (sh !== LIVE.lastShared) { LIVE.seq++; LIVE.lastShared = sh; }
+      try { const { error } = await LIVE.sb.from('live_games').update({ data: liveDoc(), updated_at: new Date().toISOString() }).eq('id', LIVE.id); if (error) throw error; LIVE.err = ''; }
+      catch (e) { LIVE.err = 'Not reaching the Webway. Changes will send when the signal is back.'; }
+    }, now ? 0 : 350);
+  }
+  function liveReceive(d) {
+    if (!d || !d.b || d.writer === LIVE.me || !S.battle) return;
+    const host = LIVE.role === 'host';
+    LIVE.other = host ? d.guest : d.host;
+    const remote = host ? d.b : flipBattle(d.b);
+    const B0 = S.battle; const wasR = B0.round, wasT = B0.turn;
+    const merged = mergeLive(B0, remote, d.seq || 0);
+    if ((d.seq || 0) > LIVE.seq) LIVE.seq = d.seq;
+    S.battle = merged; LIVE.lastShared = sharedOf(merged);
+    if (merged.round !== wasR || merged.turn !== wasT) { autoCP(merged, merged.round !== wasR); if (merged.turn === 'me') toast('Your turn. Command phase.'); }
+    if (merged.ended && !B0.ended) { S.screen = 'results'; toast('They ended the battle.'); }
+    save(); if (!UI.overlay || UI.overlay === 'webway') render();
+    // their copy of my side is out of date: send mine again
+    const mineNow = JSON.stringify([merged.cp.me, merged.vp.me, merged.cards.me]); const mineThere = JSON.stringify([remote.cp.me, remote.vp.me, remote.cards.me]);
+    if (mineNow !== mineThere) livePush();
+  }
+  async function liveListen() {
+    if (LIVE.ch) { try { LIVE.sb.removeChannel(LIVE.ch); } catch (e) { /* ignore */ } }
+    LIVE.ch = LIVE.sb.channel('ww:' + LIVE.id).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_games', filter: 'id=eq.' + LIVE.id }, (p) => liveReceive(p.new && p.new.data)).subscribe();
+    // catch up after the phone wakes or the signal drops
+    if (!LIVE.vis) { LIVE.vis = true; document.addEventListener('visibilitychange', () => { if (LIVE.on && document.visibilityState === 'visible') liveFetch(); }); }
+  }
+  async function liveFetch() { try { const { data } = await LIVE.sb.from('live_games').select('data').eq('id', LIVE.id).maybeSingle(); if (data) liveReceive(data.data); } catch (e) { /* next change catches up */ } }
+  async function liveOpen() {
+    UI.liveBusy = true; LIVE.err = ''; render();
+    try {
+      const sb = await liveAuth(); LIVE.sb = sb; LIVE.role = 'host'; LIVE.id = liveCode(); LIVE.seq = 1; LIVE.other = null;
+      S.battle.link = { id: LIVE.id, role: 'host' };
+      const { error } = await sb.from('live_games').insert({ id: LIVE.id, data: liveDoc() }); if (error) throw new Error(error.message);
+      LIVE.on = true; LIVE.lastShared = sharedOf(S.battle); await liveListen(); save();
+    } catch (e) { LIVE.err = e.message; delete S.battle.link; }
+    UI.liveBusy = false; render();
+  }
+  async function liveJoin(code) {
+    UI.liveBusy = true; LIVE.err = ''; render();
+    try {
+      const id = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); if (id.length !== 6) throw new Error('The code is 6 letters and numbers.');
+      if (!list()) throw new Error('Load your army list first.');
+      const sb = await liveAuth(); LIVE.sb = sb;
+      const { data, error } = await sb.from('live_games').select('data').eq('id', id).maybeSingle();
+      if (error) throw new Error(error.message); if (!data || !data.data || !data.data.b) throw new Error('No battle with that code. Check it with your opponent.');
+      const d = data.data; LIVE.id = id; LIVE.role = 'guest'; LIVE.other = d.host; LIVE.seq = d.seq || 1;
+      if (S.battle && !S.battle.ended && S.screen === 'battle' && !(S.battle.link && S.battle.link.id === id)) archiveBattle('unfinished');
+      const b = flipBattle(d.b);
+      // my side comes from my own list; theirs is already in the shared copy
+      S.field.first = swapSide(d.first); S.field.mode = d.mode;
+      const keep = S.battle; S.battle = b; b.log = []; b.cpDone = {}; b.spotted = []; b.units = buildUnits(list());
+      // the host's army becomes this phone's opponent
+      const h = d.host || {}; const known = (n) => n && (FACTION_FILES[n] || FOES[n]);
+      S.rivals.webway = { faction: [h.sub, h.faction].find(known) || h.faction || 'Space Marines', name: h.name || 'Webway opponent', detachments: [], warlord: '', notes: '', record: [0, 0] };
+      S.foeKey = 'webway'; ensureRound(b.round);
+      b.link = { id, role: 'guest' }; b.cp.me = b.cp.me || 0;
+      // CP already handed out this game: the host's phone gave both sides the same amount
+      b.cpDone[b.round + '-' + b.turn] = true;
+      addLog('Joined ' + ((d.host && d.host.name) || 'the battle') + ' through the Webway.', 'event');
+      LIVE.on = true; LIVE.lastShared = sharedOf(b); S.screen = 'battle'; UI.view = 'emblem'; UI.overlay = null; UI.sheet = null;
+      await liveListen(); livePush(true); save(); void keep;
+      location.hash = '';
+      toast('Linked. You run your side; they run theirs.');
+    } catch (e) { LIVE.err = e.message; }
+    UI.liveBusy = false; render();
+  }
+  function liveClose() {
+    if (LIVE.ch) { try { LIVE.sb.removeChannel(LIVE.ch); } catch (e) { /* ignore */ } }
+    LIVE.on = false; LIVE.ch = null; if (S.battle) delete S.battle.link; save();
+  }
+  // a battle that was linked when the app closed picks the link back up
+  async function liveResume() {
+    const L = S.battle && !S.battle.ended && S.battle.link; if (!L || !STANDALONE) return;
+    try { LIVE.sb = await liveAuth(); LIVE.id = L.id; LIVE.role = L.role; LIVE.on = true; LIVE.lastShared = sharedOf(S.battle); await liveListen(); await liveFetch(); } catch (e) { LIVE.on = false; }
+  }
+  const liveGuard = (act, el) => {
+    if (!LIVE.on || !S.battle) return '';
+    const B = S.battle; const w = el.dataset.w || el.dataset.k;
+    const theirs = { adj: el.dataset.w === 'foe', rv: el.dataset.w === 'foe', priAdd: el.dataset.k === 'foe', secAdd: w === 'foe', cardDone: el.dataset.w === 'foe', cardDrop: el.dataset.w === 'foe', ready: el.dataset.k === 'foe', foeUsed: true, dealNow: el.dataset.w === 'foe', foeWlDead: true };
+    if (theirs[act]) return 'That is their side. They update it on their phone.';
+    if ((act === 'phase' || act === 'startRound' || act === 'nextRound') && B.turn !== 'me') return 'Their turn. They move the game on from their phone.';
+    return '';
+  };
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) { /* optional */ }
   lastSaved = JSON.stringify(Object.assign({}, S, { updatedAt: 0 }));
   render();
-  syncStart();
+  // a battle link (#ww=CODE) opens the join sheet straight away
+  (() => { const m = location.hash.match(/ww=([A-Za-z0-9]{6})/); if (m && STANDALONE) { UI.wwCode = m[1].toUpperCase(); UI.wwNeedList = !(window.matchMedia && matchMedia('(display-mode: standalone)').matches); S.screen = 'home'; UI.overlay = 'wwjoin'; render(); } })();
+  syncStart().then(() => liveResume());
 })();

@@ -37,3 +37,24 @@ create policy "own images in" on storage.objects for insert to authenticated
 drop policy if exists "own images out" on storage.objects;
 create policy "own images out" on storage.objects for delete to authenticated
   using (bucket_id = 'images' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- ===== The Webway (run this part too) =====
+-- One row per linked battle. Anyone signed in (including a guest who joined from a QR code) can read
+-- and update a battle if they know its code; only the person who opened it can create it.
+create table if not exists public.live_games (
+  id text primary key,
+  host uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.live_games enable row level security;
+drop policy if exists "open a battle" on public.live_games;
+create policy "open a battle" on public.live_games for insert to authenticated with check (host = (select auth.uid()));
+drop policy if exists "read a battle" on public.live_games;
+create policy "read a battle" on public.live_games for select to authenticated using (true);
+drop policy if exists "play a battle" on public.live_games;
+create policy "play a battle" on public.live_games for update to authenticated using (true) with check (true);
+do $$ begin
+  alter publication supabase_realtime add table public.live_games;
+exception when duplicate_object then null; end $$;
