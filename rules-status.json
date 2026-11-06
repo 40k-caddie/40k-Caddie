@@ -1,10 +1,29 @@
 {
- "checked": "2026-11-06T03:53:00+00:00",
+ "checked": "2026-11-06T05:19:56+00:00",
  "factions": {
+  "adepta-sororitas": "1.4 October 2026",
+  "adeptus-custodes": "2.8.1 October 2026",
+  "adeptus-mechanicus": "1.4 October 2026",
   "aeldari": "1.4 October 2026",
+  "astra-militarum": "2.8.1 October 2026",
+  "chaos-daemons": "2.8.1 October 2026",
+  "chaos-knights": "2.8.1 October 2026",
+  "chaos-space-marines": "2.8.1 October 2026",
+  "death-guard": "2.8.1 October 2026",
+  "drukhari": "2.8.1 October 2026",
+  "emperor-s-children": "2.8.1 October 2026",
+  "genestealer-cults": "2.8.1 October 2026",
+  "grey-knights": "2.8.1 October 2026",
+  "imperial-agents": "1.3 October 2026",
+  "imperial-knights": "2.8.1 October 2026",
+  "leagues-of-votann": "1.2 October 2026",
   "necrons": "2.8.1 October 2026",
-  "space-marines": "2.8.1 October 2026"
+  "orks": "2.8.1 October 2026",
+  "space-marines": "2.8.1 October 2026",
+  "t-au-empire": "2.8.1 October 2026",
+  "thousand-sons": "2.8.1 October 2026",
+  "tyranids": "1.3 October 2026",
+  "world-eaters": "2.8.1 October 2026"
  },
- "errors": {},
- "note": "Seeded from the check run in the Claude app on 6 Nov 2026. The weekly job fills in every army."
+ "errors": {}
 }
