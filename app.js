@@ -1079,11 +1079,11 @@
         <span class="orb" aria-hidden="true"><span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span></span>
         <span class="w-name">Terra</span><span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
-      ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', 'Your rules coach', !UI.cogOK)}
-      <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span><span class="w-sub">Opens Warhammer Community</span></a>
-      ${world('macragge', 'rulesInfo', 15, 61, 60, 'Macragge', 'Rules data', 'As of ' + RULES_ASOF, false)}
-      ${world('prospero', 'gloss', 47, 79, 52, 'Prospero', 'Rules glossary', 'Every rule word explained', false)}
-      ${world('webway', 'webway', 84, 80, 36, 'The Webway', 'Link a device', 'Two phones, one game', !STANDALONE)}
+      ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', '', !UI.cogOK)}
+      <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span></a>
+      ${world('macragge', 'rulesInfo', 15, 61, 60, 'Macragge', 'Rules data', RULES_ASOF, false)}
+      ${world('prospero', 'gloss', 47, 79, 52, 'Prospero', 'Rules glossary', '', false)}
+      ${world('webway', 'webway', 84, 80, 36, 'The Webway', 'Link a device', '', !STANDALONE)}
     </main>
     ${B ? `<div class="wrap"><button class="btn block" data-act="endBattle" style="border-color: var(--accent-text); color: var(--accent-text)">${esc(a.end.toUpperCase())} · ROUND ${roman(B.round)}, ${B.vp.me}–${B.vp.foe}</button></div>` : ''}
     <footer class="wrap stack" style="gap: 6px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); align-items: center">
