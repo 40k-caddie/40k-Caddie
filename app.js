@@ -24,6 +24,16 @@
     sc.onerror = () => { factionLoading[name] = 'failed'; render(); };
     document.head.appendChild(sc);
   }
+  // resolves once an army's datasheets are in (or there are none to fetch)
+  function ensureFaction(name) {
+    return new Promise((res) => {
+      if (!name || FOES[name] || !FACTION_FILES[name]) return res();
+      loadFaction(name); let n = 0;
+      const t = setInterval(() => { if (FOES[name] || factionLoading[name] === 'failed' || ++n > 100) { clearInterval(t); res(); } }, 100);
+    });
+  }
+  // the army a pasted list belongs to, as this app names it (chapter first, then the codex)
+  const listFaction = (L) => (L ? [L.subfaction, L.faction].find((n) => n && (FACTION_FILES[n] || FOES[n])) || '' : '');
   // The Macragge test for one army: open its Wahapedia page in the laptop's browser and compare the book version with the one this app holds
   // the installed app reads the weekly check's results instead of a browser (fetched at most once per visit unless asked)
   let rulesStatusP = null;
@@ -630,7 +640,7 @@
   // ---------- rules lookups ----------
   const norm = (s) => String(s || '').toLowerCase().replace(/➤/g, '').replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
   const sing = (s) => s.replace(/s$/, '');
-  function ds(name) { return D.units[name] || null; }
+  function ds(name) { return D.units[name] || (S.army === 'other' && list() ? foeUnits(listFaction(list()))[name] : null) || null; }
   function matchProfile(profiles, modelName) {
     const n = norm(modelName);
     return profiles.find((p) => norm(p.name) === n) || profiles.find((p) => norm(p.name).includes(n) || n.includes(norm(p.name))) || profiles.find((p) => !/sergeant|captain|champion/i.test(p.name) || /sergeant/i.test(modelName)) || profiles[0];
@@ -751,8 +761,10 @@
     if (g && !B.recorded && g.result !== 'Draw') { foe().record[g.result === 'Victory' ? 0 : 1]++; B.recorded = true; }
   }
   function buildUnits(L) {
+    // Space Marine datasheets first, then the list's own army (any of the 25 other armies)
+    const fu = foeUnits(listFaction(L));
     return L.units.map((u, i) => {
-      const d = ds(u.name);
+      const d = ds(u.name) || fu[u.name] || null;
       const profs = d ? d.m : [];
       const models = [];
       u.models.forEach((m) => {
@@ -1987,6 +1999,7 @@
   // ---------- render ----------
   function render() {
     document.body.className = ARMY[S.army].cls; applyArmyTheme();
+    if (S.army === 'other' && list()) { const lf = listFaction(list()); if (lf && !FOES[lf]) loadFaction(lf); }
     if (S.foeKey && foe()) { const fn = foe().faction; if (!FD(fn)) loadFaction(fn); else if (!factionTried[fn]) { factionTried[fn] = true; checkFaction(fn); } }
     applyFoeTheme();
     if (S.battle && S.battle.rounds) syncScores();
@@ -2518,6 +2531,7 @@
       const b = flipBattle(d.b);
       // my side comes from my own list; theirs is already in the shared copy
       S.field.first = swapSide(d.first); S.field.mode = d.mode;
+      await ensureFaction(listFaction(list()));
       const keep = S.battle; S.battle = b; b.log = []; b.cpDone = {}; b.spotted = []; b.units = buildUnits(list());
       // the host's army becomes this phone's opponent
       const h = d.host || {}; const known = (n) => n && (FACTION_FILES[n] || FOES[n]);
