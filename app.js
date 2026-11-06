@@ -2047,7 +2047,7 @@
     async moveCopy() {
       try {
         // the owner's own uploads that are not in the shared library travel with it; library images are already in the app
-        const own = POOL.filter((x) => !x.lib && x.src && x.src.startsWith('data:'));
+        const own = POOL.filter((x) => !x.lib && x.src && x.src.startsWith('data:') && !LIB.items.some((li) => li.id === x.id));
         const json = JSON.stringify({ v: 1, state: S, hist: HIST, histDel: HIST_DEL, own });
         const gz = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
         let bin = ''; const u8 = new Uint8Array(gz); for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
