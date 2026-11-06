@@ -247,6 +247,8 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '6 Nov 2026', items: [
+      'The ships between the worlds follow your army: the Gloriana for the Imperium, the Nicor for Carcharodons, and their own vessels for Aeldari, Necrons, Tyranids and Drukhari.',
+      'Army buttons are your own: new players start with Other, and each army they load gets a button (the last two, plus Other).',
       'Ulthwé joins the worlds: what has changed in the app, newest first.',
       'Glimpses: now and then a distant ship or rift drifts behind the worlds.',
       'The Cogitator on Mars: ask about the battle in front of you, answered from both armies\' real rules.',
@@ -937,9 +939,26 @@
   window.addEventListener('resize', () => layoutNet());
   // Battle barges plying the lanes between the worlds, drawn from the ship picture in the library (a Gloriana, Invincible Reason, or any file named for a ship)
   let bargeSrc = null, bargeFor = null, bargeBusy = false;
-  function bargeItem() { return POOL.find((x) => /gloriana|invincible|reason|barge|battleship|vessel|ship/i.test(x.name)); }
+  // the ships plying the lanes follow the army you're playing: the Gloriana for the Imperium, the Nicor for Carcharodons,
+  // and each xenos fleet its own vessel. Armies with no vessel yet leave the lanes empty.
+  const IMPERIUM = /space marines|templar|blood angels|dark angels|space wolves|ultramarines|deathwatch|grey knights|custodes|sororitas|mechanicus|astra militarum|imperial knights|imperial agents|adeptus astartes/i;
+  function fleetKey() {
+    if (S.army === 'carcharodons') return 'carcharodons'; if (S.army === 'templars') return 'imperium';
+    const L = list(); if (!L) return 'imperium';
+    const f = [listFaction(L), L.faction, L.subfaction].filter(Boolean).join(' ');
+    if (/carcharod/i.test(f)) return 'carcharodons';
+    const x = ['aeldari', 'necrons', 'tyranids', 'drukhari'].find((k) => new RegExp(k, 'i').test(f)); if (x) return x;
+    return IMPERIUM.test(f) ? 'imperium' : '';
+  }
+  function bargeItem() {
+    const k = fleetKey(); if (!k) return null;
+    if (k !== 'imperium') { const it = POOL.find((x) => x.name === 'fleet-' + k); if (it) return it; }
+    return POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && /gloriana|invincible|reason|barge|battleship|vessel|ship/i.test(x.name));
+  }
   function makeBarge(it, done) {
     const img = new Image();
+    // fleet ships come already cut out and facing the right way
+    if (/^fleet-/.test(it.name)) { img.onload = () => done({ src: it.src, ratio: img.naturalHeight / img.naturalWidth }); img.onerror = () => done(null); img.src = it.src; return; }
     img.onload = () => {
       try {
         const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
