@@ -1070,7 +1070,7 @@
     </main>
     ${B ? `<div class="wrap"><button class="btn block" data-act="endBattle" style="border-color: var(--accent-text); color: var(--accent-text)">${esc(a.end.toUpperCase())} · ROUND ${roman(B.round)}, ${B.vp.me}–${B.vp.foe}</button></div>` : ''}
     <footer class="wrap stack" style="gap: 6px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); align-items: center">
-      <div class="row" style="justify-content: center; gap: 18px"><button class="dim" data-act="library" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Image library</button><button class="dim" data-act="dice" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Dice odds</button><button class="dim" data-act="about" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">About</button></div>
+      <div class="row" style="justify-content: center; gap: 18px"><button class="dim" data-act="library" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Image library</button><button class="dim" data-act="dice" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Dice odds</button><button class="dim" data-act="moveOpen" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">${STANDALONE ? 'Bring my setup' : 'Move to the app'}</button><button class="dim" data-act="about" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">About</button></div>
       ${syncLine()}
     </footer>`;
   }
@@ -1287,6 +1287,16 @@
         <button class="btn solid block" data-act="rulesCheck" ${UI.rulesBusy ? 'disabled' : ''}>CHECK FOR UPDATES</button>
         <p class="small muted" style="margin: 0">${STANDALONE ? 'A job on GitHub reads every army\'s book version on Wahapedia each week; this shows what it found' + (c.server ? ' (last run ' + esc(fmt(c.server)) + ')' : '') + '.' : 'The check reads Wahapedia\'s book versions through the browser in the Claude desktop app, so run it from your laptop. It uses no Claude tokens.'}</p>`,
         `<button class="btn block" data-act="closeAll">DONE</button>`);
+    }
+    if (o === 'move') {
+      const msg = UI.moveMsg ? `<div class="panel small" style="padding: 10px 12px; border-color: ${UI.moveErr ? 'var(--accent-text)' : 'var(--gold)'}">${esc(UI.moveMsg)}</div>` : '';
+      if (!STANDALONE) return sheet('Move to the app', `<p class="small muted" style="margin: 0">Copies your armies, opponents, image placements, battle history and field setup, so the installed app starts exactly where this one is.</p>
+        <ol class="small" style="margin: 0; padding-left: 18px; line-height: 1.5"><li>Tap <b>COPY MY SETUP</b>.</li><li>Open the installed 40k Caddie and tap <b>Bring my setup</b> at the bottom of the main screen.</li><li>Paste and tap <b>LOAD</b>.</li></ol>
+        ${UI.moveCode ? `<label class="field"><span class="eyebrow">Your setup (already copied if your phone allowed it)</span><textarea id="move-code" rows="4" readonly>${esc(UI.moveCode)}</textarea></label>` : ''}${msg}`,
+        `<button class="btn solid block" data-act="moveCopy">COPY MY SETUP</button>`);
+      return sheet('Bring my setup', `<p class="small muted" style="margin: 0">In the Claude version of 40k Caddie, tap <b>Move to the app</b> at the bottom of the main screen, then <b>COPY MY SETUP</b>. Paste it here. It replaces what is in this app now.</p>
+        <label class="field"><span class="eyebrow">Paste here</span><textarea id="move-code" rows="5" placeholder="CADDIE1:..."></textarea></label>${msg}`,
+        `<button class="btn solid block" data-act="moveLoad">LOAD</button>`);
     }
     if (o === 'account') {
       const signed = SYNC.on && SYNC.email;
@@ -2033,6 +2043,38 @@
     maps() { UI.overlay = 'maps'; UI.sheet = null; },
     layoutPick(k) { stashField(); S.field.layout = k; },
     dice() { UI.overlay = 'dice'; UI.sheet = null; },
+    moveOpen() { UI.overlay = 'move'; UI.sheet = null; UI.moveMsg = ''; UI.moveCode = ''; },
+    async moveCopy() {
+      try {
+        // the owner's own uploads that are not in the shared library travel with it; library images are already in the app
+        const own = POOL.filter((x) => !x.lib && x.src && x.src.startsWith('data:'));
+        const json = JSON.stringify({ v: 1, state: S, hist: HIST, histDel: HIST_DEL, own });
+        const gz = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+        let bin = ''; const u8 = new Uint8Array(gz); for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+        UI.moveCode = 'CADDIE1:' + btoa(bin); UI.moveErr = false;
+        try { await navigator.clipboard.writeText(UI.moveCode); UI.moveMsg = 'Copied. Now paste it into the installed app.'; }
+        catch (e) { UI.moveMsg = 'Your phone blocked the automatic copy. Press and hold the box above, Select All, then Copy.'; }
+      } catch (e) { UI.moveErr = true; UI.moveMsg = 'Could not package your setup: ' + e.message; }
+      render(); setTimeout(() => { const t = document.getElementById('move-code'); if (t) t.select(); }, 50);
+    },
+    async moveLoad() {
+      const el = document.getElementById('move-code'); const code = ((el && el.value) || '').trim().replace(/\s+/g, '');
+      if (!code.startsWith('CADDIE1:')) { UI.moveErr = true; UI.moveMsg = 'That is not a 40k Caddie setup. Copy it again from the Claude version.'; return; }
+      try {
+        const bin = atob(code.slice(8)); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        const d = JSON.parse(await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
+        if (!d || !d.state || d.state.v !== 1) throw new Error('unknown format');
+        (d.own || []).forEach((x) => { if (!POOL.some((y) => y.id === x.id)) POOL.push({ id: x.id, name: x.name, mono: x.mono, src: x.src }); });
+        poolSave();
+        (d.histDel || []).forEach((id) => { if (!HIST_DEL.includes(id)) HIST_DEL.push(id); });
+        (d.hist || []).forEach((g) => { if (!HIST.some((x) => x.id === g.id)) HIST.push(g); });
+        HIST = HIST.filter((x) => !HIST_DEL.includes(x.id)); histSave();
+        d.state.updatedAt = Date.now(); adoptRemote(d.state); save();
+        if (SYNC.on) { for (const it of POOL.filter((x) => !x.assetId)) await uploadImage(it); await pushPool(); await pushState(); if (SYNC.histCol) await syncHistory(); }
+        UI.overlay = null; S.screen = 'home'; toast('Setup loaded: ' + HIST.length + ' battles, ' + Object.keys(S.rivals || {}).length + ' opponents.');
+      } catch (e) { UI.moveErr = true; UI.moveMsg = 'Could not read that setup (' + e.message + '). Copy it again and paste the whole thing.'; }
+      render();
+    },
     account() { if (!STANDALONE) return; UI.overlay = 'account'; UI.sheet = null; UI.accMsg = ''; },
     async accGoogle() {
       UI.accBusy = true; UI.accMsg = ''; render();
