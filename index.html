@@ -343,6 +343,9 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 .ww-qr { width: min(70vw, 260px); background: #fff; padding: 6px; border-radius: 8px; }
 .ww-qr svg { display: block; width: 100%; height: auto; }
 .ww-code { font: 700 34px/1 'Chakra Petch', monospace; letter-spacing: 0.25em; color: var(--gold); }
+.cog-q { align-self: flex-end; max-width: 85%; background: var(--panel2); border: 1px solid var(--line2); border-radius: 12px 12px 2px 12px; padding: 8px 12px; }
+.cog-a { max-width: 95%; border-left: 2px solid var(--gold); padding: 4px 0 4px 12px; line-height: 1.5; }
+.cog-a.err { border-left-color: var(--accent-text); color: var(--muted); }
 </style>
 </head>
 <body>
@@ -354,11 +357,11 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=51"></script>
-<script src="lib-v6.js?v=51"></script>
-<script src="data.js?v=51"></script>
-<script src="foes.js?v=51"></script>
-<script src="app.js?v=51"></script>
+<script src="sb.js?v=52"></script>
+<script src="lib-v6.js?v=52"></script>
+<script src="data.js?v=52"></script>
+<script src="foes.js?v=52"></script>
+<script src="app.js?v=52"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

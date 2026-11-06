@@ -1079,7 +1079,7 @@
         <span class="orb" aria-hidden="true"><span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span></span>
         <span class="w-name">Terra</span><span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
-      ${world('mars', 'soon', 86, 50, 50, 'Mars', 'The Cogitator', 'Your rules coach', true)}
+      ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', 'Your rules coach', !UI.cogOK)}
       <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span><span class="w-sub">Opens Warhammer Community</span></a>
       ${world('macragge', 'rulesInfo', 15, 61, 60, 'Macragge', 'Rules data', 'As of ' + RULES_ASOF, false)}
       ${world('prospero', 'gloss', 47, 79, 52, 'Prospero', 'Rules glossary', 'Every rule word explained', false)}
@@ -1343,6 +1343,14 @@
           : `<p class="small muted" style="margin: 0">In the Warhammer 40,000 app, open your army, choose Share, then Copy as text, and paste it here.</p>
         <label class="field"><span class="eyebrow">Your army list</span><textarea id="paste-text" rows="7" placeholder="Paste the full export"></textarea></label><div id="paste-err" class="small" style="color: var(--accent-text)"></div>`}${err}`,
         `<button class="btn solid block" data-act="wwJoin" ${UI.liveBusy ? 'disabled' : ''}>${UI.liveBusy ? 'JOINING…' : 'JOIN THE BATTLE'}</button>`);
+    }
+    if (o === 'cog') {
+      const items = (UI.cog || []).map((x) => `<div class="cog-q">${esc(x.q)}</div><div class="cog-a ${x.err ? 'err' : ''}">${x.a ? cogFmt(x.a) : '<span class="muted">Consulting the archives…</span>'}</div>`).join('');
+      const B = S.battle && !S.battle.ended;
+      return sheet('The Cogitator', `${items || `<p class="small muted" style="margin: 0">Ask about the battle in front of you. It knows ${B ? 'the round, phase, CP, both armies\' units and' : 'your army and'} every stratagem and datasheet in the app. For example: <i>"Their Wraiths are about to charge my Crusaders. What helps?"</i></p>`}
+        <label class="field"><span class="eyebrow">Your question</span><textarea id="cog-q" rows="3" placeholder="Their Wraiths are charging my Crusaders. What stratagem helps?"></textarea></label>
+        <p class="small muted" style="margin: 0">${UI.cogLeft === null || UI.cogLeft === undefined ? 'No daily limit on your account.' : UI.cogLeft + ' questions left in the last 24 hours.'}</p>`,
+        `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="cogAsk" ${UI.cogBusy ? 'disabled' : ''}>${UI.cogBusy ? 'THINKING…' : 'ASK'}</button></div>`);
     }
     if (o === 'account') {
       const signed = SYNC.on && SYNC.email;
@@ -1705,7 +1713,8 @@
     const sCard = (s) => `<button class="strat" data-act="strat" data-k="${esc(s.name)}" data-d="${esc(s.det)}"><span style="min-width: 0"><span class="nm">${esc(s.name)}</span><br><span class="ds">${esc(s.det)} · ${esc(s.when ? s.when : '')}</span></span><span class="cp">${s.cp} CP</span></button>`;
     const fCard = (s) => `<button class="strat foe" data-act="fstrat" data-k="${esc(s.name)}" data-d="${esc(s.det)}"><span style="min-width: 0"><span class="nm">${esc(s.name)}</span><br><span class="ds" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden">${esc(s.effect)}</span></span><span class="cp">${s.cp} CP</span></button>`;
     const foeNote = !FD(foe().faction) ? `<p class="small muted" style="margin: 0">${factionLoading[foe().faction] === 'failed' ? 'Their rules could not load. Check your signal and reopen the app.' : FACTION_FILES[foe().faction] ? 'Loading ' + esc(factionInfo(foe().faction).display) + ' rules…' : 'No rules held for ' + esc(factionInfo(foe().faction).display) + '.'}</p>` : (!foe().detachments.length ? `<button class="btn small" data-act="openFoeDetail">Set their detachment to see their stratagems</button>` : '') + (B.round === 1 && B.phase === 0 ? factionCheckLine(foe().faction) : '');
-    return `${scoreboard()}${vowBanner}${tvow}${cmdTip}${reminders()}${B.phase === 0 && myTurn ? doctrineUI() : ''}${scoreTip}${scoringNow()}
+    const cogBtn = STANDALONE && UI.cogOK ? `<button class="btn block" data-act="cogitator" style="border-color: var(--gold); color: var(--gold)">ASK THE COGITATOR</button>` : '';
+    return `${scoreboard()}${cogBtn}${vowBanner}${tvow}${cmdTip}${reminders()}${B.phase === 0 && myTurn ? doctrineUI() : ''}${scoreTip}${scoringNow()}
       <section class="stack" style="gap: 6px"><div class="eyebrow">Your options now · ${esc(phase)} · ${myTurn ? 'your turn' : 'their turn'}</div>${mine.length ? mine.map(sCard).join('') : '<p class="small muted" style="margin: 0">No stratagems for this moment.</p>'}</section>
       <section class="stack" style="gap: 6px"><div class="eyebrow foe-ink">Watch for · ${esc(factionInfo(foe().faction).display)} · ${B.cp.foe} CP left</div>${theirs.map(fCard).join('')}${foeNote}${!theirs.length && foe().faction === 'Necrons' && foe().detachments.length ? '<p class="small muted" style="margin: 0">Nothing from their detachments in this phase.</p>' : ''}</section>`;
   }
@@ -2139,6 +2148,13 @@
       }
       liveJoin(code); return 'skip';
     },
+    cogitator() {
+      if (!STANDALONE) { toast('The Cogitator works in the installed app.'); return 'skip'; }
+      if (!SYNC.on || !SYNC.email) { toast('Sign in first: tap the line at the bottom of the main screen.'); return 'skip'; }
+      if (UI.cogOK === false) { toast('The Cogitator is not switched on for your account yet.'); cogCheck(); return 'skip'; }
+      UI.overlay = 'cog'; UI.sheet = null; if (UI.cogOK === undefined) cogCheck();
+    },
+    cogAsk() { cogAsk(); return 'skip'; },
     account() { if (!STANDALONE) return; UI.overlay = 'account'; UI.sheet = null; UI.accMsg = ''; },
     async accGoogle() {
       UI.accBusy = true; UI.accMsg = ''; render();
@@ -2160,7 +2176,7 @@
       catch (e) { UI.accErr = true; UI.accMsg = /expired|invalid/i.test(e.message) ? 'That code is wrong or has expired. Ask for a new one.' : 'Could not sign in: ' + e.message; UI.accBusy = false; }
       render();
     },
-    async accOut() { await STANDALONE.signOut(); SYNC.on = false; SYNC.email = ''; SYNC.why = 'signed out'; setSync('local'); UI.accMsg = ''; render(); },
+    async accOut() { await STANDALONE.signOut(); UI.cogOK = false; SYNC.on = false; SYNC.email = ''; SYNC.why = 'signed out'; setSync('local'); UI.accMsg = ''; render(); },
     calcTog(k) { UI.calc[k] = !UI.calc[k]; },
     gloss() { UI.overlay = 'glossary'; UI.sheet = null; loadGlossary(); },
     glossCat(k) { UI.glossCat = k; setTimeout(filterGlossary, 0); },
@@ -2432,6 +2448,79 @@
       SYNC.poolRef.onSnapshot((snap) => { if (snap.exists && !snap.metadata.hasPendingWrites && mergePool(snap.data())) render(); }, () => {});
     } catch (e) { SYNC.why = 'error: ' + ((e && (e.code || e.message)) || 'unknown'); setSync('local'); }
   }
+
+  // ---------- the Cogitator: questions about the battle in front of you, answered from the real rules ----------
+  function cogContext() {
+    const B = S.battle && !S.battle.ended ? S.battle : null; const L = list(); const F = foe();
+    const cut = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
+    const st = (m) => `M${m.M} T${m.T} Sv${m.Sv}${m.InSv && m.InSv !== '-+' ? ' (' + m.InSv + ' invuln)' : ''} W${m.W} Ld${m.LD} OC${m.OC}`;
+    const wpn = (w) => `${w.name} ${w.Range} A${w.A} ${w.BS ? 'BS' + w.BS : 'WS' + (w.WS || '')} S${w.S} AP${w.AP} D${w.D}${w.Keywords ? ' [' + w.Keywords + ']' : ''}`;
+    const sheetOf = (name, d) => !d ? `- ${name}: no datasheet in the app` : `- ${name}: ${d.m.map((m) => m.name + ' ' + st(m)).join('; ')}
+  Ranged: ${(d.r || []).map(wpn).join('; ') || 'none'}
+  Melee: ${(d.ml || []).map(wpn).join('; ') || 'none'}
+  Abilities: ${(d.ab || []).map((a) => a[0] + ': ' + cut(a[1], 260)).join(' | ') || 'none'}
+  Keywords: ${(d.kw || []).concat(d.fk || []).join(', ')}`;
+    const stratLine = (x) => `- ${x.name} (${x.cp} CP, ${x.det}${x.turn ? ', ' + x.turn + ' turn' : ''}${x.phases ? ', ' + x.phases.join('/') : ''}). When: ${cut(x.when, 220)} Target: ${cut(x.target, 160)} Effect: ${cut(x.effect, 420)}`;
+    const foeStratLine = (a) => stratLine({ det: a[0], name: a[1], cp: a[2], turn: a[3], phases: a[4], effect: a[5], when: a[6], target: a[7] });
+    const out = [];
+    if (B) out.push(`GAME: Round ${B.round} of 5, ${PHASES[B.phase]} phase, ${B.turn === 'me' ? 'MY' : 'THEIR'} turn. CP: me ${B.cp.me}, them ${B.cp.foe}. VP: me ${B.vp.me}, them ${B.vp.foe}.${B.primary && B.primary.me ? ' Primary: me ' + B.primary.me + (B.primary.foe ? ', them ' + B.primary.foe : '') + '.' : ''}${S.field.deployment ? ' Deployment: ' + S.field.deployment + '.' : ''}`);
+    else out.push('GAME: not started. Questions are about list building, deployment or rules.');
+    // my army
+    if (L) {
+      const lf = listFaction(L); const sm = S.army !== 'other' || (FD(lf) && FD(lf).base === 'SM') || /Space Marines|Adeptus Astartes/i.test(L.faction || '');
+      out.push(`\nMY ARMY: ${L.name} (${[L.subfaction, L.faction].filter(Boolean).join(', ')}). Detachments: ${(L.detachments || []).join(', ') || 'none listed'}.`);
+      if (sm) D.rulesSM.detachments.filter((d) => (L.detachments || []).includes(d.name)).forEach((d) => out.push(`Detachment rule (${d.name}): ${(d.rules || [d.rule]).map((r) => r.name + ': ' + cut(r.text, 600)).join(' | ')}`));
+      else if (FD(lf)) FD(lf).detachments.filter((d) => (L.detachments || []).includes(d.name)).forEach((d) => out.push(`Detachment rule (${d.name}): ${cut(typeof d.rule === 'string' ? d.rule : JSON.stringify(d.rule), 600)}`));
+      const units = B ? B.units : L.units.map((u) => ({ name: u.name, models: [], warlord: u.warlord }));
+      out.push('My units' + (B ? ' (models alive / total, wounds left)' : '') + ':');
+      units.forEach((u) => { const al = u.models.filter((m) => m.wl > 0).length; out.push(`- ${u.name}${u.warlord ? ' (Warlord)' : ''}${B ? `: ${al}/${u.models.length} models, ${u.models.reduce((t, m) => t + m.wl, 0)} wounds left${al ? '' : ' DESTROYED'}` : ''}`); });
+      out.push('My datasheets:'); [...new Set(units.map((u) => u.name))].forEach((n) => out.push(sheetOf(n, ds(n))));
+      out.push('My stratagems:');
+      const mine = sm ? D.rulesSM.stratagems.filter((x) => (L.detachments || []).includes(x.det)) : ((FD(lf) && FD(lf).stratagems) || []).filter((a) => (L.detachments || []).includes(a[0])).map((a) => ({ det: a[0], name: a[1], cp: a[2], turn: a[3], phases: a[4], effect: a[5], when: a[6], target: a[7] }));
+      mine.concat(D.rulesSM.core.map((x) => ({ ...x, det: 'Core' }))).forEach((x) => out.push(stratLine(x)));
+    }
+    // their army
+    if (F) {
+      const fd = FD(F.faction);
+      out.push(`\nTHEIR ARMY: ${F.name ? F.name + ', ' : ''}${F.faction}. Detachments: ${(F.detachments || []).join(', ') || 'not known'}.${F.warlord ? ' Warlord: ' + F.warlord + '.' : ''}${B && B.foeWarlordDead ? ' Their warlord is dead.' : ''}`);
+      if (fd) {
+        (fd.army_rules || []).filter(Boolean).forEach((r) => out.push(`Army rule (${r.name}): ${cut(r.text || r.desc || '', 600)}`));
+        fd.detachments.filter((d) => (F.detachments || []).includes(d.name)).forEach((d) => out.push(`Detachment rule (${d.name}): ${cut(typeof d.rule === 'string' ? d.rule : JSON.stringify(d.rule), 600)}`));
+        const linked = B && (B.foeUnits || []).length;
+        const names = linked ? B.foeUnits.map((u) => u.name) : B ? B.spotted.map((x) => x.name) : [];
+        if (linked) { out.push('Their units (live from their phone):'); B.foeUnits.forEach((u) => { const al = u.models.filter((m) => m.wl > 0).length; out.push(`- ${u.name}: ${al}/${u.models.length} models, ${u.models.reduce((t, m) => t + m.wl, 0)} wounds left${al ? '' : ' DESTROYED'}`); }); }
+        else if (names.length) out.push('Their units spotted so far: ' + names.join(', ') + '.');
+        if (names.length) { out.push('Their datasheets:'); [...new Set(names)].forEach((n) => out.push(sheetOf(n, foeUnits(F.faction)[n]))); }
+        const fs = (fd.stratagems || []).filter((a) => !(F.detachments || []).length || (F.detachments || []).includes(a[0]));
+        out.push('Their stratagems:'); fs.slice(0, 60).forEach((a) => out.push(foeStratLine(a)));
+      }
+    }
+    return out.join('\n');
+  }
+  const cogFmt = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+  async function cogCall(body) {
+    const { data, error } = await STANDALONE.client.functions.invoke('cogitator', { body });
+    if (!error) return data;
+    let d = null; try { d = await error.context.json(); } catch (e) { /* no body */ }
+    return Object.assign({ error: (d && (d.why || d.error)) || 'The Cogitator could not be reached. Are you online?' }, d || {});
+  }
+  async function cogCheck() {
+    if (!STANDALONE || !SYNC.on || !SYNC.email) { UI.cogOK = false; return; }
+    const r = await cogCall({ check: true }).catch(() => null);
+    UI.cogOK = !!(r && r.allowed); UI.cogLeft = r ? r.left : null;
+    if (S.screen === 'home' && !UI.overlay) render();
+  }
+  async function cogAsk() {
+    const el = document.getElementById('cog-q'); const q = ((el && el.value) || '').trim(); if (!q || UI.cogBusy) return;
+    UI.cog = UI.cog || []; const hist = UI.cog.filter((x) => x.a && !x.err).slice(-3).map((x) => ({ q: x.q, a: x.a }));
+    const item = { q, a: '' }; UI.cog.push(item); UI.cogBusy = true; render();
+    const r = await cogCall({ question: q, context: cogContext(), history: hist }).catch((e) => ({ error: e.message }));
+    if (r && r.answer) { item.a = r.answer; if (r.left !== undefined) UI.cogLeft = r.left; }
+    else { item.a = (r && r.error) || 'No answer came back.'; item.err = true; if (r && r.left === 0) UI.cogLeft = 0; }
+    UI.cogBusy = false; render();
+    setTimeout(() => { const b = document.querySelector('#overlay .sheet-body'); if (b) b.scrollTop = b.scrollHeight; }, 30);
+  }
+
   // ---------- the Webway: two phones, one battle ----------
   // The game lives in one shared row (Supabase "live_games"), written from the host's point of view.
   // Each phone owns its own side (CP, VP, cards, units); the shared board (round, phase, turn, objectives)
@@ -2608,5 +2697,5 @@
   render();
   // a battle link (#ww=CODE) opens the join sheet straight away
   (() => { const m = location.hash.match(/ww=([A-Za-z0-9]{6})/); if (m && STANDALONE) { UI.wwCode = m[1].toUpperCase(); UI.wwNeedList = !(window.matchMedia && matchMedia('(display-mode: standalone)').matches); S.screen = 'home'; UI.overlay = 'wwjoin'; render(); } })();
-  syncStart().then(() => liveResume());
+  syncStart().then(() => { liveResume(); cogCheck(); });
 })();
