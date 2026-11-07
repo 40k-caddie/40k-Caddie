@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>40k Caddie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@700;900&family=Barlow+Condensed:wght@400;500;600;700&family=Chakra+Petch:wght@500;700&family=Metamorphous&family=Noto+Sans+Runic&family=Uncial+Antiqua&family=Oxanium:wght@400;600;700&family=Share+Tech+Mono&family=Philosopher:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Black+Ops+One&family=Cinzel:wght@700;900&family=Barlow+Condensed:wght@400;500;600;700&family=Chakra+Petch:wght@500;700&family=Metamorphous&family=Noto+Sans+Runic&family=Uncial+Antiqua&family=Oxanium:wght@400;600;700&family=Share+Tech+Mono&family=Philosopher:ital,wght@0,400;0,700;1,400&display=swap">
 <style>
 /* Layout: one-column phone app; army theme owns the frame, foe theme owns its territory. Deliberately dark-only. */
 :root {
@@ -980,6 +980,68 @@ body.army-templars[data-foe="if"] .band::before { content: ""; position: absolut
   background-image: var(--grime), repeating-linear-gradient(-45deg, #15110A 0 11px, #C99A12 11px 22px); background-size: 180px 180px, 100% 100%;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%); mask-image: linear-gradient(90deg, transparent, #000 15%); }
 .emblem.phalanx .ph-log { align-items: center !important; text-align: center !important; }
+
+/* ===== Orks as YOUR army: rust, scrap, teef. The klan picks the paint ===== */
+body.army-orks {
+  --clan: #B3231B;
+  --bg: #0C0906; --panel: rgba(22,15,9,0.9); --panel2: rgba(26,18,10,0.92); --line: #3B2A1A; --line2: #7A5A36;
+  --text: #EFE6D6; --muted: #C4B39A; --dim: #8C7B64; --accent: var(--clan); --accent-text: #E9C46A; --gold: #E9C46A; --good: #A9C25A;
+  --head: 'Black Ops One', 'Pirata One', sans-serif; --head-weight: 400; --head-size: 0.86;
+}
+body.army-orks .world.terra .orb { background: none; box-shadow: none; }
+body.army-orks .world .terra-art.home-art { overflow: visible; background: none; border: 0; box-shadow: none; }
+body.army-orks .world .terra-art.home-art img { object-fit: contain; border-radius: 0; transform: scale(1.3); filter: drop-shadow(0 0 14px rgba(255,120,40,0.35)) brightness(1.05); animation: rokDrift 16s ease-in-out infinite; }
+@keyframes rokDrift { 0%, 100% { transform: scale(1.3) rotate(-3deg); } 50% { transform: scale(1.3) rotate(3deg) translateY(-3px); } }
+body.army-orks #void { display: block; background: #0C0906; }
+body.army-orks #void::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 62%;
+  background: linear-gradient(rgba(12,9,6,0.5), rgba(12,9,6,0.46)), url("lib/pmwork2.webp") 55% 40% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+body.army-orks #void::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 58%;
+  background: linear-gradient(rgba(12,9,6,0.6), rgba(12,9,6,0.64)), url("lib/pmwork3.webp") 60% 40% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(transparent, #000 45%); mask-image: linear-gradient(transparent, #000 45%); }
+/* under the header: rusted choppas, sluggas and shootas, pulled from the weapon sheet */
+body.army-orks .band { border-top-color: var(--clan); padding-bottom: 34px !important; background-color: rgba(22,15,9,0.94);
+  background-image: url("lib/pmwork_band.webp"), var(--grime), linear-gradient(180deg, #2C1F12, #0F0A06);
+  background-size: auto 26px, 180px 180px, 100% 100%; background-position: 0 calc(100% - 3px), 0 0, 0 0; background-repeat: repeat-x, repeat, no-repeat;
+  box-shadow: inset 0 -2px 0 var(--clan); }
+body.army-orks[data-clan="goffs"] .band { background-image: url("lib/pmwork_band.webp"), repeating-conic-gradient(#0E0B08 0 25%, #D8D2C4 0 50%), var(--grime), linear-gradient(180deg, #2C1F12, #0F0A06);
+  background-size: auto 26px, 12px 12px, 180px 180px, 100% 100%; background-position: 0 calc(100% - 3px), 0 calc(100% - 30px), 0 0, 0 0; background-repeat: repeat-x, repeat-x, repeat, no-repeat; padding-bottom: 46px !important; }
+body.army-orks .panel { background-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--clan) 60%, transparent) 50%, transparent), var(--grime), var(--stain), linear-gradient(175deg, rgba(34,24,14,0.92), rgba(14,10,6,0.95));
+  background-size: 100% 1px, 180px 180px, 420px 420px, 100% 100%; background-repeat: no-repeat, repeat, repeat, no-repeat; border-color: #4A3520; }
+body.army-orks .banner { border-color: #7A5A36; background-image: var(--grime), linear-gradient(180deg, rgba(40,28,16,0.92), rgba(15,10,6,0.95)); background-size: 180px 180px, 100% 100%; }
+body.army-orks .sheet { background: #110C07; }
+body.army-orks .clash .mine { background-image: var(--grime), linear-gradient(100deg, color-mix(in srgb, var(--clan) 70%, #2A1A0E), #140D07); background-size: 180px 180px, 100% 100%; }
+body.army-orks .fight-btn { background-image: var(--grime), linear-gradient(180deg, color-mix(in srgb, var(--clan) 85%, #000), color-mix(in srgb, var(--clan) 45%, #000)); background-size: 180px 180px, 100% 100%; border-color: #E9C46A; font-family: 'Black Ops One', sans-serif; letter-spacing: 0.06em; }
+.ork-clan { width: 46px; height: 46px; padding: 3px; border: 1px solid var(--line2); background: rgba(0,0,0,0.25); display: inline-flex; align-items: center; justify-content: center; }
+.ork-clan img { width: 100%; height: 100%; object-fit: contain; }
+.ork-clan.on { border: 2px solid var(--clan); box-shadow: 0 0 10px color-mix(in srgb, var(--clan) 60%, transparent); }
+.emblem.rok { aspect-ratio: 390 / 560; container-type: inline-size; overflow: visible; }
+.emblem.rok .rk-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9) contrast(1.08) saturate(1.05); box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 45%, #000 66%, transparent); mask-image: radial-gradient(120% 100% at 50% 45%, #000 66%, transparent); }
+.emblem.rok .q { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 0; padding: 2px; color: #EFE6D6; text-shadow: 0 1px 3px #000; background: transparent; }
+.emblem.rok .rk-core { background: rgba(14,10,6,0.74); border: 2px solid #5A4128; border-top: 4px solid var(--clan, #B3231B); box-shadow: 0 0 18px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(233,196,106,0.18); }
+.emblem.rok .rk-core .qt { font-family: 'Black Ops One', sans-serif; font-size: clamp(14px, 5cqw, 22px); line-height: 1.05; }
+.emblem.rok .rk-core .tnum { font-weight: 700; font-size: clamp(11px, 3.6cqw, 15px); }
+.emblem.rok .rk-core .eyebrow { font-size: clamp(8px, 2.4cqw, 10px); }
+.emblem.rok .rk-sign { justify-content: flex-end; padding-bottom: 4px; }
+.emblem.rok .rk-plq { display: flex; flex-direction: column; align-items: center; gap: 1px; background: rgba(20,13,7,0.82); border: 2px solid #5A4128; border-left: 4px solid var(--clan, #B3231B); padding: 3px 6px; min-width: 76%; transform: rotate(-2deg); }
+.emblem.rok .rk-foe .rk-plq { border-left-color: var(--foe-c, #8A6A1E); transform: rotate(2deg); }
+.emblem.rok .rk-t { font-family: 'Black Ops One', sans-serif; font-size: clamp(10px, 3.3cqw, 14px); line-height: 1.1; }
+.emblem.rok .rk-s { font-size: clamp(9px, 2.8cqw, 12px); font-weight: 700; opacity: 0.9; }
+.emblem.rok .rk-log { justify-content: center; align-items: center !important; text-align: center !important; padding: 6px 10px; background: linear-gradient(rgba(14,10,6,0), rgba(14,10,6,0.8) 30%); gap: 2px; }
+.emblem.rok .jw-line { font-size: clamp(10px, 3.1cqw, 13px); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* Orks as the foe */
+body[data-foe="ork"] { --foe-font: 'Black Ops One', sans-serif; }
+body[data-foe="ork"] .foe-head { animation: none; color: #EFE6D6; text-shadow: 0 1px 3px #000; padding-bottom: 32px !important;
+  background-image: url("lib/pmwork_band.webp"), linear-gradient(90deg, rgba(12,9,6,0.95) 40%, rgba(12,9,6,0.3) 75%, rgba(12,9,6,0.55)), url("lib/pmwork4.webp"), var(--grime), linear-gradient(170deg, #2C1F12, #0C0906);
+  background-size: auto 24px, 100% 100%, auto 170%, 180px 180px, 100% 100%; background-position: 0 calc(100% - 2px), 0 0, right -10px top 20%, 0 0, 0 0; background-repeat: repeat-x, no-repeat, no-repeat, repeat, no-repeat; box-shadow: inset 0 -2px 0 #7A5A36; }
+body[data-foe="ork"] .foe-panel, body[data-foe="ork"] .strat.foe { background-image: linear-gradient(90deg, transparent, rgba(169,194,90,0.4) 50%, transparent), var(--grime), var(--stain), linear-gradient(175deg, #241A0F, #0E0A06);
+  background-size: 100% 1px, 180px 180px, 420px 420px, 100% 100%; background-repeat: no-repeat, repeat, repeat, no-repeat; border-color: #4A3520; }
+body.army-templars[data-foe="ork"] .band { padding-bottom: 34px !important; }
+body.army-templars[data-foe="ork"] .band::after { right: 50%; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); bottom: 8px; }
+body.army-templars[data-foe="ork"] .band::before { content: ""; position: absolute; left: 50%; right: 0; bottom: 4px; height: 24px; pointer-events: none;
+  background: url("lib/pmwork_band.webp") 0 0 / auto 24px repeat-x;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%); mask-image: linear-gradient(90deg, transparent, #000 15%); }
 </style>
 </head>
 <body>
@@ -991,12 +1053,12 @@ body.army-templars[data-foe="if"] .band::before { content: ""; position: absolut
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=72"></script>
-<script src="lib-v16.js?v=72"></script>
-<script src="footfall.js?v=72"></script>
-<script src="data.js?v=72"></script>
-<script src="foes.js?v=72"></script>
-<script src="app.js?v=72"></script>
+<script src="sb.js?v=73"></script>
+<script src="lib-v17.js?v=73"></script>
+<script src="footfall.js?v=73"></script>
+<script src="data.js?v=73"></script>
+<script src="foes.js?v=73"></script>
+<script src="app.js?v=73"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
