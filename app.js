@@ -276,6 +276,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Chasing the meta, in Footfall: your army\'s 11th edition win rate and rank, and beside each unit when you add one, how often it is taken, whether it clearly lifts the win rate, and how many recent winning lists took it. The Chasing the meta panel lists what recent winners took and the units that lift results, with one tap to add. Numbers update weekly from the 40k-analytics report and the Competitive Innovations column on Tabletop Battles.',
       'Footfall, the list builder: the void port on the main screen. A legal list carries its army\'s seal (Chapter Master Approved, High Marshal Approved, Silent King Approved, Nurgle Approved and more), and you send it to battle the way that army goes to war: Board the Thunderhawks, Board the Night Scythes, Launch the Tyrannocytes. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
       'Before every battle, the app checks the rules it holds for both armies against the current ones. If either army\'s rules have changed, it tells you before the fight starts, so you can check points and datasheets first.',
       'Your battle world is named for your army\'s home: Fenris for the Vlka Fenryka, The Tomb World for the Infinite Empire, The Craftworld for the Asuryani, Erioch for the Deathwatch. Dark Angels live on the Rock, so they keep Terra. Black Templars keep Terra at the heart of the map, but you board the Eternal Crusader to fight: tap the ship as it circles the world.',
@@ -2942,6 +2943,34 @@
     })().catch((e) => { delete FFX.loading[file]; FFX.err = e.message; throw e; });
     return FFX.loading[file];
   }
+  // Chasing the meta: weekly numbers from the 40k-analytics report and recent Competitive Innovations winning lists
+  let FFMETA = null, ffMetaP = null;
+  function ffMetaLoad() {
+    if (!ffMetaP) ffMetaP = fetch('footfall/meta.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((m) => { FFMETA = m; if (S.screen === 'footfall') render(); return m; }).catch(() => null);
+    return ffMetaP;
+  }
+  const ffNorm = (n) => String(n || '').toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9']+/g, ' ').trim();
+  const FF_META_NAME = { 'Genestealer Cults': 'Genestealer Cult', 'Agents of the Imperium': 'Imperial Agents', Ultramarines: 'Space Marines', 'Imperial Fists': 'Space Marines', 'Iron Hands': 'Space Marines', 'Raven Guard': 'Space Marines', Salamanders: 'Space Marines', 'White Scars': 'Space Marines' };
+  function ffMetaFor(Dd) {
+    if (!FFMETA || !FFMETA.factions) return null;
+    const short = ffShort(Dd.facName); const name = FF_META_NAME[short] || short;
+    const f = FFMETA.factions[name] || Object.entries(FFMETA.factions).find(([k]) => ffNorm(k) === ffNorm(name))?.[1];
+    if (!f) return null;
+    const win = (FFMETA.winning || {})[name] || null;
+    const units = {}; Object.entries(f.units || {}).forEach(([k, v]) => { units[ffNorm(k)] = v; });
+    const wins = {}; if (win) Object.entries(win.units || {}).forEach(([k, v]) => { wins[ffNorm(k)] = (wins[ffNorm(k)] || 0) + v; });
+    return { name, shared: name !== short, f, units, win, wins };
+  }
+  // the small line beside a unit: how often it is taken, whether it helps, and how often recent winners took it
+  function ffMetaLine(M, unitName) {
+    if (!M) return '';
+    const u = M.units[ffNorm(unitName)]; const w = M.win && M.win.lists >= 5 ? M.wins[ffNorm(unitName)] || 0 : null;
+    const bits = [];
+    if (u) bits.push(`${Math.round(u.pct)}% of lists`);
+    if (u && u.eff !== null && u.z !== null && Math.abs(u.z) >= 2) bits.push(`${u.eff > 0 ? '▲ +' : '▼ '}${u.eff} win rate`);
+    if (w) bits.push(`in ${w} of ${M.win.lists} recent winning lists`);
+    return bits.join(' · ');
+  }
   // the selections that are set-up choices rather than units
   const ffIsConfig = (Dd, s) => { const r = FF.R(Dd, s.k); return !r || r.cats.includes(CONFIG_CAT) || /^(battle size|detachment|force disposition|show\/hide options)$/i.test(r.name); };
   const ffConfigSel = (Dd, L, re) => L.roster.sels.find((s) => re.test(FF.R(Dd, s.k).name));
@@ -3049,6 +3078,7 @@
           ${ev.enhMax !== null ? `<span class="small muted">Enhancements ${ev.enh} of ${ev.enhMax}</span>` : ''}
         </div>
       </section>
+      ${(() => { ffMetaLoad(); const M = ffMetaFor(Dd); if (!M || !M.f.win) return ''; return `<button class="ff-line ff-meta" data-act="ffMetaOpen"><span class="eyebrow">Chasing the meta</span><span>${esc(M.name)}${M.shared ? ' (all chapters)' : ''} win <b>${M.f.win}%</b> of games in 11th edition · ${M.f.games.toLocaleString()} games · rank ${M.f.rank} of ${M.f.of}</span></button>`; })()}
       ${errs.length ? `<section class="panel ff-errs stack" style="gap: 4px; padding: 10px 12px"><span class="eyebrow" style="color: var(--accent-text)">To fix</span>${errs.slice(0, 4).map((e) => `<span class="small">${esc(e.msg)}</span>`).join('')}${errs.length > 4 ? `<span class="small muted">and ${errs.length - 4} more</span>` : ''}
         <div class="row" style="gap: 8px; margin-top: 4px">${errs.length > 4 ? '<button class="btn small" data-act="ffErrs">SEE ALL</button>' : ''}<button class="btn small" data-act="ffCogWhy">ASK THE COGITATOR WHY</button></div></section>` : ''}
       ${sugg.length ? `<section class="stack" style="gap: 6px"><span class="eyebrow">${(ev.limit - ev.pts).toLocaleString()} pts spare · could fit</span><div class="row" style="gap: 6px; flex-wrap: wrap">${sugg.map((o) => `<button class="chip" data-act="ffAddKey" data-k="${esc(o.key)}">+ ${esc(o.name)} · ${o.pts}</button>`).join('')}</div></section>` : ''}
@@ -3122,14 +3152,15 @@
         `<button class="btn solid block" data-act="closeAll">DONE</button>`);
     }
     if (sh.type === 'ffAdd') {
-      const own = ffOwned(Dd); const q = (UI.ffQ || '').toLowerCase();
+      const own = ffOwned(Dd); const q = (UI.ffQ || '').toLowerCase(); ffMetaLoad(); const M = ffMetaFor(Dd);
       const opts = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model') && (!q || o.name.toLowerCase().includes(q)))
         .filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i);
       const byCat = {}; opts.forEach((o) => { const c = ffCatName(Dd, o.primaryCat); (byCat[c] = byCat[c] || []).push(o); });
       const cats = Object.keys(byCat).sort((a, b) => ffCatRank(a) - ffCatRank(b) || a.localeCompare(b));
       return sheet('Add a unit', `<label class="field"><span class="eyebrow">Search</span><input type="search" id="ff-q" value="${esc(UI.ffQ || '')}" placeholder="Unit name" autocomplete="off"></label>
         <button class="ff-pick ${st.ownedOnly ? 'on' : ''}" data-act="ffOwnedOnly" aria-pressed="${st.ownedOnly}"><span class="ff-box" aria-hidden="true">${st.ownedOnly ? '✓' : ''}</span><span class="ff-nm">Only units I own <span class="small muted">(set them in My collection)</span></span></button>
-        ${cats.map((c) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((o) => { const id = ffOwnedKey(Dd, o.key); const have = ffInList(ev, id); const owned = own[id] || 0; const full = o.max >= 0 && o.count >= o.max; const noOwn = st.ownedOnly && owned <= have; return `<button class="strat" data-act="ffAddKey" data-k="${esc(o.key)}" ${full || noOwn ? 'disabled' : ''} style="min-height: 46px"><span style="min-width: 0"><span class="nm">${esc(o.name)}</span>${have || owned || o.max >= 0 ? `<br><span class="ds">${have ? have + ' in list' : ''}${o.max >= 0 ? (have ? ' · ' : '') + 'max ' + o.max : ''}${owned ? ' · ' + owned + ' owned' : ''}</span>` : ''}</span><b class="ff-pts">${o.pts}</b></button>`; }).join('')}</div>`).join('') || '<p class="small muted">Nothing matches.</p>'}`, '');
+        ${cats.map((c) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((o) => { const id = ffOwnedKey(Dd, o.key); const have = ffInList(ev, id); const owned = own[id] || 0; const full = o.max >= 0 && o.count >= o.max; const noOwn = st.ownedOnly && owned <= have; const ml = ffMetaLine(M, o.name); const info = [have ? have + ' in list' : '', o.max >= 0 ? 'max ' + o.max : '', owned ? owned + ' owned' : ''].filter(Boolean).join(' · ');
+          return `<button class="strat" data-act="ffAddKey" data-k="${esc(o.key)}" ${full || noOwn ? 'disabled' : ''} style="min-height: 46px"><span style="min-width: 0"><span class="nm">${esc(o.name)}</span>${info ? `<br><span class="ds">${esc(info)}</span>` : ''}${ml ? `<br><span class="ds ff-ml">${esc(ml)}</span>` : ''}</span><b class="ff-pts">${o.pts}</b></button>`; }).join('')}</div>`).join('') || '<p class="small muted">Nothing matches.</p>'}`, '');
     }
     if (sh.type === 'ffDet') {
       const det = ffConfigSel(Dd, L, /^detachment$/i); if (!det) return '';
@@ -3138,6 +3169,24 @@
       return sheet('Detachments', `<p class="small muted" style="margin: 0">${ev.dpMax !== null ? `${ev.dp} of ${ev.dpMax} detachment points used. ` : ''}Each detachment costs the points shown.</p>
         ${opts.map((o) => { const on = o.count > 0; return `<button class="ff-pick ${on ? 'on' : ''}" data-act="ffDet" data-k="${esc(o.key)}" ${!on && o.dp > left ? 'disabled' : ''} aria-pressed="${on}"><span class="ff-box" aria-hidden="true">${on ? '✓' : ''}</span><span class="ff-nm">${esc(o.name)} <span class="small muted">${o.dp} DP</span></span></button>`; }).join('')}
         ${(ev.node(det.u) || { kids: [] }).kids.map((k) => ffProfiles(Dd, k.r.key).replace('Datasheet', esc(k.eff.name) + ' rules')).join('')}`, `<button class="btn solid block" data-act="closeAll">DONE</button>`);
+    }
+    if (sh.type === 'ffMeta') {
+      const M = ffMetaFor(Dd); if (!M) return sheet('Chasing the meta', '<p class="small muted" style="margin: 0">No meta numbers for this army yet.</p>', '');
+      const opts = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model'));
+      const keyOf = (n) => (opts.find((o) => ffNorm(o.name) === ffNorm(n)) || {}).key;
+      const row = (n, sub) => { const k = keyOf(n); return `<div class="ff-row"><span class="ff-nm">${esc(n)}<br><span class="small muted">${esc(sub)}</span></span>${k ? `<button class="btn small" data-act="ffAddKey" data-k="${esc(k)}">ADD</button>` : ''}</div>`; };
+      const us = Object.entries(M.f.units || {});
+      const played = us.slice().sort((a, b) => b[1].pct - a[1].pct).slice(0, 10);
+      const lifts = us.filter(([, v]) => v.z !== null && v.z >= 2).sort((a, b) => b[1].eff - a[1].eff);
+      const wl = M.win && M.win.lists ? Object.entries(M.win.units).filter(([n]) => keyOf(n)).sort((a, b) => b[1] - a[1]).slice(0, 10) : [];
+      const arts = (FFMETA.ci && FFMETA.ci.articles) || [];
+      return sheet('Chasing the meta', `<p style="margin: 0"><b>${esc(M.name)}</b>${M.shared ? ' (all Space Marine chapters together)' : ''} won <b>${M.f.win}%</b> of ${M.f.games.toLocaleString()} games in 11th edition, rank ${M.f.rank} of ${M.f.of}.</p>
+        ${wl.length ? `<div class="stack" style="gap: 2px"><span class="eyebrow">In recent winning lists (${M.win.lists} lists)</span>${M.win.lists < 5 ? '<span class="small muted">Only a few lists so far: read these loosely.</span>' : ''}${wl.map(([n, c]) => row(n, `in ${c} of ${M.win.lists}`)).join('')}</div>` : ''}
+        ${lifts.length ? `<div class="stack" style="gap: 2px"><span class="eyebrow">Lift the win rate</span>${lifts.map(([n, v]) => row(n, `+${v.eff} points when taken · in ${Math.round(v.pct)}% of lists`)).join('')}</div>` : ''}
+        <div class="stack" style="gap: 2px"><span class="eyebrow">Most played</span>${played.map(([n, v]) => row(n, `in ${Math.round(v.pct)}% of lists${v.z !== null && Math.abs(v.z) >= 2 ? (v.eff > 0 ? ' · ▲ +' : ' · ▼ ') + v.eff + ' win rate' : ''}`)).join('')}</div>
+        <p class="small muted" style="margin: 0">"Win rate" effects compare lists with the unit to similar lists without it; small effects are left out. Winners take what wins, and what is popular, so treat these as pointers, not rules.</p>
+        <p class="small muted" style="margin: 0">Win rates and unit numbers: <a href="${esc(FFMETA.analytics.url)}" target="_blank" rel="noopener" style="color: var(--gold)">40k-analytics</a>${FFMETA.analytics.updated ? ', updated ' + esc(FFMETA.analytics.updated) : ''}. Winning lists: Competitive Innovations on <a href="https://www.tabletopbattles.com/tag/competitive-innovations" target="_blank" rel="noopener" style="color: var(--gold)">Tabletop Battles</a>${arts.length ? ', ' + arts.length + ' articles from the last eight weeks' : ''}. Unofficial.</p>`,
+        `<button class="btn solid block" data-act="closeAll">DONE</button>`);
     }
     if (sh.type === 'ffErrs') return sheet('To fix', `${ev.errors.map((e) => `<p class="small" style="margin: 0">${esc(e.msg)}</p>`).join('') || '<p class="small">Nothing. The list is legal.</p>'}`, `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="ffCogWhy">ASK THE COGITATOR</button></div>`);
     if (sh.type === 'ffOwn') {
@@ -3205,6 +3254,12 @@
       const n = ev.node(s.u); if (!n || seenU.has(n.r.id)) continue; seenU.add(n.r.id);
       const ps = FF.profiles(Dd, n.r.key);
       out.push(`- ${n.eff.name}: ` + ps.map((p) => p.type === 'Abilities' || p.type === 'Rule' ? `${p.name}: ${cut(p.chars.Description, 300)}` : `${p.name} [${Object.entries(p.chars).map(([k, v]) => k + ' ' + v).join(', ')}]`).join(' | '));
+    }
+    const M = ffMetaFor(Dd);
+    if (M) {
+      out.push(`\nMETA (11th edition tournament data): ${M.name} win ${M.f.win}% of ${M.f.games} games, rank ${M.f.rank} of ${M.f.of}.`);
+      out.push('Units by share of lists, with effect on win rate where clear: ' + Object.entries(M.f.units || {}).map(([n, v]) => `${n} ${Math.round(v.pct)}%${v.z !== null && Math.abs(v.z) >= 2 ? ' (' + (v.eff > 0 ? '+' : '') + v.eff + ' win rate)' : ''}`).join('; '));
+      if (M.win && M.win.lists) out.push(`Recent winning lists (${M.win.lists}): ` + Object.entries(M.win.units).sort((a, b) => b[1] - a[1]).slice(0, 20).map(([n, c]) => `${n} in ${c}`).join('; '));
     }
     out.push('\nOTHER UNITS that could be added (name, points):');
     out.push(FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model')).filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i).map((o) => `${o.name} ${o.pts}`).join('; '));
@@ -3282,6 +3337,7 @@
     ffDup(u) { let made = null; ffMutate((Dd, L) => { const f = ffFind(L, u); if (!f) return; const copy = JSON.parse(JSON.stringify(f.s)); const re = (s) => { s.u = 's' + Math.random().toString(36).slice(2, 10); delete s.as; (s.kids || []).forEach(re); }; re(copy); L.roster.sels.push(copy); made = copy; }); if (made) UI.sheet = { type: 'ffUnit', u: made.u }; },
     ffDel(u) { ffMutate((Dd, L) => FF.remove(L.roster, u)); UI.sheet = null; },
     ffErrs() { UI.sheet = { type: 'ffErrs' }; },
+    ffMetaOpen() { UI.sheet = { type: 'ffMeta' }; },
     ffOwnOpen() { UI.sheet = { type: 'ffOwn' }; },
     ffOwnN(k) { const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return; const [id, d] = k.split('|'); const own = ffOwned(Dd); own[id] = Math.max(0, (own[id] || 0) + +d); if (!own[id]) delete own[id]; },
     ffOwnedOnly() { const st = ffState(); st.ownedOnly = !st.ownedOnly; },
