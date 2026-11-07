@@ -77,13 +77,19 @@ CI_TAG = 'https://www.tabletopbattles.com/tag/competitive-innovations'
 
 
 def ci_articles():
-    page = get(CI_TAG)
     urls = []
-    for u in re.findall(r'href="(/40k-competitive-innovations-in-11th[^"#?]*)"', page):
-        u = 'https://www.tabletopbattles.com' + u.rstrip('/')
-        if u not in urls:
-            urls.append(u)
-    return urls[:12]
+    cat = 'https://www.tabletopbattles.com/category/columns/40k-competitive-innovations'
+    for src in (CI_TAG, cat, CI_TAG + '/page/2', cat + '/page/2', CI_TAG + '?page=2', cat + '?page=2'):
+        try:
+            page = get(src); time.sleep(1)
+        except Exception:
+            continue
+        for u in re.findall(r'href="(?:https://www\.tabletopbattles\.com)?(/40k-competitive-innovations-in-11th[^"#?]*)"', page):
+            u = 'https://www.tabletopbattles.com' + u.rstrip('/')
+            if u not in urls:
+                urls.append(u)
+    print('articles found:', len(urls))
+    return urls[:24]
 
 
 def ci_lists(page):
