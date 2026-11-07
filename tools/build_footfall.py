@@ -15,7 +15,7 @@ import re
 import sys
 
 DROP_KEYS = {"publicationId", "page", "comment", "authorName", "readme", "publications", "xmlns",
-             "battleScribeVersion", "import", "defaultSelectionEntryId", "gameSystemRevision",
+             "battleScribeVersion", "import", "gameSystemRevision",
              "authorContact", "authorUrl"}
 # exact names only: "Crusader Squad" and similar must survive
 CRUSADE = re.compile(r"(?i)^(crusade|crusade force|crusade army|crusade relics|crusade points|crusade:.*|battle honours|"

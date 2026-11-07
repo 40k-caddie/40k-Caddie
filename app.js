@@ -276,6 +276,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Footfall, the list builder: the void port on the main screen. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
       'Before every battle, the app checks the rules it holds for both armies against the current ones. If either army\'s rules have changed, it tells you before the fight starts, so you can check points and datasheets first.',
       'Your battle world is named for your army\'s home: Fenris for the Vlka Fenryka, The Tomb World for the Infinite Empire, The Craftworld for the Asuryani, Erioch for the Deathwatch. Dark Angels live on the Rock, so they keep Terra. Black Templars keep Terra at the heart of the map, but you board the Eternal Crusader to fight: tap the ship as it circles the world.',
       'Lists can come from anywhere: paste text from the Warhammer 40,000 app, Warmind, New Recruit, Listforge or BattleScribe, or type it yourself with one unit per line and its points. The app finds the army, detachment, units, model counts and your warlord.',
@@ -1288,9 +1289,9 @@
     <main class="sol" aria-label="Main page">
       ${(() => {
         // the worlds as one network: Terra to every world, plus an outer ring between neighbours
-        const P = { terra: [50, 45], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], ulthwe: [49, 11] };
-        const E = [['terra', 'solemnace'], ['terra', 'mars'], ['terra', 'astro'], ['terra', 'macragge'], ['terra', 'prospero'], ['terra', 'webway'], ['terra', 'ulthwe'],
-          ['astro', 'ulthwe'], ['ulthwe', 'solemnace'], ['solemnace', 'mars'], ['mars', 'webway'], ['webway', 'prospero'], ['prospero', 'macragge'], ['macragge', 'astro']];
+        const P = { terra: [50, 45], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], ulthwe: [49, 11], footfall: [14, 41] };
+        const E = [['terra', 'footfall'], ['terra', 'solemnace'], ['terra', 'mars'], ['terra', 'astro'], ['terra', 'macragge'], ['terra', 'prospero'], ['terra', 'webway'], ['terra', 'ulthwe'],
+          ['astro', 'ulthwe'], ['ulthwe', 'solemnace'], ['solemnace', 'mars'], ['mars', 'webway'], ['webway', 'prospero'], ['prospero', 'macragge'], ['macragge', 'footfall'], ['footfall', 'astro']];
         const line = (e, cls, i) => `<line class="${cls}" x1="${P[e[0]][0]}" y1="${P[e[0]][1]}" x2="${P[e[1]][0]}" y2="${P[e[1]][1]}" data-a="${e[0]}" data-b="${e[1]}" style="animation-delay: ${(-i * 0.7).toFixed(1)}s"></line>`;
         return `<svg class="net" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${E.map((e, i) => line(e, e[0] === 'terra' ? 'spoke' : 'ring', i)).join('')}</svg><div class="fleet" aria-hidden="true"></div>`;
       })()}
@@ -1306,6 +1307,7 @@
       ${world('macragge', 'rulesInfo', 15, 61, 60, 'Macragge', 'Rules data', RULES_ASOF, false)}
       ${world('prospero', 'gloss', 47, 79, 52, 'Prospero', 'Rules glossary', '', false)}
       ${world('webway', 'webway', 84, 80, 36, 'The Webway', 'Link a device', '', !STANDALONE)}
+      ${world('footfall', 'footfall', 14, 41, 44, 'Footfall', 'List builder', '', STANDALONE ? false : 'In the app', (() => { const it = POOL.find((x) => x.name === 'footfall-station'); return it ? it.src : ''; })())}
     </main>
     ${B ? `<div class="wrap"><button class="btn block" data-act="endBattle" style="border-color: var(--accent-text); color: var(--accent-text)">${esc(a.end.toUpperCase())} · ROUND ${roman(B.round)}, ${B.vp.me}–${B.vp.foe}</button></div>` : ''}
     <footer class="wrap stack" style="gap: 6px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); align-items: center">
@@ -1573,7 +1575,7 @@
     if (o === 'cog') {
       const items = (UI.cog || []).map((x) => `<div class="cog-q">${esc(x.q)}</div><div class="cog-a ${x.err ? 'err' : ''}">${x.a ? cogFmt(x.a) : '<span class="muted">Consulting the archives…</span>'}</div>`).join('');
       const B = S.battle && !S.battle.ended;
-      return sheet('The Cogitator', `${items || `<p class="small muted" style="margin: 0">Ask about the battle in front of you. It knows ${B ? 'the round, phase, CP, both armies\' units and' : 'your army and'} every stratagem and datasheet in the app. For example: <i>"Their Wraiths are about to charge my Crusaders. What helps?"</i></p>`}
+      return sheet('The Cogitator', `${items || (S.screen === 'footfall' ? `<p class="small muted" style="margin: 0">Ask about your list: what an enhancement or detachment does, which wargear suits a unit, why something is not legal, or what to add with the points left.</p>` : `<p class="small muted" style="margin: 0">Ask about the battle in front of you. It knows ${B ? 'the round, phase, CP, both armies\' units and' : 'your army and'} every stratagem and datasheet in the app. For example: <i>"Their Wraiths are about to charge my Crusaders. What helps?"</i></p>`)}
         <label class="field"><span class="eyebrow">Your question</span><textarea id="cog-q" rows="3" placeholder="Their Wraiths are charging my Crusaders. What stratagem helps?"></textarea></label>
         <p class="small muted" style="margin: 0">${UI.cogLeft === null || UI.cogLeft === undefined ? 'No daily limit on your account.' : UI.cogLeft + ' questions left in the last 24 hours.'}</p>`,
         `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="cogAsk" ${UI.cogBusy ? 'disabled' : ''}>${UI.cogBusy ? 'THINKING…' : 'ASK'}</button></div>`);
@@ -2231,6 +2233,7 @@
   // ---------- sheets (battle) ----------
   function renderSheet() {
     const sh = UI.sheet; if (!sh) return '';
+    if (sh.type && sh.type.indexOf('ff') === 0) return ffSheet(sh);
     const B = S.battle;
     if (sh.type === 'strat') {
       const s = allMyStrats().find((x) => x.name === sh.name && x.det === sh.det);
@@ -2398,6 +2401,7 @@
     if (S.screen === 'home') { root.innerHTML = renderHome(); layoutNet(); if (!GL.t) GL.t = setTimeout(glimpseTick, 4000); }
     else if (S.screen === 'battle' && S.battle) root.innerHTML = renderBattle();
     else if (S.screen === 'results' && S.battle) root.innerHTML = renderResults();
+    else if (S.screen === 'footfall') root.innerHTML = renderFootfall();
     else root.innerHTML = renderMuster();
     const gl = document.getElementById('glimpse'); if (gl) gl.hidden = S.screen !== 'home';
     const vd = document.getElementById('void'); if (vd && S.army === 'wolves' && !vd.querySelector('.wolf-snow')) vd.insertAdjacentHTML('beforeend', '<div class="wolf-snow"></div>');
@@ -2692,6 +2696,9 @@
     save(); render();
     if (r === 'top') window.scrollTo(0, 0);
   });
+  document.addEventListener('input', (ev) => {
+    if (ev.target && ev.target.id === 'ff-q') { UI.ffQ = ev.target.value; const pos = ev.target.selectionStart; render(); const el = document.getElementById('ff-q'); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) { /* ignore */ } } }
+  });
   document.addEventListener('change', (ev) => {
     const el = ev.target;
     if (el.dataset && el.dataset.math) { UI.math[el.dataset.math] = el.value; render(); }
@@ -2864,7 +2871,7 @@
     const tendril = pics.find((x) => x.glimpse === 'reach');
     const r = sol.getBoundingClientRect(); const layer = glimpseLayer();
     Object.assign(layer.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-    const P = { ulthwe: [49, 11], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], terra: [50, 45] };
+    const P = { ulthwe: [49, 11], solemnace: [80, 21], mars: [86, 50], astro: [18, 22], macragge: [15, 61], prospero: [47, 79], webway: [84, 80], terra: [50, 45], footfall: [14, 41] };
     if (tendril && Date.now() - GL.lastTendril > 50000 && Math.random() < 0.35) { GL.lastTendril = Date.now(); return reach(tendril, r, layer, P); }
     const pool = pics.filter((x) => x !== tendril && x.id !== GL.last); const it = pool[Math.floor(Math.random() * pool.length)]; if (!it) return; GL.last = it.id;
     // somewhere empty: well clear of every world
@@ -2906,8 +2913,377 @@
     a.onfinish = () => img.remove();
   }
 
+  // ---------- Footfall: the list builder (rules from the BSData 11th edition data, read by footfall.js) ----------
+  const FFX = { idx: null, data: {}, loading: {}, err: '' };
+  const ffState = () => { S.ff = S.ff || { lists: {}, cur: null, owned: {}, ownedOnly: false }; return S.ff; };
+  const ffCur = () => { const st = ffState(); return st.cur ? st.lists[st.cur] || null : null; };
+  const ffShort = (n) => String(n || '').split(' - ').pop();
+  const ffGroup = (n) => (/^Imperium/.test(n) ? 'Imperium' : /^Chaos/.test(n) ? 'Chaos' : 'Xenos');
+  const CONFIG_CAT = '4ac9-fd30-1e3d-b249';
+  async function ffIndex() {
+    if (FFX.idx) return FFX.idx;
+    const r = await fetch('footfall/index.json?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error('The list-builder data could not load.');
+    FFX.idx = await r.json(); return FFX.idx;
+  }
+  function ffData(file) {
+    if (FFX.data[file]) return Promise.resolve(FFX.data[file]);
+    if (FFX.loading[file]) return FFX.loading[file];
+    FFX.loading[file] = (async () => {
+      const idx = await ffIndex(); const v = (idx.source && idx.source.commit) || '1';
+      const all = [...idx.factions, ...idx.libraries]; const fac = idx.factions.find((x) => x.file === file);
+      if (!fac) throw new Error('That army is not in the data.');
+      const order = []; const seen = new Set();
+      const go = (f) => { if (seen.has(f)) return; seen.add(f); order.push(f); const rec = all.find((x) => x.file === f); (rec ? rec.libs : []).forEach(go); };
+      go(file);
+      const get = (f) => fetch('footfall/' + f + '?v=' + v).then((r) => { if (!r.ok) throw new Error('Missing ' + f); return r.json(); });
+      const [sys, ...cats] = await Promise.all([get(idx.system), ...order.map(get)]);
+      const Dd = FF.Data(sys, cats, fac.id); Dd.file = file; Dd.facName = fac.name;
+      FFX.data[file] = Dd; delete FFX.loading[file]; return Dd;
+    })().catch((e) => { delete FFX.loading[file]; FFX.err = e.message; throw e; });
+    return FFX.loading[file];
+  }
+  // the selections that are set-up choices rather than units
+  const ffIsConfig = (Dd, s) => { const r = FF.R(Dd, s.k); return !r || r.cats.includes(CONFIG_CAT) || /^(battle size|detachment|force disposition|show\/hide options)$/i.test(r.name); };
+  const ffConfigSel = (Dd, L, re) => L.roster.sels.find((s) => re.test(FF.R(Dd, s.k).name));
+  function ffAfter(Dd, L) {
+    FF.settle(Dd, L.roster);
+    const ev = FF.evaluate(Dd, L.roster);
+    L.pts = ev.pts; L.limit = ev.limit; L.ok = !ev.errors.length; L.updated = Date.now();
+    return ev;
+  }
+  const ffCatName = (Dd, id) => (Dd.cats[id] || {}).name || 'Other';
+  const CAT_ORDER = ['Epic Hero', 'Character', 'Battleline', 'Infantry', 'Mounted', 'Swarm', 'Beast', 'Monster', 'Vehicle', 'Dedicated Transport', 'Fortification'];
+  const ffCatRank = (n) => { const i = CAT_ORDER.indexOf(n); return i < 0 ? 50 : i; };
+  // a selection's units and points in one line
+  function ffSummary(Dd, ev, s) {
+    const n = ev.node(s.u); if (!n) return '';
+    const models = n.kids.filter((k) => k.r.type === 'model').reduce((a, k) => a + k.sel.n, 0);
+    const bits = [];
+    if (models) bits.push(models + (models === 1 ? ' model' : ' models'));
+    else { const gear = n.kids.filter((k) => k.r.type !== 'model' && !/^warlord$/i.test(k.eff.name) && !(k.sel.gids || []).some((g) => /enhancement/i.test((FF.R(Dd, g) || {}).name || ''))).map((k) => k.eff.name); if (gear.length) bits.push(gear.slice(0, 3).join(', ')); }
+    const flat = []; const walk = (l) => l.forEach((k) => { flat.push(k); walk(k.kids); }); walk(n.kids);
+    if (flat.some((k) => /^warlord$/i.test(k.eff.name))) bits.push('Warlord');
+    flat.filter((k) => (k.sel.gids || []).some((g) => /enhancement/i.test((FF.R(Dd, g) || {}).name || ''))).forEach((k) => bits.push(k.eff.name));
+    for (const id in s.as || {}) (s.as[id] || []).forEach((u) => { const t = ev.node(u); if (t) bits.push(((FF.R(Dd, s.k).assoc.find((a) => a.id === id) || {}).name === 'Supporting' ? 'supports ' : 'leads ') + t.eff.name); });
+    return bits.join(' · ');
+  }
+  const ffOwnedKey = (Dd, key) => (FF.R(Dd, key) || {}).id;
+  const ffOwned = (Dd) => { const st = ffState(); st.owned[Dd.file] = st.owned[Dd.file] || {}; return st.owned[Dd.file]; };
+  const ffInList = (ev, id) => ev.S.force.kids.filter((k) => k.r.id === id).length;
+  // what to add when the list is short: the biggest units that fit the points left
+  function ffSuggest(Dd, ev) {
+    const spare = ev.limit - ev.pts; if (!ev.limit || spare < 30) return [];
+    const st = ffState(); const own = ffOwned(Dd);
+    // big centrepieces and allies are a choice to make, not a gap-filler
+    const pool = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model') && o.pts > 0 && o.pts <= spare && o.pts <= ev.limit * 0.3 && (o.max < 0 || o.count < o.max)
+      && !o.cats.some((c) => /^allies|titanic|lord of war|fortification|epic hero/i.test(ffCatName(Dd, c))) && (!st.ownedOnly || (own[ffOwnedKey(Dd, o.key)] || 0) > ffInList(ev, ffOwnedKey(Dd, o.key))))
+      .filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i);
+    // the closest fit first, then the most-used kinds of unit
+    const inList = new Set(ev.S.force.kids.map((k) => k.r.id));
+    return pool.sort((a, b) => (spare - a.pts) - (spare - b.pts) - (inList.has(FF.R(Dd, a.key).id) ? 40 : 0) + (inList.has(FF.R(Dd, b.key).id) ? 40 : 0)).slice(0, 3);
+  }
+  function ffSeal(Dd, ev) {
+    const ok = !ev.errors.length; const pct = ev.limit ? Math.min(1, ev.pts / ev.limit) : 0; const C = 2 * Math.PI * 52;
+    const near = ev.limit && ev.limit - ev.pts < 30 && ev.pts <= ev.limit;
+    return `<button class="ff-seal ${ok ? 'ok' : 'bad'} ${ok && near ? 'full' : ''}" data-act="ffSeal" aria-label="${ok ? 'List is legal. Take it to ' + esc(homeWorld().name) : ev.errors.length + ' problems to fix'}">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="trk" cx="60" cy="60" r="52"></circle><circle class="arc" cx="60" cy="60" r="52" stroke-dasharray="${(C * pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"></circle><circle class="wax" cx="60" cy="60" r="${(14 + 30 * pct).toFixed(1)}"></circle></svg>
+      <span class="ff-seal-in"><b>${ev.pts.toLocaleString()}</b><small>of ${(ev.limit || 0).toLocaleString()}</small></span>
+      <span class="ff-seal-cap">${ok ? (near ? 'Approved · To ' + esc(homeWorld().name) : 'Legal · To ' + esc(homeWorld().name)) : ev.errors.length + (ev.errors.length === 1 ? ' problem' : ' problems')}</span></button>`;
+  }
+  function renderFootfall() {
+    const st = ffState(); const L = ffCur();
+    const head = (title, eyebrow, back) => `<header class="band wrap" style="padding-block: 10px 8px; text-align: center">
+      <button class="icon-btn" data-act="${back}" aria-label="Back" style="position: absolute; left: 4px; top: 8px">${ICON.back}</button>
+      <div class="eyebrow">${esc(eyebrow)}</div><h1 class="h" style="font-size: calc(${title.length > 16 ? 28 : 36}px * var(--head-size)); padding-inline: 40px">${esc(title)}</h1></header>`;
+    if (!L || UI.ffView === 'lists') {
+      const lists = Object.values(st.lists).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+      return `${head('Footfall', 'THE VOID PORT · LIST BUILDER', 'home')}
+      <main class="main wrap stack">
+        <p class="small muted" style="margin: 0">Build legal lists for any army from the current points and rules. Everything is checked as you go.</p>
+        ${lists.length ? lists.map((x) => `<button class="strat" data-act="ffOpenList" data-k="${esc(x.id)}"><span style="min-width: 0"><span class="nm">${esc(x.name)}</span><br><span class="ds">${esc(ffShort(x.facName))} · ${(x.pts || 0).toLocaleString()} of ${(x.limit || 0).toLocaleString()} pts · ${x.ok ? 'legal' : 'not legal yet'}</span></span>${ICON.next}</button>`).join('') : '<div class="panel small muted" style="padding: 12px">No lists yet.</div>'}
+        <button class="btn solid block" data-act="ffNew">NEW LIST</button>
+        ${FFX.idx && FFX.idx.source ? `<p class="small muted" style="margin: 0">Data from the BSData community project, ${esc(FFX.idx.source.date)}. Unofficial.</p>` : ''}
+      </main>`;
+    }
+    const Dd = FFX.data[L.file];
+    if (!Dd) { ffData(L.file).then(() => render()).catch(() => render()); return `${head(L.name, ffShort(L.facName).toUpperCase(), 'ffLists')}<main class="main wrap"><div class="panel small muted" style="padding: 12px">${FFX.err ? esc(FFX.err) : 'Loading the ' + esc(ffShort(L.facName)) + ' rules…'}</div></main>`; }
+    const ev = FF.evaluate(Dd, L.roster);
+    const units = L.roster.sels.filter((s) => !ffIsConfig(Dd, s));
+    const det = ffConfigSel(Dd, L, /^detachment$/i), fd = ffConfigSel(Dd, L, /^force disposition$/i), bs = ffConfigSel(Dd, L, /^battle size$/i);
+    const dets = det ? (ev.node(det.u) || { kids: [] }).kids.map((k) => k.eff.name) : [];
+    const fdOpts = fd ? FF.options(Dd, ev, fd.u).filter((o) => !o.group && !o.hidden) : [];
+    const fdOn = fd ? (ev.node(fd.u) || { kids: [] }).kids.map((k) => k.r.key) : [];
+    const sizes = bs ? FF.options(Dd, ev, bs.u).filter((o) => !o.group && !o.hidden && /point limit/i.test(o.name)) : [];
+    const sizeOn = bs ? (ev.node(bs.u) || { kids: [] }).kids.map((k) => k.r.key) : [];
+    const sugg = ffSuggest(Dd, ev);
+    // units grouped by their main category
+    const byCat = {};
+    units.forEach((s) => { const n = ev.node(s.u); const c = n ? ffCatName(Dd, n.r.primaryCat) : 'Other'; (byCat[c] = byCat[c] || []).push(s); });
+    const cats = Object.keys(byCat).sort((a, b) => ffCatRank(a) - ffCatRank(b));
+    const errs = ev.errors;
+    return `${head(L.name, ffShort(L.facName).toUpperCase(), 'ffLists')}
+    <main class="main wrap stack">
+      <section class="ff-top">${ffSeal(Dd, ev)}
+        <div class="stack" style="gap: 6px; min-width: 0; flex: 1">
+          <div class="row" style="gap: 6px; flex-wrap: wrap">${sizes.map((o) => `<button class="chip ${sizeOn.includes(o.key) ? 'on' : ''}" data-act="ffSize" data-k="${esc(o.key)}">${esc(o.name.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)/, ''))}</button>`).join('')}</div>
+          <button class="ff-line" data-act="ffDetOpen"><span class="eyebrow">Detachments · ${ev.dp}${ev.dpMax !== null ? ' of ' + ev.dpMax : ''} pts</span><span>${dets.length ? esc(dets.join(', ')) : 'Choose a detachment'}</span></button>
+          ${fdOpts.length > 1 || (fdOpts.length && !fdOn.length) ? `<div class="stack" style="gap: 4px"><span class="eyebrow">Force disposition</span><div class="row" style="gap: 6px; flex-wrap: wrap">${fdOpts.map((o) => `<button class="chip ${fdOn.includes(o.key) ? 'on' : ''}" data-act="ffFD" data-k="${esc(o.key)}">${esc(o.name)}</button>`).join('')}</div></div>` : fdOn.length ? `<span class="small muted">Force disposition: ${esc((ev.node(fd.u).kids[0] || { eff: { name: '' } }).eff.name)}</span>` : ''}
+          ${ev.enhMax !== null ? `<span class="small muted">Enhancements ${ev.enh} of ${ev.enhMax}</span>` : ''}
+        </div>
+      </section>
+      ${errs.length ? `<section class="panel ff-errs stack" style="gap: 4px; padding: 10px 12px"><span class="eyebrow" style="color: var(--accent-text)">To fix</span>${errs.slice(0, 4).map((e) => `<span class="small">${esc(e.msg)}</span>`).join('')}${errs.length > 4 ? `<span class="small muted">and ${errs.length - 4} more</span>` : ''}
+        <div class="row" style="gap: 8px; margin-top: 4px">${errs.length > 4 ? '<button class="btn small" data-act="ffErrs">SEE ALL</button>' : ''}<button class="btn small" data-act="ffCogWhy">ASK THE COGITATOR WHY</button></div></section>` : ''}
+      ${sugg.length ? `<section class="stack" style="gap: 6px"><span class="eyebrow">${(ev.limit - ev.pts).toLocaleString()} pts spare · could fit</span><div class="row" style="gap: 6px; flex-wrap: wrap">${sugg.map((o) => `<button class="chip" data-act="ffAddKey" data-k="${esc(o.key)}">+ ${esc(o.name)} · ${o.pts}</button>`).join('')}</div></section>` : ''}
+      ${cats.map((c) => `<section class="stack" style="gap: 6px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((s) => { const bad = errs.some((e) => e.u === s.u); return `<button class="strat ff-unit ${bad ? 'bad' : ''}" data-act="ffUnit" data-k="${esc(s.u)}"><span style="min-width: 0"><span class="nm">${esc(ev.name(s.u))}</span><br><span class="ds">${esc(ffSummary(Dd, ev, s))}</span></span><b class="ff-pts">${ev.ptsOf(s.u)}</b></button>`; }).join('')}</section>`).join('')}
+      <button class="btn solid block" data-act="ffAddOpen">ADD A UNIT</button>
+      <div class="row" style="justify-content: center; gap: 14px; flex-wrap: wrap">
+        <button class="dim ff-link" data-act="ffCog">Ask the Cogitator</button><button class="dim ff-link" data-act="ffOwnOpen">My collection</button><button class="dim ff-link" data-act="ffCopy">Copy as text</button><button class="dim ff-link" data-act="ffMore">Rename or delete</button>
+      </div>
+    </main>`;
+  }
+  // the options under a selection, grouped as the data groups them
+  function ffOpts(Dd, ev, u, depth) {
+    const all = FF.options(Dd, ev, u);
+    const imm = (o) => (o.gids.length >= 2 ? o.gids[o.gids.length - 2] : null);
+    const kidsOf = (g) => all.filter((o) => imm(o) === g);
+    const P = ev.node(u);
+    const block = (g) => kidsOf(g).sort((a, b) => (/^warlord$/i.test(b.name) ? 1 : 0) - (/^warlord$/i.test(a.name) ? 1 : 0)).map((o) => {
+      if (o.group) {
+        if (o.hidden) return '';
+        const inner = block(o.key); if (!inner.trim()) return '';
+        const hint = o.max === 1 ? 'choose one' : o.min > 0 && o.max > 0 ? `${o.min} to ${o.max}` : o.max > 0 ? `up to ${o.max}` : '';
+        const chosen = all.filter((x) => !x.group && x.gids.includes(o.key)).reduce((a, x) => a + x.count, 0);
+        return `<details class="ff-grp" ${depth > 0 || chosen || o.min > 0 ? 'open' : ''}><summary><span class="eyebrow">${esc(o.name)}</span>${hint ? `<span class="small muted"> ${esc(hint)}</span>` : ''}</summary><div class="stack" style="gap: 4px">${inner}</div></details>`;
+      }
+      const sel = P.kids.filter((k) => k.r.key === o.key);
+      if (o.hidden && !sel.length) return '';
+      const grp = imm(o) ? all.find((x) => x.key === imm(o)) : null;
+      const pts = o.pts ? ` <span class="small muted">${o.pts > 0 ? '+' : ''}${o.pts} pts</span>` : '';
+      const nested = sel.map((k) => { const inner = ffOpts(Dd, ev, k.u, depth + 1); return inner.trim() ? `<div class="ff-nest">${sel.length > 1 ? `<span class="small muted">${esc(k.eff.name)}</span>` : ''}${inner}</div>` : ''; }).join('');
+      if (o.type === 'model' || (o.max !== 1 && !(grp && grp.max === 1))) {
+        const n = sel.reduce((a, k) => a + k.sel.n, 0);
+        return `<div class="ff-row ${o.hidden ? 'bad' : ''}"><span class="ff-nm">${esc(o.name)}${pts}</span><span class="ff-step"><button class="btn small" data-act="ffN" data-k="${esc(u)}|${esc(o.key)}|-1" ${n <= 0 ? 'disabled' : ''} aria-label="One fewer ${esc(o.name)}">−</button><b>${n}</b><button class="btn small" data-act="ffN" data-k="${esc(u)}|${esc(o.key)}|1" ${(o.max >= 0 && o.count >= o.max) || o.hidden ? 'disabled' : ''} aria-label="One more ${esc(o.name)}">+</button></span></div>${nested}`;
+      }
+      const on = sel.length > 0;
+      // always-carried wargear: shown, not toggled
+      if (o.min >= 1 && o.max === 1 && !(grp && grp.max === 1) && on && !o.hidden) return `<div class="ff-row ff-fixed"><span class="ff-nm"><span class="ff-box" aria-hidden="true">✓</span> ${esc(o.name)}${pts}</span></div>${nested}`;
+      return `<button class="ff-pick ${on ? 'on' : ''} ${o.hidden ? 'bad' : ''}" data-act="ffPick" data-k="${esc(u)}|${esc(o.key)}|${grp && grp.max === 1 ? esc(grp.key) : ''}" aria-pressed="${on}"><span class="ff-box" aria-hidden="true">${on ? '✓' : ''}</span><span class="ff-nm">${esc(o.name)}${pts}</span></button>${on ? nested : ''}`;
+    }).join('');
+    return block(null);
+  }
+  function ffProfiles(Dd, key) {
+    const ps = FF.profiles(Dd, key); if (!ps.length) return '';
+    const unitP = ps.filter((p) => p.type === 'Unit'), rng = ps.filter((p) => /Ranged/.test(p.type)), mel = ps.filter((p) => /Melee/.test(p.type)), ab = ps.filter((p) => p.type === 'Abilities' || p.type === 'Rule');
+    const tbl = (rows) => { if (!rows.length) return ''; const cols = Object.keys(rows[0].chars).filter((c) => c !== 'Keywords'); return `<div class="ff-tbl"><table><tr><th></th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${rows.map((r) => `<tr><td>${esc(r.name)}${r.chars.Keywords && r.chars.Keywords !== '-' ? `<br><small class="muted">${esc(r.chars.Keywords)}</small>` : ''}</td>${cols.map((c) => `<td>${esc(r.chars[c])}</td>`).join('')}</tr>`).join('')}</table></div>`; };
+    return `<details class="ff-grp"><summary><span class="eyebrow">Datasheet</span></summary>${tbl(unitP)}${tbl(rng)}${tbl(mel)}${ab.map((a) => `<p class="small" style="margin: 4px 0"><b>${esc(a.name)}.</b> ${esc(a.chars.Description || '')}</p>`).join('')}</details>`;
+  }
+  function ffSheet(sh) {
+    const st = ffState(); const L = ffCur(); const Dd = L ? FFX.data[L.file] : null;
+    if (sh.type === 'ffNew') {
+      const idx = FFX.idx;
+      if (!idx) { ffIndex().then(() => render()).catch((e) => { FFX.err = e.message; render(); }); return sheet('New list', `<p class="small muted" style="margin: 0">${FFX.err ? esc(FFX.err) : 'Loading the armies…'}</p>`, ''); }
+      const groups = ['Imperium', 'Chaos', 'Xenos'];
+      const size = UI.ffSize || 'Strike Force';
+      return sheet('New list', `<label class="field"><span class="eyebrow">Name</span><input type="text" id="ff-name" value="${esc(UI.ffName || '')}" placeholder="My list" autocomplete="off"></label>
+        <div class="stack" style="gap: 4px"><span class="eyebrow">Battle size</span><div class="row" style="gap: 6px; flex-wrap: wrap">${['Incursion', 'Strike Force', 'Onslaught'].map((x) => `<button class="chip ${size === x ? 'on' : ''}" data-act="ffNewSize" data-k="${x}">${x}</button>`).join('')}</div></div>
+        ${groups.map((g) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${g}</span>${idx.factions.filter((f) => ffGroup(f.name) === g).sort((a, b) => ffShort(a.name).localeCompare(ffShort(b.name))).map((f) => `<button class="strat" data-act="ffCreate" data-k="${esc(f.file)}" style="min-height: 44px"><span class="nm">${esc(ffShort(f.name))}</span>${ICON.next}</button>`).join('')}</div>`).join('')}`, '');
+    }
+    if (!L || !Dd) return '';
+    const ev = FF.evaluate(Dd, L.roster);
+    if (sh.type === 'ffUnit') {
+      const n = ev.node(sh.u); if (!n) return '';
+      const errs = ev.errors.filter((e) => e.u === sh.u || (ev.node(e.u) && (() => { for (let p = ev.node(e.u); p; p = p.parent) if (p.u === sh.u) return true; return false; })()));
+      const partners = FF.partners(Dd, ev, sh.u);
+      const attach = partners.map((p) => { const cur = ((n.sel.as || {})[p.a.id] || [])[0]; return `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(p.a.name === 'Supporting' ? 'Supports' : p.a.name === 'Leading' ? 'Leads' : p.a.name)}</span><div class="row" style="gap: 6px; flex-wrap: wrap"><button class="chip ${!cur ? 'on' : ''}" data-act="ffAttach" data-k="${esc(sh.u)}|${esc(p.a.id)}|">None</button>${p.can.map((t) => `<button class="chip ${cur === t.u ? 'on' : ''}" data-act="ffAttach" data-k="${esc(sh.u)}|${esc(p.a.id)}|${esc(t.u)}">${esc(t.eff.name)}</button>`).join('')}</div>${!p.can.length ? '<span class="small muted">No unit in the list it can join yet.</span>' : ''}</div>`; }).join('');
+      return sheet(n.eff.name, `<div class="row" style="justify-content: space-between"><span class="small muted">${esc(ffSummary(Dd, ev, n.sel))}</span><b class="ff-pts">${ev.ptsOf(sh.u)} pts</b></div>
+        ${errs.length ? `<div class="panel ff-errs stack" style="gap: 3px; padding: 8px 10px">${errs.map((e) => `<span class="small">${esc(e.msg)}</span>`).join('')}</div>` : ''}
+        ${attach}
+        <div class="stack" style="gap: 6px">${ffOpts(Dd, ev, sh.u, 0)}</div>
+        ${ffProfiles(Dd, n.r.key)}
+        <div class="row" style="gap: 8px; flex-wrap: wrap"><button class="btn small" data-act="ffCogUnit" data-k="${esc(sh.u)}">ASK THE COGITATOR</button><button class="btn small" data-act="ffDup" data-k="${esc(sh.u)}">DUPLICATE</button><button class="btn small" data-act="ffDel" data-k="${esc(sh.u)}" style="color: var(--accent-text)">REMOVE</button></div>`,
+        `<button class="btn solid block" data-act="closeAll">DONE</button>`);
+    }
+    if (sh.type === 'ffAdd') {
+      const own = ffOwned(Dd); const q = (UI.ffQ || '').toLowerCase();
+      const opts = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model') && (!q || o.name.toLowerCase().includes(q)))
+        .filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i);
+      const byCat = {}; opts.forEach((o) => { const c = ffCatName(Dd, o.primaryCat); (byCat[c] = byCat[c] || []).push(o); });
+      const cats = Object.keys(byCat).sort((a, b) => ffCatRank(a) - ffCatRank(b) || a.localeCompare(b));
+      return sheet('Add a unit', `<label class="field"><span class="eyebrow">Search</span><input type="search" id="ff-q" value="${esc(UI.ffQ || '')}" placeholder="Unit name" autocomplete="off"></label>
+        <button class="ff-pick ${st.ownedOnly ? 'on' : ''}" data-act="ffOwnedOnly" aria-pressed="${st.ownedOnly}"><span class="ff-box" aria-hidden="true">${st.ownedOnly ? '✓' : ''}</span><span class="ff-nm">Only units I own <span class="small muted">(set them in My collection)</span></span></button>
+        ${cats.map((c) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((o) => { const id = ffOwnedKey(Dd, o.key); const have = ffInList(ev, id); const owned = own[id] || 0; const full = o.max >= 0 && o.count >= o.max; const noOwn = st.ownedOnly && owned <= have; return `<button class="strat" data-act="ffAddKey" data-k="${esc(o.key)}" ${full || noOwn ? 'disabled' : ''} style="min-height: 46px"><span style="min-width: 0"><span class="nm">${esc(o.name)}</span>${have || owned || o.max >= 0 ? `<br><span class="ds">${have ? have + ' in list' : ''}${o.max >= 0 ? (have ? ' · ' : '') + 'max ' + o.max : ''}${owned ? ' · ' + owned + ' owned' : ''}</span>` : ''}</span><b class="ff-pts">${o.pts}</b></button>`; }).join('')}</div>`).join('') || '<p class="small muted">Nothing matches.</p>'}`, '');
+    }
+    if (sh.type === 'ffDet') {
+      const det = ffConfigSel(Dd, L, /^detachment$/i); if (!det) return '';
+      const opts = FF.options(Dd, ev, det.u).filter((o) => !o.group && !o.hidden);
+      const left = ev.dpMax === null ? 99 : ev.dpMax - ev.dp;
+      return sheet('Detachments', `<p class="small muted" style="margin: 0">${ev.dpMax !== null ? `${ev.dp} of ${ev.dpMax} detachment points used. ` : ''}Each detachment costs the points shown.</p>
+        ${opts.map((o) => { const on = o.count > 0; return `<button class="ff-pick ${on ? 'on' : ''}" data-act="ffDet" data-k="${esc(o.key)}" ${!on && o.dp > left ? 'disabled' : ''} aria-pressed="${on}"><span class="ff-box" aria-hidden="true">${on ? '✓' : ''}</span><span class="ff-nm">${esc(o.name)} <span class="small muted">${o.dp} DP</span></span></button>`; }).join('')}
+        ${(ev.node(det.u) || { kids: [] }).kids.map((k) => ffProfiles(Dd, k.r.key).replace('Datasheet', esc(k.eff.name) + ' rules')).join('')}`, `<button class="btn solid block" data-act="closeAll">DONE</button>`);
+    }
+    if (sh.type === 'ffErrs') return sheet('To fix', `${ev.errors.map((e) => `<p class="small" style="margin: 0">${esc(e.msg)}</p>`).join('') || '<p class="small">Nothing. The list is legal.</p>'}`, `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="ffCogWhy">ASK THE COGITATOR</button></div>`);
+    if (sh.type === 'ffOwn') {
+      const own = ffOwned(Dd);
+      const opts = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model') && !o.cats.some((c) => /^allies/i.test(ffCatName(Dd, c)))).filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i).sort((a, b) => a.name.localeCompare(b.name));
+      return sheet('My collection', `<p class="small muted" style="margin: 0">How many of each unit you own for ${esc(ffShort(L.facName))}. Turn on "Only units I own" when adding units to build from your shelf.</p>
+        ${opts.map((o) => { const id = ffOwnedKey(Dd, o.key); const v = own[id] || 0; return `<div class="ff-row"><span class="ff-nm">${esc(o.name)}</span><span class="ff-step"><button class="btn small" data-act="ffOwnN" data-k="${esc(id)}|-1" ${v <= 0 ? 'disabled' : ''} aria-label="One fewer">−</button><b>${v}</b><button class="btn small" data-act="ffOwnN" data-k="${esc(id)}|1" aria-label="One more">+</button></span></div>`; }).join('')}`, `<button class="btn solid block" data-act="closeAll">DONE</button>`);
+    }
+    if (sh.type === 'ffMore') return sheet('This list', `<label class="field"><span class="eyebrow">Name</span><input type="text" id="ff-rename" value="${esc(L.name)}" autocomplete="off"></label>`, `<div class="grid2"><button class="btn" data-act="ffDelList" style="color: var(--accent-text)">${UI.ffSure ? 'TAP AGAIN TO DELETE' : 'DELETE LIST'}</button><button class="btn solid" data-act="ffRename">SAVE NAME</button></div>`);
+    return '';
+  }
+  // the list as text, in the Warhammer 40,000 app's layout (other apps and this app's own list reader take it)
+  function ffText(Dd, ev, L) {
+    const fac = Dd.facName.split(' - '); const short = fac[fac.length - 1];
+    const astartes = /Adeptus Astartes/.test(Dd.facName);
+    const det = ffConfigSel(Dd, L, /^detachment$/i); const dets = det ? (ev.node(det.u) || { kids: [] }).kids.map((k) => k.eff.name) : [];
+    const fd = ffConfigSel(Dd, L, /^force disposition$/i); const fdn = fd && ev.node(fd.u) && ev.node(fd.u).kids[0] ? ev.node(fd.u).kids[0].eff.name : '';
+    const size = ev.limit >= 3000 ? 'Onslaught' : ev.limit >= 2000 ? 'Strike Force' : 'Incursion';
+    const ALIAS = { 'Agents of the Imperium': 'Imperial Agents' };
+    const out = [`${L.name} (${ev.pts} points)`, '', ...(astartes ? (short === 'Space Marines' ? ['Space Marines'] : ['Space Marines', short]) : [ALIAS[short] || short])];
+    if (dets.length) out.push(`${dets.join(' and ')} (${ev.dp} Detachment Points)`);
+    if (fdn) out.push(fdn);
+    out.push(`${size} (${ev.limit} points)`, '');
+    const isEnh = (k) => (k.sel.gids || []).some((g) => /enhancement/i.test((FF.R(Dd, g) || {}).name || ''));
+    for (const s of L.roster.sels.filter((x) => !ffIsConfig(Dd, x))) {
+      const n = ev.node(s.u); if (!n) continue;
+      out.push(`${n.eff.name} (${ev.ptsOf(s.u)} points)`);
+      const flat = []; const walk = (l) => l.forEach((k) => { flat.push(k); walk(k.kids); }); walk(n.kids);
+      if (flat.some((k) => /^warlord$/i.test(k.eff.name))) out.push('  • Warlord');
+      flat.filter(isEnh).forEach((k) => out.push('  • Enhancement: ' + k.eff.name));
+      const gear = (k, mult, pad) => k.kids.filter((x) => !isEnh(x) && !/^warlord$/i.test(x.eff.name)).forEach((x) => { out.push(`${pad}• ${x.sel.n * mult}x ${x.eff.name}`); gear(x, x.sel.n * mult, pad + '  '); });
+      n.kids.filter((k) => !isEnh(k) && !/^warlord$/i.test(k.eff.name)).forEach((k) => {
+        if (k.r.type === 'model') { out.push(`  • ${k.sel.n}x ${k.eff.name}`); gear(k, k.sel.n, '    '); if (!k.kids.length) out.push(`    • ${k.sel.n}x ${k.eff.name}`); }
+        else { out.push(`  • ${k.sel.n}x ${k.eff.name}`); gear(k, k.sel.n, '    '); }
+      });
+      out.push('');
+    }
+    out.push('Exported with 40k Caddie (Footfall)');
+    return out.join('\n');
+  }
+  // what the Cogitator is given while you build
+  function ffCogContext() {
+    const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return 'LIST BUILDING: no list open.';
+    const ev = FF.evaluate(Dd, L.roster);
+    const cut = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
+    const out = ['LIST BUILDING in Footfall, the app\'s list builder. The person is building an army list before a game, not playing one. Use the BSData rules data below (points, wargear, enhancements, detachment rules, datasheets).'];
+    out.push(`Army: ${ffShort(Dd.facName)}. Points: ${ev.pts} of ${ev.limit}. Detachment points: ${ev.dp}${ev.dpMax !== null ? ' of ' + ev.dpMax : ''}. Enhancements: ${ev.enh}${ev.enhMax !== null ? ' of ' + ev.enhMax : ''}.`);
+    const det = ffConfigSel(Dd, L, /^detachment$/i);
+    (det && ev.node(det.u) ? ev.node(det.u).kids : []).forEach((k) => { out.push(`Detachment: ${k.eff.name}`); FF.profiles(Dd, k.r.key).forEach((p) => out.push(`  ${p.name}: ${cut(Object.values(p.chars).join(' '), 900)}`)); });
+    out.push(ev.errors.length ? 'Problems the builder found (the list is NOT legal until these are fixed):' : 'The builder found no problems: the list is legal.');
+    ev.errors.forEach((e) => out.push('- ' + (e.u && e.u !== 'force' && ev.node(e.u) ? ev.node(e.u).eff.name + ': ' : '') + e.msg));
+    out.push('\nTHE LIST:'); out.push(ffText(Dd, ev, L));
+    // enhancements open to the characters in the list, with what they do
+    const seenE = new Set();
+    for (const s of L.roster.sels.filter((x) => !ffIsConfig(Dd, x))) {
+      for (const o of FF.options(Dd, ev, s.u).filter((o) => !o.group && !o.hidden && o.gids.some((g) => /enhancement/i.test((FF.R(Dd, g) || {}).name || '')))) {
+        if (seenE.has(o.name)) continue; seenE.add(o.name);
+        if (seenE.size === 1) out.push('\nENHANCEMENTS available in the chosen detachments:');
+        out.push(`- ${o.name} (${o.pts} pts): ${cut(FF.profiles(Dd, o.key).map((p) => Object.values(p.chars).join(' ')).join(' '), 500)}`);
+      }
+    }
+    out.push('\nDATASHEETS of units in the list:');
+    const seenU = new Set();
+    for (const s of L.roster.sels.filter((x) => !ffIsConfig(Dd, x))) {
+      const n = ev.node(s.u); if (!n || seenU.has(n.r.id)) continue; seenU.add(n.r.id);
+      const ps = FF.profiles(Dd, n.r.key);
+      out.push(`- ${n.eff.name}: ` + ps.map((p) => p.type === 'Abilities' || p.type === 'Rule' ? `${p.name}: ${cut(p.chars.Description, 300)}` : `${p.name} [${Object.entries(p.chars).map(([k, v]) => k + ' ' + v).join(', ')}]`).join(' | '));
+    }
+    out.push('\nOTHER UNITS that could be added (name, points):');
+    out.push(FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model')).filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i).map((o) => `${o.name} ${o.pts}`).join('; '));
+    return out.join('\n').slice(0, 110000);
+  }
+  function ffMutate(fn) {
+    const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return;
+    fn(Dd, L); ffAfter(Dd, L);
+  }
+  const ffFind = (L, u) => FF.findSel(L.roster, u);
+  const FF_ACT = {
+    footfall() {
+      if (!STANDALONE) { toast('Footfall works in the installed app.'); return 'skip'; }
+      S.screen = 'footfall'; UI.ffView = ffCur() ? null : 'lists'; UI.overlay = null; UI.sheet = null; window.scrollTo(0, 0);
+      ffIndex().then(() => render()).catch(() => {}); return 'top';
+    },
+    ffLists() { UI.ffView = 'lists'; UI.sheet = null; window.scrollTo(0, 0); return 'top'; },
+    ffOpenList(k) { ffState().cur = k; UI.ffView = null; window.scrollTo(0, 0); return 'top'; },
+    ffNew() { UI.sheet = { type: 'ffNew' }; UI.ffName = ''; },
+    ffNewSize(k) { const el = document.getElementById('ff-name'); UI.ffName = el ? el.value : UI.ffName; UI.ffSize = k; },
+    ffCreate(file) {
+      const el = document.getElementById('ff-name'); const name = ((el && el.value) || '').trim();
+      const fac = (FFX.idx.factions.find((f) => f.file === file) || {}).name || file;
+      UI.sheet = null; UI.ffView = null;
+      const id = 'L' + Date.now().toString(36);
+      const st = ffState();
+      st.lists[id] = { id, name: name || ffShort(fac) + ' list', file, facName: fac, roster: null, pts: 0, limit: 0, ok: false, updated: Date.now() };
+      st.cur = id;
+      ffData(file).then((Dd) => { const L = st.lists[id]; L.roster = FF.newRoster(Dd, UI.ffSize || 'Strike Force'); ffAfter(Dd, L); save(); render(); }).catch(() => render());
+      window.scrollTo(0, 0); return 'top';
+    },
+    ffSize(k) { ffMutate((Dd, L) => { const bs = ffConfigSel(Dd, L, /^battle size$/i); if (!bs) return; const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, bs.u).find((x) => x.key === k); if (o) FF.setSize(Dd, L.roster, o.name.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)/, '')); }); },
+    ffDetOpen() { UI.sheet = { type: 'ffDet' }; },
+    ffDet(k) { ffMutate((Dd, L) => { const det = ffConfigSel(Dd, L, /^detachment$/i); if (!det) return; const i = det.kids.findIndex((x) => x.k === k); if (i >= 0) det.kids.splice(i, 1); else { const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, det.u).find((x) => x.key === k); if (o) FF.add(Dd, L.roster, det.u, o.key, o.gids, 1, true); } }); },
+    ffFD(k) { ffMutate((Dd, L) => { const fd = ffConfigSel(Dd, L, /^force disposition$/i); if (!fd) return; const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, fd.u).find((x) => x.key === k); fd.kids = []; if (o) FF.add(Dd, L.roster, fd.u, o.key, o.gids, 1, true); }); },
+    ffSeal() {
+      const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return;
+      const ev = FF.evaluate(Dd, L.roster);
+      if (ev.errors.length) { UI.sheet = { type: 'ffErrs' }; return; }
+      // to the home world: the list becomes your army for the next battle
+      let parsed; try { parsed = parseList(ffText(Dd, ev, L)); } catch (e) { toast('The list could not be carried over.'); return; }
+      const short = ffShort(Dd.facName);
+      const key = ({ 'Black Templars': 'templars', ...MAINABLE })[short];
+      if (key && myArmies().includes(key)) { S.army = key; S.lists[key] = parsed; }
+      else { S.army = 'other'; S.facKey = null; S.lists.other = parsed; rememberFac(parsed); }
+      S.screen = 'muster'; UI.sheet = null; toast(L.name + ' is ready on ' + homeWorld().name); window.scrollTo(0, 0); return 'top';
+    },
+    ffUnit(u) { UI.sheet = { type: 'ffUnit', u }; },
+    ffAddOpen() { UI.sheet = { type: 'ffAdd' }; UI.ffQ = ''; },
+    ffAddKey(k) {
+      let made = null;
+      ffMutate((Dd, L) => { const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, null).find((x) => x.key === k); if (o) made = FF.add(Dd, L.roster, null, o.key, o.gids, 1); });
+      if (made) { UI.sheet = { type: 'ffUnit', u: made.u }; }
+    },
+    ffN(k) {
+      const [pu, key, d] = k.split('|');
+      ffMutate((Dd, L) => {
+        const P = ffFind(L, pu); if (!P) return;
+        const have = P.s.kids.find((x) => x.k === key);
+        if (+d > 0) { if (have) have.n += 1; else { const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, pu).find((x) => x.key === key); if (o) FF.add(Dd, L.roster, pu, o.key, o.gids, 1); } }
+        else if (have) FF.setN(L.roster, have.u, have.n - 1);
+      });
+    },
+    ffPick(k) {
+      const [pu, key, gk] = k.split('|');
+      ffMutate((Dd, L) => {
+        const P = ffFind(L, pu); if (!P) return;
+        const have = P.s.kids.find((x) => x.k === key);
+        if (have) { if (!gk) FF.remove(L.roster, have.u); return; }
+        if (gk) P.s.kids.filter((x) => (x.gids || []).includes(gk)).forEach((x) => FF.remove(L.roster, x.u));
+        const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, pu).find((x) => x.key === key); if (o) FF.add(Dd, L.roster, pu, o.key, o.gids, 1);
+      });
+    },
+    ffAttach(k) { const [u, a, t] = k.split('|'); ffMutate((Dd, L) => FF.attach(L.roster, u, a, t || null)); },
+    ffDup(u) { let made = null; ffMutate((Dd, L) => { const f = ffFind(L, u); if (!f) return; const copy = JSON.parse(JSON.stringify(f.s)); const re = (s) => { s.u = 's' + Math.random().toString(36).slice(2, 10); delete s.as; (s.kids || []).forEach(re); }; re(copy); L.roster.sels.push(copy); made = copy; }); if (made) UI.sheet = { type: 'ffUnit', u: made.u }; },
+    ffDel(u) { ffMutate((Dd, L) => FF.remove(L.roster, u)); UI.sheet = null; },
+    ffErrs() { UI.sheet = { type: 'ffErrs' }; },
+    ffOwnOpen() { UI.sheet = { type: 'ffOwn' }; },
+    ffOwnN(k) { const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return; const [id, d] = k.split('|'); const own = ffOwned(Dd); own[id] = Math.max(0, (own[id] || 0) + +d); if (!own[id]) delete own[id]; },
+    ffOwnedOnly() { const st = ffState(); st.ownedOnly = !st.ownedOnly; },
+    ffCopy() { const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return 'skip'; const t = ffText(Dd, FF.evaluate(Dd, L.roster), L); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('List copied'), () => toast('Could not copy on this device')); return 'skip'; },
+    ffMore() { UI.sheet = { type: 'ffMore' }; UI.ffSure = false; },
+    ffRename() { const L = ffCur(); const el = document.getElementById('ff-rename'); if (L && el && el.value.trim()) L.name = el.value.trim(); UI.sheet = null; },
+    ffDelList() { if (!UI.ffSure) { UI.ffSure = true; return; } const st = ffState(); delete st.lists[st.cur]; st.cur = null; UI.sheet = null; UI.ffView = 'lists'; UI.ffSure = false; },
+    ffCog() { return ffCogOpen(''); },
+    ffCogWhy() { return ffCogOpen('Why is my list not legal, and what is the simplest way to fix each problem?'); },
+    ffCogUnit(u) { const L = ffCur(); const Dd = L && FFX.data[L.file]; const n = Dd && FF.evaluate(Dd, L.roster).node(u); return ffCogOpen(n ? `What are the best choices for my ${n.eff.name} (wargear, enhancement, who it should join)?` : ''); },
+  };
+  function ffCogOpen(q) {
+    const r = ACT.cogitator(); if (r === 'skip') return 'skip';
+    UI.ffCogQ = q; setTimeout(() => { const el = document.getElementById('cog-q'); if (el && q && !el.value) el.value = q; }, 30);
+  }
+  Object.assign(ACT, FF_ACT);
+
   // ---------- the Cogitator: questions about the battle in front of you, answered from the real rules ----------
   function cogContext() {
+    if (S.screen === 'footfall') return ffCogContext();
     const B = S.battle && !S.battle.ended ? S.battle : null; const L = list(); const F = foe();
     const cut = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; };
     const st = (m) => `M${m.M} T${m.T} Sv${m.Sv}${m.InSv && m.InSv !== '-+' ? ' (' + m.InSv + ' invuln)' : ''} W${m.W} Ld${m.LD} OC${m.OC}`;

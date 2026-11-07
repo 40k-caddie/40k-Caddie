@@ -16,7 +16,7 @@ self.addEventListener('fetch', (e) => {
   if (/supabase\.co$/.test(url.hostname)) return;
   const same = url.origin === self.location.origin;
   // the page itself and the weekly rules result: newest when online, saved copy when not
-  if (req.mode === 'navigate' || (same && /rules-status\.json$/.test(url.pathname))) {
+  if (req.mode === 'navigate' || (same && /(rules-status|footfall\/index)\.json$/.test(url.pathname))) {
     e.respondWith(fetch(req).then((r) => { const c = r.clone(); caches.open(CACHE).then((x) => x.put(same && req.mode === 'navigate' ? './' : req, c)); return r; })
       .catch(() => caches.match(req.mode === 'navigate' ? './' : req, { ignoreSearch: true })));
     return;
