@@ -852,6 +852,7 @@ body[data-foe="dw"] .foe-panel, body[data-foe="dw"] .strat.foe { background-imag
 /* battle log lines sit centred in every emblem */
 .emblem .jw-wake, .emblem.chapel .ch-log, .emblem.vault .vt-log { align-items: center !important; text-align: center !important; }
 .emblem .jw-line { text-align: center; }
+.world .terra-art.home-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; filter: saturate(0.9) brightness(0.9); }
 </style>
 </head>
 <body>
@@ -863,11 +864,11 @@ body[data-foe="dw"] .foe-panel, body[data-foe="dw"] .strat.foe { background-imag
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=60"></script>
-<script src="lib-v14.js?v=60"></script>
-<script src="data.js?v=60"></script>
-<script src="foes.js?v=60"></script>
-<script src="app.js?v=60"></script>
+<script src="sb.js?v=61"></script>
+<script src="lib-v14.js?v=61"></script>
+<script src="data.js?v=61"></script>
+<script src="foes.js?v=61"></script>
+<script src="app.js?v=61"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
