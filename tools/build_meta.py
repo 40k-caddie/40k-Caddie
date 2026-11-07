@@ -71,45 +71,49 @@ def analytics(page):
 
 # ---------- 2. recent winning lists ----------
 UNIT = re.compile(r'^(.+?) \((\d+) (?:points|pts)\)$', re.I)
+SIZE = re.compile(r'^(incursion|strike force|onslaught)\b', re.I)
+MONTHS = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec'
+CI_TAG = 'https://www.tabletopbattles.com/tag/competitive-innovations'
 
 
 def ci_articles():
-    page = get(CI_SEARCH)
+    page = get(CI_TAG)
     urls = []
-    for u in re.findall(r'href="(https://www\.tabletopbattles\.com/[^"#?]*competitive-innovations-in-11th[^"#?]*)"', page):
-        u = u.rstrip('/')
+    for u in re.findall(r'href="(/40k-competitive-innovations-in-11th[^"#?]*)"', page):
+        u = 'https://www.tabletopbattles.com' + u.rstrip('/')
         if u not in urls:
             urls.append(u)
     return urls[:12]
 
 
 def ci_lists(page):
-    """Each list in an article: (faction, [unit names]). Lists are printed as exported text from the 40k app or New Recruit."""
-    body = re.sub(r'(?i)<br\s*/?>', '\n', page)
-    body = re.sub(r'(?i)</(p|div|li|h\d|pre|code)>', '\n', body)
-    lines = [html.unescape(re.sub(r'<[^>]+>', '', l)).replace('\xa0', ' ').rstrip() for l in body.split('\n')]
-    lists, cur = [], None
-    for raw in lines:
-        l = raw.strip()
-        if not l:
+    """Each placed list in an article: a heading "Player - Army (detachments) - Disposition - 1st Place" and its list."""
+    out = []
+    for m in re.finditer(r'<h2>(.*?)</h2>(.*?)(?=<h2>|$)', page, re.S):
+        head = text(m.group(1)); body = m.group(2)
+        parts = [x.strip() for x in head.split(' - ')]
+        if len(parts) < 3 or not re.search(r'(?i)place|winner|finalist', parts[-1]):
             continue
-        if re.search(r'\(\s*\d[\d,]*\s*(?:points|pts)\s*\)\s*$', l, re.I) and cur is None:
-            cur = {'head': [l], 'units': []}
+        eb = body.find('expandBody')
+        if eb < 0:
             continue
-        if cur is None:
-            continue
-        if l.startswith('Exported with') or re.match(r'(?i)^(data version|exported)', l):
-            lists.append(cur); cur = None; continue
-        m = UNIT.match(l)
-        if m and not l.startswith(('•', '-', '◦')):
-            cur['units'].append(m.group(1).strip())
-        elif len(cur['head']) < 8 and not cur['units']:
-            cur['head'].append(l)
-        if len(cur['units']) > 40:
-            lists.append(cur); cur = None
-    if cur and cur['units']:
-        lists.append(cur)
-    return [x for x in lists if len(x['units']) >= 3]
+        chunk = re.sub(r'(?i)<br\s*/?>|</p>|</div>', '\n', body[eb:])
+        lines = [html.unescape(re.sub(r'<[^>]+>', '', l)).replace('\xa0', ' ').strip() for l in chunk.split('\n')]
+        units = []
+        sized = any(SIZE.match(l) for l in lines)
+        seen_size = False
+        for l in lines:
+            if l.startswith('Exported with'):
+                break
+            if SIZE.match(l):
+                seen_size = True; continue
+            u = UNIT.match(l)
+            # the list's own title line sits above the battle size; skip it
+            if u and not l.startswith(('•', '-')) and (seen_size or not sized):
+                units.append(re.sub(r'^\d+x\s+', '', u.group(1).strip()))
+        if len(units) >= 3:
+            out.append({'army': parts[1].split(' (')[0].strip(), 'place': parts[-1], 'units': units})
+    return out
 
 
 def main():
@@ -128,18 +132,17 @@ def main():
                 p = get(u); time.sleep(2)
             except Exception as e:
                 print('article failed', u, e); continue
-            dm = re.search(r'"datePublished"\s*:\s*"([^"]+)"', p)
-            when = dm.group(1)[:10] if dm else ''
-            if when and datetime.fromisoformat(when).replace(tzinfo=timezone.utc) < now - timedelta(weeks=WEEKS):
+            dm = re.search(r'(' + MONTHS + r') (\d{2}) (\d{4})', p)
+            when = datetime.strptime(' '.join(dm.groups()), '%b %d %Y').replace(tzinfo=timezone.utc) if dm else None
+            if when and when < now - timedelta(weeks=WEEKS):
                 continue
+            when = when.date().isoformat() if when else ''
             title = re.search(r'<title>(.*?)</title>', p, re.S)
             got = ci_lists(p)
             meta['ci']['articles'].append({'url': u, 'date': when, 'title': html.unescape(title.group(1)).split(' - ')[0].strip() if title else u, 'lists': len(got)})
             for L in got:
-                head = ' '.join(L['head'])
-                fac = next((n for n in sorted(names, key=len, reverse=True) if norm(n) in norm(head)), None)
-                if not fac:
-                    fac = next((n for n in names if norm(n).rstrip('s') in norm(head)), None)
+                a = norm(L['army'])
+                fac = next((n for n in names if norm(n) == a), None) or next((n for n in names if norm(n).rstrip('s') == a.rstrip('s')), None)
                 if not fac:
                     continue
                 w = meta['winning'].setdefault(fac, {'lists': 0, 'units': {}})
