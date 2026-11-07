@@ -135,8 +135,18 @@
   }
   function foeUnits(faction) {
     if (unitCache[faction]) return unitCache[faction];
-    const f = FD(faction); if (!f) return {};
-    return (unitCache[faction] = Object.assign({}, f.base === 'SM' ? window.IT_FOES.smUnits : {}, f.units));
+    const f = FD(faction); if (!f) return FRESH[faction] || {};
+    return (unitCache[faction] = Object.assign({}, f.base === 'SM' ? window.IT_FOES.smUnits : {}, f.units, FRESH[faction] || {}));
+  }
+  // current datasheets from the weekly community data (the same files Footfall uses), laid over the app's built-in copy
+  const FRESH = {}; const freshTried = {};
+  const FRESH_ALIAS = { 'Imperial Agents': 'Agents of the Imperium', 'Space Marines (other chapter)': 'Space Marines', Carcharodons: 'Space Marines', 'Alpha Legion': 'Chaos Space Marines' };
+  function freshLoad(faction) {
+    if (!STANDALONE || !faction || freshTried[faction] || typeof FF === 'undefined') return;
+    freshTried[faction] = true;
+    const want = FRESH_ALIAS[faction] || faction;
+    ffIndex().then((idx) => { const f = idx.factions.find((x) => ffShort(x.name) === want); if (!f) return null; return ffData(f.file); })
+      .then((Dd) => { if (!Dd) return; FRESH[faction] = FF.datasheets(Dd); delete unitCache[faction]; render(); }).catch(() => {});
   }
   const OBJ_DEFAULT = [['Your home', 'home'], ['Centre', 'central'], ['Their home', 'foehome'], ['Flank 1', 'expansion'], ['Flank 2', 'expansion']];
   const HDR = /^(ANY BATTLE ROUND|FIRST BATTLE ROUND|FIRST AND SECOND BATTLE ROUND|SECOND BATTLE ROUND ONWARDS|SECOND TO FOURTH BATTLE ROUND|SECOND AND THIRD BATTLE ROUND|THIRD BATTLE ROUND ONWARDS|FOURTH BATTLE ROUND ONWARDS|FIFTH BATTLE ROUND|END OF THE BATTLE)$/;
@@ -276,6 +286,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Coming soon, at the bottom of the main screen: which armies already have their own full look, as your army and as an opponent, and which are still on the way.',
       'My collection, in Footfall: record the units you actually own, for every army you collect (each army keeps its own collection). Open any Footfall list, tap My collection at the bottom, and set how many of each unit is on your shelf. Then, when adding units to a list, turn on "Only units I own": the builder offers only what you have (and no more copies than you own), and its suggestions for spare points stick to your shelf too. Your collection is saved to your account and never takes up a list slot.',
       'Chasing the meta, in Footfall: your army\'s 11th edition win rate and rank, and beside each unit when you add one, how often it is taken, whether it clearly lifts the win rate, and how many recent winning lists took it. The Chasing the meta panel lists what recent winners took and the units that lift results, with one tap to add. Numbers update weekly from the 40k-analytics report and the Competitive Innovations column on Tabletop Battles.',
       'Footfall, the list builder: the void port on the main screen. A legal list carries its army\'s seal (Chapter Master Approved, High Marshal Approved, Silent King Approved, Nurgle Approved and more), and you send it to battle the way that army goes to war: Board the Thunderhawks, Board the Night Scythes, Launch the Tyrannocytes. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
@@ -833,7 +844,7 @@
   // ---------- rules lookups ----------
   const norm = (s) => String(s || '').toLowerCase().replace(/➤/g, '').replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
   const sing = (s) => s.replace(/s$/, '');
-  function ds(name) { return D.units[name] || (S.army === 'other' && list() ? foeUnits(listFaction(list()))[name] : ARMY[S.army] && ARMY[S.army].lib ? foeUnits(ARMY[S.army].lib)[name] : null) || null; }
+  function ds(name) { const mine = [listFaction(list()), ARMY[S.army] && ARMY[S.army].lib, ARMY[S.army] && ARMY[S.army].label].find((f) => f && FRESH[f] && FRESH[f][name]); if (mine) return FRESH[mine][name]; return D.units[name] || (S.army === 'other' && list() ? foeUnits(listFaction(list()))[name] : ARMY[S.army] && ARMY[S.army].lib ? foeUnits(ARMY[S.army].lib)[name] : null) || null; }
   function matchProfile(profiles, modelName) {
     const n = norm(modelName);
     return profiles.find((p) => norm(p.name) === n) || profiles.find((p) => norm(p.name).includes(n) || n.includes(norm(p.name))) || profiles.find((p) => !/sergeant|captain|champion/i.test(p.name) || /sergeant/i.test(modelName)) || profiles[0];
@@ -1313,7 +1324,7 @@
     </main>
     ${B ? `<div class="wrap"><button class="btn block" data-act="endBattle" style="border-color: var(--accent-text); color: var(--accent-text)">${esc(a.end.toUpperCase())} · ROUND ${roman(B.round)}, ${B.vp.me}–${B.vp.foe}</button></div>` : ''}
     <footer class="wrap stack" style="gap: 6px; padding-block: 0 calc(16px + env(safe-area-inset-bottom, 0px)); align-items: center">
-      <div class="row" style="justify-content: center; gap: 18px"><button class="dim" data-act="library" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Image library</button><button class="dim" data-act="dice" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Dice odds</button><button class="dim" data-act="moveOpen" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">${STANDALONE ? 'Bring my setup' : 'Move to the app'}</button><button class="dim" data-act="about" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">About</button></div>
+      <div class="row" style="justify-content: center; gap: 18px"><button class="dim" data-act="library" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Image library</button><button class="dim" data-act="dice" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Dice odds</button><button class="dim" data-act="moveOpen" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">${STANDALONE ? 'Bring my setup' : 'Move to the app'}</button><button class="dim" data-act="comingSoon" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">Coming soon</button><button class="dim" data-act="about" style="border: 0; background: transparent; font-size: 12px; text-decoration: underline; min-height: 32px">About</button></div>
       ${syncLine()}
     </footer>`;
   }
@@ -1660,6 +1671,19 @@
         <p id="gl-none" class="small muted" style="margin: 0" hidden>Nothing matches that.</p>
         <div id="gl-list" style="display: flex; flex-direction: column; gap: 4px">${list}</div>
         <p class="small muted" style="margin: 0">Official wording from the Wahapedia 11th edition core rules and army rules, as of ${RULES_ASOF}. Opponents' army rules appear once their army has been picked.</p>`, '<button class="btn solid block" data-act="closeAll">DONE</button>');
+    }
+    if (o === 'coming') {
+      // which armies have their full look so far; everything else works fully, with the standard look
+      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons)', 'Asuryani (Aeldari)', 'Deathwatch'];
+      const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch'];
+      const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Space Marines (other chapter)', 'Alpha Legion']);
+      const todo = FACTIONS.map((f) => f[0]).filter((n) => !done.has(n));
+      const li = (l) => l.map((n) => `<li>${esc(n)}</li>`).join('');
+      return sheet('Coming soon', `<p style="margin: 0">Every army works fully in the app: lists, battles, rules, the Cogitator and Footfall. Some armies also have their own look: frames, words, battle screen, colours and art. The rest use the standard look for now, and all of them will get theirs.</p>
+        <div class="stack" style="gap: 4px"><span class="eyebrow">Full look as your main army</span><ul class="small" style="margin: 0; padding-left: 18px">${li(DONE_MAIN)}</ul></div>
+        <div class="stack" style="gap: 4px"><span class="eyebrow">Full look as an opponent</span><ul class="small" style="margin: 0; padding-left: 18px">${li(DONE_FOE)}</ul></div>
+        <div class="stack" style="gap: 4px"><span class="eyebrow">Standard look for now, theirs on the way</span><ul class="small" style="margin: 0; padding-left: 18px">${li(todo)}<li>Black Templars as an opponent</li></ul></div>`,
+        `<button class="btn solid block" data-act="closeAll">DONE</button>`);
     }
     if (o === 'about') {
       return sheet('About 40k Caddie', `
@@ -2395,6 +2419,7 @@
     document.body.className = ARMY[S.army].cls; applyArmyTheme(); applyNecronTheme();
     if (S.army === 'other' && list()) { const lf = listFaction(list()); if (lf && !FOES[lf]) loadFaction(lf); }
     if (S.foeKey && foe()) { const fn = foe().faction; if (!FD(fn)) loadFaction(fn); else if (!factionTried[fn]) { factionTried[fn] = true; checkFaction(fn); } }
+    if (STANDALONE) { if (S.foeKey && foe()) freshLoad(foe().faction); if (list()) freshLoad(listFaction(list()) || (ARMY[S.army] && (ARMY[S.army].lib || ARMY[S.army].label))); }
     applyFoeTheme();
     if (S.battle && S.battle.rounds) syncScores();
     const scored = document.body.classList.contains('foe-scored');
@@ -2592,6 +2617,7 @@
     rulesCheck() { checkRules(); return 'skip'; },
     news() { UI.overlay = 'news'; },
     about() { UI.overlay = 'about'; },
+    comingSoon() { UI.overlay = 'coming'; },
     undo() {
       const u = UI.undo.pop(); if (!u) return;
       S.battle = JSON.parse(u.b); toast('Undone: ' + u.label);
@@ -3054,6 +3080,7 @@
       </main>`;
     }
     const Dd = FFX.data[L.file];
+    if (Dd && !L.roster) { L.roster = FF.newRoster(Dd, UI.ffSize || 'Strike Force'); ffAfter(Dd, L); }
     if (!Dd) { ffData(L.file).then(() => render()).catch(() => render()); return `${head(L.name, ffShort(L.facName).toUpperCase(), 'ffLists')}<main class="main wrap"><div class="panel small muted" style="padding: 12px">${FFX.err ? esc(FFX.err) : 'Loading the ' + esc(ffShort(L.facName)) + ' rules…'}</div></main>`; }
     const ev = FF.evaluate(Dd, L.roster);
     const units = L.roster.sels.filter((s) => !ffIsConfig(Dd, s));
@@ -3120,14 +3147,15 @@
     }).join('');
     return block(null);
   }
-  function ffProfiles(Dd, key) {
-    const ps = FF.profiles(Dd, key); if (!ps.length) return '';
+  function ffProfiles(Dd, key, ev, u) {
+    const ps = ev && u ? FF.unitProfiles(Dd, ev, u) : FF.profiles(Dd, key); if (!ps.length) return '';
+    const cell = (r, c) => `<td${(r.mod || []).includes(c) ? ' class="ff-mod" title="Changed by your army, detachment, wargear or enhancement"' : ''}>${esc(r.chars[c])}</td>`;
     const unitP = ps.filter((p) => p.type === 'Unit'), rng = ps.filter((p) => /Ranged/.test(p.type)), mel = ps.filter((p) => /Melee/.test(p.type)), ab = ps.filter((p) => p.type === 'Abilities' || p.type === 'Rule');
-    const tbl = (rows) => { if (!rows.length) return ''; const cols = Object.keys(rows[0].chars).filter((c) => c !== 'Keywords'); return `<div class="ff-tbl"><table><tr><th></th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${rows.map((r) => `<tr><td>${esc(r.name)}${r.chars.Keywords && r.chars.Keywords !== '-' ? `<br><small class="muted">${esc(r.chars.Keywords)}</small>` : ''}</td>${cols.map((c) => `<td>${esc(r.chars[c])}</td>`).join('')}</tr>`).join('')}</table></div>`; };
-    return `<details class="ff-grp"><summary><span class="eyebrow">Datasheet</span></summary>${tbl(unitP)}${tbl(rng)}${tbl(mel)}${ab.map((a) => `<p class="small" style="margin: 4px 0"><b>${esc(a.name)}.</b> ${esc(a.chars.Description || '')}</p>`).join('')}</details>`;
+    const tbl = (rows) => { if (!rows.length) return ''; const cols = Object.keys(rows[0].chars).filter((c) => c !== 'Keywords'); return `<div class="ff-tbl"><table><tr><th></th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${rows.map((r) => `<tr><td>${esc(r.name)}${r.chars.Keywords && r.chars.Keywords !== '-' ? `<br><small class="muted">${esc(r.chars.Keywords)}</small>` : ''}</td>${cols.map((c) => cell(r, c)).join('')}</tr>`).join('')}</table></div>`; };
+    return `<details class="ff-grp"><summary><span class="eyebrow">Datasheet</span></summary>${tbl(unitP)}${tbl(rng)}${tbl(mel)}${ab.map((a) => `<p class="small" style="margin: 4px 0"><b>${esc(a.name)}.</b> ${esc(a.chars.Description || '')}</p>`).join('')}${ps.some((p) => (p.mod || []).length) ? '<p class="small muted" style="margin: 4px 0">Gold values are changed by your army, detachment, wargear or enhancements.</p>' : ''}</details>`;
   }
   function ffSheet(sh) {
-    const st = ffState(); const L = ffCur(); const Dd = L ? FFX.data[L.file] : null;
+    const st = ffState(); const L = ffCur(); const Dd = L && L.roster ? FFX.data[L.file] : null;
     if (sh.type === 'ffNew') {
       const idx = FFX.idx;
       if (!idx) { ffIndex().then(() => render()).catch((e) => { FFX.err = e.message; render(); }); return sheet('New list', `<p class="small muted" style="margin: 0">${FFX.err ? esc(FFX.err) : 'Loading the armies…'}</p>`, ''); }
@@ -3148,7 +3176,7 @@
         ${errs.length ? `<div class="panel ff-errs stack" style="gap: 3px; padding: 8px 10px">${errs.map((e) => `<span class="small">${esc(e.msg)}</span>`).join('')}</div>` : ''}
         ${attach}
         <div class="stack" style="gap: 6px">${ffOpts(Dd, ev, sh.u, 0)}</div>
-        ${ffProfiles(Dd, n.r.key)}
+        ${ffProfiles(Dd, n.r.key, ev, sh.u)}
         <div class="row" style="gap: 8px; flex-wrap: wrap"><button class="btn small" data-act="ffCogUnit" data-k="${esc(sh.u)}">ASK THE COGITATOR</button><button class="btn small" data-act="ffDup" data-k="${esc(sh.u)}">DUPLICATE</button><button class="btn small" data-act="ffDel" data-k="${esc(sh.u)}" style="color: var(--accent-text)">REMOVE</button></div>`,
         `<button class="btn solid block" data-act="closeAll">DONE</button>`);
     }
@@ -3185,6 +3213,7 @@
         ${wl.length ? `<div class="stack" style="gap: 2px"><span class="eyebrow">In recent winning lists (${M.win.lists} lists)</span>${M.win.lists < 5 ? '<span class="small muted">Only a few lists so far: read these loosely.</span>' : ''}${wl.map(([n, c]) => row(n, `in ${c} of ${M.win.lists}`)).join('')}</div>` : ''}
         ${lifts.length ? `<div class="stack" style="gap: 2px"><span class="eyebrow">Lift the win rate</span>${lifts.map(([n, v]) => row(n, `+${v.eff} points when taken · in ${Math.round(v.pct)}% of lists`)).join('')}</div>` : ''}
         <div class="stack" style="gap: 2px"><span class="eyebrow">Most played</span>${played.map(([n, v]) => row(n, `in ${Math.round(v.pct)}% of lists${v.z !== null && Math.abs(v.z) >= 2 ? (v.eff > 0 ? ' · ▲ +' : ' · ▼ ') + v.eff + ' win rate' : ''}`)).join('')}</div>
+        ${(() => { const st = FFMETA.status || {}; const old = (k) => st[k] && st[k].kept ? st[k].since : ''; const a = old('analytics'), c = old('ci'); return a || c ? `<p class="small" style="margin: 0; color: var(--accent-text)">${a ? 'The win-rate figures could not be refreshed and date from ' + esc(a) + '. ' : ''}${c ? 'The winning lists could not be refreshed and date from ' + esc(c) + '.' : ''}</p>` : ''; })()}
         <p class="small muted" style="margin: 0">"Win rate" effects compare lists with the unit to similar lists without it; small effects are left out. Winners take what wins, and what is popular, so treat these as pointers, not rules.</p>
         <p class="small muted" style="margin: 0">Win rates and unit numbers: <a href="${esc(FFMETA.analytics.url)}" target="_blank" rel="noopener" style="color: var(--gold)">40k-analytics</a>${FFMETA.analytics.updated ? ', updated ' + esc(FFMETA.analytics.updated) : ''}. Winning lists: Competitive Innovations on <a href="https://www.tabletopbattles.com/tag/competitive-innovations" target="_blank" rel="noopener" style="color: var(--gold)">Tabletop Battles</a>${arts.length ? ', ' + arts.length + ' articles from the last eight weeks' : ''}. Unofficial.</p>`,
         `<button class="btn solid block" data-act="closeAll">DONE</button>`);
@@ -3253,7 +3282,7 @@
     const seenU = new Set();
     for (const s of L.roster.sels.filter((x) => !ffIsConfig(Dd, x))) {
       const n = ev.node(s.u); if (!n || seenU.has(n.r.id)) continue; seenU.add(n.r.id);
-      const ps = FF.profiles(Dd, n.r.key);
+      const ps = FF.unitProfiles(Dd, ev, s.u);
       out.push(`- ${n.eff.name}: ` + ps.map((p) => p.type === 'Abilities' || p.type === 'Rule' ? `${p.name}: ${cut(p.chars.Description, 300)}` : `${p.name} [${Object.entries(p.chars).map(([k, v]) => k + ' ' + v).join(', ')}]`).join(' | '));
     }
     const M = ffMetaFor(Dd);
@@ -3267,7 +3296,7 @@
     return out.join('\n').slice(0, 110000);
   }
   function ffMutate(fn) {
-    const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return;
+    const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd || !L.roster) return;
     fn(Dd, L); ffAfter(Dd, L);
   }
   const ffFind = (L, u) => FF.findSel(L.roster, u);
@@ -3289,7 +3318,7 @@
       const st = ffState();
       st.lists[id] = { id, name: name || ffShort(fac) + ' list', file, facName: fac, roster: null, pts: 0, limit: 0, ok: false, updated: Date.now() };
       st.cur = id;
-      ffData(file).then((Dd) => { const L = st.lists[id]; L.roster = FF.newRoster(Dd, UI.ffSize || 'Strike Force'); ffAfter(Dd, L); save(); render(); }).catch(() => render());
+      ffData(file).then((Dd) => { const L = st.lists[id]; if (L && !L.roster) { L.roster = FF.newRoster(Dd, UI.ffSize || 'Strike Force'); ffAfter(Dd, L); } save(); render(); }).catch(() => render());
       window.scrollTo(0, 0); return 'top';
     },
     ffSize(k) { ffMutate((Dd, L) => { const bs = ffConfigSel(Dd, L, /^battle size$/i); if (!bs) return; const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, bs.u).find((x) => x.key === k); if (o) FF.setSize(Dd, L.roster, o.name.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)/, '')); }); },

@@ -157,6 +157,22 @@ def main():
                     w['units'][un] = w['units'].get(un, 0) + 1
     except Exception as e:
         print('competitive innovations failed:', e); meta['ci']['error'] = str(e)[:200]
+    # if a source failed or its page changed shape, keep last week's numbers and say how old they are
+    try:
+        old = json.load(open('footfall/meta.json', encoding='utf-8'))
+    except Exception:
+        old = {}
+    meta['status'] = {}
+    if len(meta['factions']) < 10 and old.get('factions'):
+        meta['factions'] = old['factions']; meta['analytics'] = old.get('analytics', meta['analytics'])
+        meta['status']['analytics'] = {'kept': True, 'since': (old.get('status', {}).get('analytics') or {}).get('since') or old.get('built', '')[:10]}
+    else:
+        meta['status']['analytics'] = {'kept': False, 'since': now.date().isoformat()}
+    if not meta['winning'] and old.get('winning'):
+        meta['winning'] = old['winning']; meta['ci'] = old.get('ci', meta['ci'])
+        meta['status']['ci'] = {'kept': True, 'since': (old.get('status', {}).get('ci') or {}).get('since') or old.get('built', '')[:10]}
+    else:
+        meta['status']['ci'] = {'kept': False, 'since': now.date().isoformat()}
     json.dump(meta, open('footfall/meta.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print(f"{len(facs)} factions, {sum(len(f.get('units', {})) for f in facs.values())} unit rows, {len(meta['ci']['articles'])} articles, "
           f"{sum(w['lists'] for w in meta['winning'].values())} winning lists")

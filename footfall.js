@@ -50,7 +50,8 @@
       key, id: node.targetId || node.id, name: node.name || t.name, type: isGroup ? 'group' : t.type || 'upgrade', isGroup,
       node, t, costs: {}, constraints: both('constraints'), modifiers: both('modifiers'), modifierGroups: both('modifierGroups'),
       cats: both('categoryLinks').map((c) => c.targetId), primaryCat: (both('categoryLinks').find((c) => c.primary) || {}).targetId,
-      hidden: !!(node.hidden || t.hidden), def: node.defaultSelectionEntryId || t.defaultSelectionEntryId, collective: !!(node.collective || t.collective),
+      // Onslaught is switched off in the community data for now; the app offers it anyway (its points limit is set like the others)
+      hidden: !!(node.hidden || t.hidden) && !/^3\. Onslaught/.test(node.name || t.name || ''), def: node.defaultSelectionEntryId || t.defaultSelectionEntryId, collective: !!(node.collective || t.collective),
       assoc: both('associations'), kids: [],
     };
     for (const c of t.costs || []) r.costs[c.typeId] = c.value;
@@ -332,11 +333,15 @@
     const sel = { u: uid(), k: key, n: n || 1, kids: [], gids: gids || [] };
     const list = parentU ? findSel(roster, parentU).s.kids : roster.sels;
     list.push(sel);
-    if (!noFill) fillDefaults(D, roster, sel);
+    if (!noFill) {
+      fillDefaults(D, roster, sel);
+      // a second pass: some requirements only appear once the rest of the unit is in place
+      for (let pass = 0; pass < 2; pass++) { const walk = (x, d) => { if (d > 5) return; fillDefaults(D, roster, x, 6); (x.kids || []).forEach((k) => walk(k, d + 1)); }; walk(sel, 0); }
+    }
     return sel;
   }
   function fillDefaults(D, roster, sel, depth = 0) {
-    if (depth > 6) return;
+    if (depth > 7) return;
     // required single options first (a sergeant, a pistol), then groups that need N picks
     const ev = evaluate(D, roster);
     for (const o of options(D, ev, sel.u).filter((o) => !o.group && !o.hidden && o.min > o.count)) {
@@ -350,7 +355,8 @@
       const g = options(D, evaluate(D, roster), sel.u).find((o) => o.key === g0.key && o.gids.join() === g0.gids.join());
       if (!g || g.min <= g.count) continue;
       const inside = options(D, evaluate(D, roster), sel.u).filter((o) => !o.group && !o.hidden && o.gids.includes(g.key));
-      const pick = inside.find((o) => o.key === g.def || R(D, o.key).id === g.def) || inside.find((o) => o.max < 0 || o.max > o.count); if (!pick) continue;
+      const open = (o) => o.max < 0 || o.max > o.count;
+      const pick = inside.find((o) => (o.key === g.def || R(D, o.key).id === g.def) && open(o)) || inside.find(open); if (!pick) continue;
       const need = g.min - g.count;
       const take = pick.max >= 0 ? Math.min(need, pick.max - pick.count) : need;
       if (take <= 0) continue;
@@ -389,11 +395,67 @@
     const r = R(D, key); const out = []; const seen = new Set();
     const take = (o, depth) => {
       if (!o || depth > 8) return;
-      for (const p of o.profiles || []) { const k = p.typeName + p.name; if (!seen.has(k)) { seen.add(k); out.push({ type: p.typeName, name: p.name, chars: Object.fromEntries((p.characteristics || []).map((c) => [c.name, c.$text || ''])) }); } }
+      for (const p of o.profiles || []) { const k = p.typeName + p.name; if (!seen.has(k)) { seen.add(k); out.push({ type: p.typeName, name: p.name, chars: Object.fromEntries((p.characteristics || []).map((c) => [c.name, c.$text || ''])), ids: Object.fromEntries((p.characteristics || []).map((c) => [c.typeId, c.name])) }); } }
       for (const l of o.infoLinks || []) { const t = D.idx[l.targetId]; if (!t) continue; if (l.type === 'profile') take({ profiles: [t] }, depth + 1); else if (l.type === 'rule' && !seen.has('R' + t.name)) { seen.add('R' + t.name); out.push({ type: 'Rule', name: t.name, chars: { Description: t.description || '' } }); } }
       for (const rr of o.rules || []) if (!seen.has('R' + rr.name)) { seen.add('R' + rr.name); out.push({ type: 'Rule', name: rr.name, chars: { Description: rr.description || '' } }); }
     };
     take(r.node, 0); if (r.t !== r.node) take(r.t, 0);
+    return out;
+  }
+  // a selected unit's datasheet with what its army, detachment, wargear and enhancements change on it
+  function unitProfiles(D, ev, u) {
+    const S = ev.S; const unit = S.byU[u]; if (!unit) return [];
+    const base = profiles(D, unit.r.key);
+    const walk = (n) => { for (const k of n.kids) { profiles(D, k.r.key).forEach((p) => { if (!base.some((b) => b.type === p.type && b.name === p.name)) base.push(p); }); walk(k); } };
+    walk(unit);
+    const rootOf = (n) => { let p = n; while (p.parent && !p.parent.force) p = p.parent; return p; };
+    const changed = new Set();
+    const applyTo = (m, k) => {
+      const tm = /profiles\.([^.]+)$/.exec(m.affects || ''); if (!tm) return;
+      for (const p of base) {
+        if (p.type !== tm[1]) continue;
+        const name = p.ids && p.ids[m.field]; if (!name) continue;
+        const cur = String(p.chars[name] || ''); let next = cur;
+        if (m.type === 'set') next = String(m.value);
+        else if (m.type === 'increment' || m.type === 'decrement') { const mm = /(-?\d+)/.exec(cur); if (!mm) continue; const v = +mm[1] + (m.type === 'increment' ? 1 : -1) * Number(m.value) * (k || 1); next = cur.replace(mm[1], String(v)); }
+        else if (m.type === 'append') { if (m.skipIfPresent && cur.includes(m.skipIfPresent)) continue; next = cur ? cur + (m.join !== undefined ? m.join : ', ') + m.value : String(m.value); }
+        else continue;
+        if (next !== cur) { p.chars[name] = next; changed.add(p.type + '|' + p.name + '|' + name); }
+      }
+    };
+    const consider = (src, m) => {
+      if (!m.affects || !/profiles\./.test(m.affects) || !holds(S, m, src)) return;
+      const k = times(S, m, src); if (!k) return;
+      const a = m.affects;
+      let hit = false;
+      if (/^(self|profiles\.)/.test(a)) hit = rootOf(src) === unit || src === unit;
+      else { const id = (a.split('.').find((x) => /^[0-9a-f]{3,4}-[0-9a-f]{3,4}-/.test(x)) || ''); hit = !id || matches(S, unit, id); }
+      if (hit) applyTo(m, k);
+    };
+    const runAll = (src, mods, groups) => { (mods || []).forEach((m) => consider(src, m)); (groups || []).forEach((g) => { if (holds(S, g, src)) runAll(src, g.modifiers, g.modifierGroups); }); };
+    for (const n of S.all) runAll(n, n.r.modifiers, n.r.modifierGroups);
+    base.forEach((p) => { p.mod = Object.keys(p.chars).filter((c) => changed.has(p.type + '|' + p.name + '|' + c)); });
+    return base;
+  }
+  // a unit's full datasheet (every model and weapon it can take), in the battle screens' format
+  function datasheet(D, key) {
+    const r = R(D, key); if (!r) return null;
+    const all = []; const seen = new Set();
+    const take = (k) => { profiles(D, k).forEach((p) => { const id = p.type + '|' + p.name; if (!seen.has(id)) { seen.add(id); all.push(p); } }); };
+    const walk = (k, d) => { if (d > 5) return; for (const o of optionTree(D, k)) if (!o.group) { take(o.key); walk(o.key, d + 1); } };
+    take(key); walk(key, 0);
+    const cats = r.cats.map((c) => (D.cats[c] || {}).name).filter(Boolean);
+    const strip = (c) => { const o = { name: c.name }; for (const [k, v] of Object.entries(c.chars)) if (k !== 'Base') o[k] = v; return o; };
+    const m = all.filter((p) => p.type === 'Unit').map(strip); if (!m.length) return null;
+    return {
+      p: r.costs[PTS] || 0, kw: cats.filter((c) => !/^Faction: /.test(c) && c !== r.name), fk: cats.filter((c) => /^Faction: /.test(c)).map((c) => c.slice(9)),
+      m, r: all.filter((p) => /Ranged/.test(p.type)).map(strip), ml: all.filter((p) => /Melee/.test(p.type)).map(strip),
+      ab: all.filter((p) => p.type === 'Abilities').map((p) => [p.name, p.chars.Description || '']), src: 'bsdata',
+    };
+  }
+  function datasheets(D) {
+    const out = {};
+    for (const k of D.roots) { const r = R(D, k); if (!r || r.isGroup || (r.type !== 'unit' && r.type !== 'model') || out[r.name]) continue; const d = datasheet(D, k); if (d) out[r.name] = d; }
     return out;
   }
   function newRoster(D, sizeName) {
@@ -411,6 +473,6 @@
     if (!bs.kids.some((k) => k.k === opt.key)) bs.kids.push({ u: uid(), k: opt.key, n: 1, kids: [], gids: opt.gids });
   }
 
-  const FF = { Data, R, evaluate, options, add, settle, remove, setN, partners, attach, profiles, newRoster, setSize, findSel, PTS, DP, ENH };
+  const FF = { Data, R, evaluate, options, add, settle, remove, unitProfiles, datasheet, datasheets, setN, partners, attach, profiles, newRoster, setSize, findSel, PTS, DP, ENH };
   if (typeof module !== 'undefined' && module.exports) module.exports = FF; else root.FF = FF;
 })(typeof window !== 'undefined' ? window : globalThis);
