@@ -116,7 +116,7 @@ def ci_lists(page):
             u = UNIT.match(l)
             # the list's own title line sits above the battle size; skip it
             if u and not l.startswith(('•', '-')) and (seen_size or not sized):
-                units.append(re.sub(r'^\d+x\s+', '', u.group(1).strip()))
+                units.extend(x.strip() for x in re.sub(r'^\d+x\s+', '', u.group(1).strip()).split(' + ') if x.strip())  # "Leader + Bodyguard" lines hold two units
         if len(units) >= 3:
             out.append({'army': parts[1].split(' (')[0].strip(), 'place': parts[-1], 'units': units})
     return out
