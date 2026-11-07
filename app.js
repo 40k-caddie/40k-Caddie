@@ -276,6 +276,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'My collection, in Footfall: record the units you actually own, for every army you collect (each army keeps its own collection). Open any Footfall list, tap My collection at the bottom, and set how many of each unit is on your shelf. Then, when adding units to a list, turn on "Only units I own": the builder offers only what you have (and no more copies than you own), and its suggestions for spare points stick to your shelf too. Your collection is saved to your account and never takes up a list slot.',
       'Chasing the meta, in Footfall: your army\'s 11th edition win rate and rank, and beside each unit when you add one, how often it is taken, whether it clearly lifts the win rate, and how many recent winning lists took it. The Chasing the meta panel lists what recent winners took and the units that lift results, with one tap to add. Numbers update weekly from the 40k-analytics report and the Competitive Innovations column on Tabletop Battles.',
       'Footfall, the list builder: the void port on the main screen. A legal list carries its army\'s seal (Chapter Master Approved, High Marshal Approved, Silent King Approved, Nurgle Approved and more), and you send it to battle the way that army goes to war: Board the Thunderhawks, Board the Night Scythes, Launch the Tyrannocytes. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
       'Before every battle, the app checks the rules it holds for both armies against the current ones. If either army\'s rules have changed, it tells you before the fight starts, so you can check points and datasheets first.',
@@ -2145,7 +2146,7 @@
     if (a.emblem === 'ward') {
       // the ward of aversion: a carved iron diamond with a line through its heart, rimed with frost, snow lying on its upper edges
       const jp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.6).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.6).toFixed(2)}%`;
-      const lastW = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const lastW = B.log.slice(-1).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
       const statusW = `<span class="eyebrow" style="font-size: clamp(8px, 2.6cqw, 11px)">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt" style="font-size: clamp(16px, 5.6cqw, 24px)">${PHASES[B.phase]}</span>
         <span class="tnum" style="font-size: clamp(12px, 4cqw, 16px); font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span>`;
       const O = 'M195 12 L382 280 L195 548 L8 280 Z', I = 'M195 48 L349 280 L195 512 L41 280 Z';
