@@ -1631,10 +1631,10 @@
     }
     if (o === 'about') {
       return sheet('About 40k Caddie', `
-        <p style="margin: 0">A personal, fan-made battle companion for Warhammer 40,000. Not for sale, and not affiliated with or endorsed by Games Workshop.</p>
+        <p style="margin: 0">A free, unofficial, fan-made battle companion for Warhammer 40,000. Not for sale, and not affiliated with or endorsed by Games Workshop.</p>
         <p class="small" style="margin: 0">Warhammer 40,000 and all associated names, factions and marks belong to Games Workshop Limited.</p>
         <div class="small stack" style="gap: 4px"><span class="eyebrow">Data and art</span>
-          <span>Rules data: powered by <a href="https://wahapedia.ru" target="_blank" rel="noopener" style="color: var(--gold)">Wahapedia</a> (data export) and the BSData community project.</span>
+          <span>Rules data: powered by <a href="https://wahapedia.ru" target="_blank" rel="noopener" style="color: var(--gold)">Wahapedia</a> (data export) and the <a href="https://github.com/BSData/wh40k-11e" target="_blank" rel="noopener" style="color: var(--gold)">BSData</a> community project. Both are volunteer-run, so they can lag behind new releases.</span>
           <span>Heraldry icons: Lorc, Delapouite and contributors, <a href="https://game-icons.net" target="_blank" rel="noopener" style="color: var(--gold)">game-icons.net</a>, CC BY 3.0.</span>
           <span>Images you add in the Image library are your own and are kept in your account.</span></div>
         <p class="small muted" style="margin: 0">Always check the official rules when in doubt.</p>`,
