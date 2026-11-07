@@ -12,11 +12,11 @@
   const FD = (faction) => FOES[faction] || null;
   // Every other army ships as its own file and loads only when someone picks it; versions are each army's Wahapedia book at pull time
   const FACTION_FILES = {"Adeptus Custodes": "adeptus-custodes", "Grey Knights": "grey-knights", "Adepta Sororitas": "adepta-sororitas", "Astra Militarum": "astra-militarum", "Adeptus Mechanicus": "adeptus-mechanicus", "Imperial Knights": "imperial-knights", "Imperial Agents": "imperial-agents", "World Eaters": "world-eaters", "Death Guard": "death-guard", "Thousand Sons": "thousand-sons", "Emperor's Children": "emperor-s-children", "Chaos Space Marines": "chaos-space-marines", "Alpha Legion": "alpha-legion", "Chaos Daemons": "chaos-daemons", "Chaos Knights": "chaos-knights", "Orks": "orks", "Tyranids": "tyranids", "Genestealer Cults": "genestealer-cults", "T'au Empire": "t-au-empire", "Drukhari": "drukhari", "Leagues of Votann": "leagues-of-votann", "Black Templars": "black-templars", "Blood Angels": "blood-angels", "Ultramarines": "ultramarines", "Carcharodons": "carcharodons", "Space Marines (other chapter)": "space-marines-other-chapter"};
-  const FACTION_VER = {"Necrons": "2.8.1 October 2026", "Aeldari": "1.4 October 2026", "Adeptus Custodes": "2.8.1 October 2026", "Grey Knights": "2.8.1 October 2026", "Adepta Sororitas": "1.4 October 2026", "Astra Militarum": "2.8.1 October 2026", "Adeptus Mechanicus": "1.4 October 2026", "Imperial Knights": "2.8.1 October 2026", "Imperial Agents": "1.3 October 2026", "World Eaters": "2.8.1 October 2026", "Death Guard": "2.8.1 October 2026", "Thousand Sons": "2.8.1 October 2026", "Emperor's Children": "2.8.1 October 2026", "Chaos Space Marines": "2.8.1 October 2026", "Alpha Legion": "2.8.1 October 2026", "Chaos Daemons": "2.8.1 October 2026", "Chaos Knights": "2.8.1 October 2026", "Orks": "2.8.1 October 2026", "Tyranids": "1.3 October 2026", "Genestealer Cults": "2.8.1 October 2026", "T'au Empire": "2.8.1 October 2026", "Drukhari": "2.8.1 October 2026", "Leagues of Votann": "1.2 October 2026", "Black Templars": "2.8.1 October 2026", "Blood Angels": "2.8.1 October 2026", "Dark Angels": "2.8.1 October 2026", "Space Wolves": "2.8.1 October 2026", "Ultramarines": "2.8.1 October 2026", "Carcharodons": "2.8.1 October 2026", "Space Marines (other chapter)": "2.8.1 October 2026"};
-  const FACTION_PAGE = {"Necrons": "https://wahapedia.ru/wh40k11ed/factions/necrons", "Aeldari": "https://wahapedia.ru/wh40k11ed/factions/aeldari", "Adeptus Custodes": "https://wahapedia.ru/wh40k11ed/factions/adeptus-custodes", "Grey Knights": "https://wahapedia.ru/wh40k11ed/factions/grey-knights", "Adepta Sororitas": "https://wahapedia.ru/wh40k11ed/factions/adepta-sororitas", "Astra Militarum": "https://wahapedia.ru/wh40k11ed/factions/astra-militarum", "Adeptus Mechanicus": "https://wahapedia.ru/wh40k11ed/factions/adeptus-mechanicus", "Imperial Knights": "https://wahapedia.ru/wh40k11ed/factions/imperial-knights", "Imperial Agents": "https://wahapedia.ru/wh40k11ed/factions/imperial-agents", "World Eaters": "https://wahapedia.ru/wh40k11ed/factions/world-eaters", "Death Guard": "https://wahapedia.ru/wh40k11ed/factions/death-guard", "Thousand Sons": "https://wahapedia.ru/wh40k11ed/factions/thousand-sons", "Emperor's Children": "https://wahapedia.ru/wh40k11ed/factions/emperor-s-children", "Chaos Space Marines": "https://wahapedia.ru/wh40k11ed/factions/chaos-space-marines", "Alpha Legion": "https://wahapedia.ru/wh40k11ed/factions/chaos-space-marines", "Chaos Daemons": "https://wahapedia.ru/wh40k11ed/factions/chaos-daemons", "Chaos Knights": "https://wahapedia.ru/wh40k11ed/factions/chaos-knights", "Orks": "https://wahapedia.ru/wh40k11ed/factions/orks", "Tyranids": "https://wahapedia.ru/wh40k11ed/factions/tyranids", "Genestealer Cults": "https://wahapedia.ru/wh40k11ed/factions/genestealer-cults", "T'au Empire": "https://wahapedia.ru/wh40k11ed/factions/t-au-empire", "Drukhari": "https://wahapedia.ru/wh40k11ed/factions/drukhari", "Leagues of Votann": "https://wahapedia.ru/wh40k11ed/factions/leagues-of-votann", "Black Templars": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Blood Angels": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Dark Angels": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Space Wolves": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Ultramarines": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Carcharodons": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Space Marines (other chapter)": "https://wahapedia.ru/wh40k11ed/factions/space-marines"};
+  const FACTION_VER = {"Necrons": "2.8.1 October 2026", "Aeldari": "1.4 October 2026", "Adeptus Custodes": "2.8.1 October 2026", "Grey Knights": "2.8.1 October 2026", "Adepta Sororitas": "1.4 October 2026", "Astra Militarum": "2.8.1 October 2026", "Adeptus Mechanicus": "1.4 October 2026", "Imperial Knights": "2.8.1 October 2026", "Imperial Agents": "1.3 October 2026", "World Eaters": "2.8.1 October 2026", "Death Guard": "2.8.1 October 2026", "Thousand Sons": "2.8.1 October 2026", "Emperor's Children": "2.8.1 October 2026", "Chaos Space Marines": "2.8.1 October 2026", "Alpha Legion": "2.8.1 October 2026", "Chaos Daemons": "2.8.1 October 2026", "Chaos Knights": "2.8.1 October 2026", "Orks": "2.8.1 October 2026", "Tyranids": "1.3 October 2026", "Genestealer Cults": "2.8.1 October 2026", "T'au Empire": "2.8.1 October 2026", "Drukhari": "2.8.1 October 2026", "Leagues of Votann": "1.2 October 2026", "Black Templars": "2.8.1 October 2026", "Blood Angels": "2.8.1 October 2026", "Dark Angels": "2.8.1 October 2026", "Space Wolves": "2.8.1 October 2026", "Ultramarines": "2.8.1 October 2026", "Carcharodons": "2.8.1 October 2026", "Space Marines (other chapter)": "2.8.1 October 2026", "Imperial Fists": "2.8.1 October 2026"};
+  const FACTION_PAGE = {"Necrons": "https://wahapedia.ru/wh40k11ed/factions/necrons", "Aeldari": "https://wahapedia.ru/wh40k11ed/factions/aeldari", "Adeptus Custodes": "https://wahapedia.ru/wh40k11ed/factions/adeptus-custodes", "Grey Knights": "https://wahapedia.ru/wh40k11ed/factions/grey-knights", "Adepta Sororitas": "https://wahapedia.ru/wh40k11ed/factions/adepta-sororitas", "Astra Militarum": "https://wahapedia.ru/wh40k11ed/factions/astra-militarum", "Adeptus Mechanicus": "https://wahapedia.ru/wh40k11ed/factions/adeptus-mechanicus", "Imperial Knights": "https://wahapedia.ru/wh40k11ed/factions/imperial-knights", "Imperial Agents": "https://wahapedia.ru/wh40k11ed/factions/imperial-agents", "World Eaters": "https://wahapedia.ru/wh40k11ed/factions/world-eaters", "Death Guard": "https://wahapedia.ru/wh40k11ed/factions/death-guard", "Thousand Sons": "https://wahapedia.ru/wh40k11ed/factions/thousand-sons", "Emperor's Children": "https://wahapedia.ru/wh40k11ed/factions/emperor-s-children", "Chaos Space Marines": "https://wahapedia.ru/wh40k11ed/factions/chaos-space-marines", "Alpha Legion": "https://wahapedia.ru/wh40k11ed/factions/chaos-space-marines", "Chaos Daemons": "https://wahapedia.ru/wh40k11ed/factions/chaos-daemons", "Chaos Knights": "https://wahapedia.ru/wh40k11ed/factions/chaos-knights", "Orks": "https://wahapedia.ru/wh40k11ed/factions/orks", "Tyranids": "https://wahapedia.ru/wh40k11ed/factions/tyranids", "Genestealer Cults": "https://wahapedia.ru/wh40k11ed/factions/genestealer-cults", "T'au Empire": "https://wahapedia.ru/wh40k11ed/factions/t-au-empire", "Drukhari": "https://wahapedia.ru/wh40k11ed/factions/drukhari", "Leagues of Votann": "https://wahapedia.ru/wh40k11ed/factions/leagues-of-votann", "Black Templars": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Blood Angels": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Dark Angels": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Space Wolves": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Ultramarines": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Carcharodons": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Space Marines (other chapter)": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Imperial Fists": "https://wahapedia.ru/wh40k11ed/factions/space-marines"};
   const FACTION_FILES_V = 2;
   // armies that borrow another army's rules file (the Deathwatch fight from the Space Marine codex)
-  const FACTION_ALIAS = { Deathwatch: 'Space Marines (other chapter)' }; FACTION_FILES.Deathwatch = FACTION_FILES[FACTION_ALIAS.Deathwatch];
+  const FACTION_ALIAS = { Deathwatch: 'Space Marines (other chapter)', 'Imperial Fists': 'Space Marines (other chapter)' }; FACTION_FILES.Deathwatch = FACTION_FILES[FACTION_ALIAS.Deathwatch]; FACTION_FILES['Imperial Fists'] = FACTION_FILES[FACTION_ALIAS['Imperial Fists']];
   const factionLoading = {}, factionTried = {};
   function loadFaction(name) {
     if (!name || FOES[name] || factionLoading[name] || !FACTION_FILES[name]) return;
@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Imperial Fists can be a main army, and have their own look as an opponent: the Sentinels of Terra. Terra stays at the heart of the map and you board the Phalanx, their star-fortress, to fight; the battle screen is the Phalanx\'s great hall, its arches your Company, Round and Besieger doors and the aquila the Strategium; black-and-yellow siege chevrons run under the header; the battle cry is "Primarch-Progenitor, to your glory!".',
       'Coming soon, at the bottom of the main screen: which armies already have their own full look, as your army and as an opponent, and which are still on the way.',
       'My collection, in Footfall: record the units you actually own, for every army you collect (each army keeps its own collection). Open any Footfall list, tap My collection at the bottom, and set how many of each unit is on your shelf. Then, when adding units to a list, turn on "Only units I own": the builder offers only what you have (and no more copies than you own), and its suggestions for spare points stick to your shelf too. Your collection is saved to your account and never takes up a list slot.',
       'Chasing the meta, in Footfall: your army\'s 11th edition win rate and rank, and beside each unit when you add one, how often it is taken, whether it clearly lifts the win rate, and how many recent winning lists took it. The Chasing the meta panel lists what recent winners took and the units that lift results, with one tap to add. Numbers update weekly from the 40k-analytics report and the Competitive Innovations column on Tabletop Battles.',
@@ -322,6 +323,7 @@
     dark: { label: 'Dark Angels', cls: 'army-dark', muster: 'The Rock', eyebrow: 'THE INNER CIRCLE CONVENES', steps: ['I · The Order', 'II · The Unrepentant', 'III · The Field of Battle'], fightingAs: 'Sworn to', cry: 'Repent! For tomorrow you die!', counsel: 'The Inner Circle', log: 'The Record', vox: 'Seal the Record', voxShort: 'SEAL', armyQ: 'The Order', foeQ: 'The Unrepentant', results: 'Judgement', emblem: 'lancet', oath: 'Your penance', oathText: 'Make the foe repent', roll: 'Call the Order', end: 'End the battle', hist: 'The Sealed Archive', lib: 'Dark Angels', libRe: /dab3|darkangel/ },
     necron: { label: 'The Infinite Empire', short: 'Infinite Empire', cls: 'army-necron', muster: 'The Tomb', eyebrow: 'STASIS ENDED', steps: ['I · The Phalanx', 'II · The Lesser Race', 'III · The Battlefield'], fightingAs: 'Awakened as', cry: 'The stars are ours once more!', counsel: 'The Cryptek', log: 'Dynastic Record', vox: 'Record this', voxShort: 'RECORD', armyQ: 'The Phalanx', foeQ: 'The Lesser Race', results: 'The Reckoning of Ages', emblem: 'monolith', oath: 'Your directive', oathText: 'Reclaim what was ours', roll: 'Count the Legions', end: 'End the engagement', hist: 'The Eternal Archive', lib: 'Necrons' },
     asuryani: { label: 'Asuryani', cls: 'army-asuryani', muster: 'The Craftworld', eyebrow: 'THE SEER COUNCIL GATHERS', steps: ['I · The Warhost', 'II · The Enemy', 'III · The Path of Battle'], fightingAs: 'Walking the path of', cry: 'By the light of Asuryan!', counsel: 'The Farseer', log: 'The Skeins', vox: 'Read the runes', voxShort: 'RUNES', armyQ: 'The Warhost', foeQ: 'The Enemy', results: 'The Weave of Fate', emblem: 'stone', oath: 'Your path', oathText: 'Spend no life that fate does not demand', roll: 'Count the Host', end: 'End the battle', hist: 'The Infinity Circuit', lib: 'Aeldari', libRe: /^eldar$/ },
+    fists: { label: 'Imperial Fists', cls: 'army-fists', muster: 'The Phalanx', eyebrow: 'SENTINELS OF TERRA', steps: ['I · The Company', 'II · The Besieger', 'III · The Bastion'], fightingAs: 'Standing as', cry: 'Primarch-Progenitor, to your glory!', counsel: 'The Strategium', log: 'Siege Log', vox: 'Vox to the Phalanx', voxShort: 'VOX', armyQ: 'The Company', foeQ: 'The Besieger', results: 'The Reckoning', emblem: 'phalanx', oath: 'Your duty', oathText: 'Hold the line. Break the siege.', roll: 'Muster the Company', end: 'End the battle', hist: 'Hall of Honour', lib: 'Imperial Fists', libRe: /^ifshoulder/ },
     deathwatch: { label: 'Deathwatch', cls: 'army-deathwatch', muster: 'The Watch Fortress', eyebrow: 'THE LONG VIGIL', steps: ['I · The Kill Team', 'II · The Target', 'III · The Hunting Grounds'], fightingAs: 'Keeping watch as', cry: 'Suffer not the alien to live!', counsel: 'The Inquisitor', log: 'The Bestiarium', vox: 'Report to the Ordo', voxShort: 'ORDO', armyQ: 'The Kill Team', foeQ: 'The Target', results: 'Sworn to Silence', emblem: 'vault', oath: 'Your vigil', oathText: 'Leave no xenos threat standing', roll: 'Muster the Kill Team', end: 'End the mission', hist: 'The Catacombs', lib: 'Deathwatch' },
     other: { label: 'Other', cls: 'army-other', muster: 'Setup', eyebrow: 'BEFORE THE GAME', steps: ['I · Your Army', 'II · Opponent', 'III · Mission'], fightingAs: 'Playing as', cry: 'Fight', counsel: 'Advice', log: 'Battle Log', vox: 'Mark moment', voxShort: 'MARK', armyQ: 'Your Army', foeQ: 'Opponent', results: 'Results', emblem: 'plain', oath: 'Your focus', oathText: 'Score before you kill', roll: 'Roll Call', end: 'End the game', hist: 'Battle history' }
   };
@@ -339,6 +341,7 @@
     slaanesh: ['#FFD9F5', '#D98AE8', '#8E3AB0', '#E8C766', '#180A1C', '#E7A9F0', '#180D1C', '#7A3A90'],
     alpha: ['#CFF7EE', '#4FC2B0', '#2F5F78', '#7A8A99', '#061412', '#8FDCCF', '#0B1716', '#3A7A86'],
     chaos: ['#E8D3A0', '#B8863A', '#5A3A1A', '#2A1A0E', '#140C06', '#E0B97A', '#1A120A', '#7A5A2A'],
+    if: ['#FFF3BF', '#F2CF3C', '#D9A916', '#7E5E08', '#171103', '#F2CF3C', '#1A1508', '#8A6A1E'],
     dw: ['#E8ECEF', '#B9C2CA', '#7E8A94', '#3A4148', '#07090B', '#D6DEE4', '#0E1216', '#5E6A74'],
     loyal: ['#E6E9EE', '#A9B4C2', '#5E6B7D', '#2C3440', '#0B0E12', '#C3CBD6', '#12151A', '#4E5968'],
     blood: ['#FFD6D0', '#E8786A', '#B0261E', '#5A0E0A', '#1A0505', '#F09A8E', '#1E0A0A', '#8A2A24'],
@@ -351,7 +354,7 @@
   };
   const FACTIONS = [
     ['Necrons', 'necron'], ['Dark Angels', 'da'], ['Space Wolves', 'sw'], ['Aeldari', 'ae'], ['Adeptus Custodes', 'custodes'],
-    ['Ultramarines', 'ultra', 'Parade-Born'], ['Deathwatch', 'dw'], ['Blood Angels', 'blood'], ['Black Templars', 'templars'], ['Carcharodons', 'carc'],
+    ['Ultramarines', 'ultra', 'Parade-Born'], ['Deathwatch', 'dw'], ['Imperial Fists', 'if'], ['Blood Angels', 'blood'], ['Black Templars', 'templars'], ['Carcharodons', 'carc'],
     ['Space Marines (other chapter)', 'loyal'], ['Grey Knights', 'loyal'], ['Adepta Sororitas', 'blood'], ['Astra Militarum', 'loyal'],
     ['Adeptus Mechanicus', 'blood'], ['Imperial Knights', 'loyal'], ['Imperial Agents', 'loyal'],
     ['World Eaters', 'khorne'], ['Death Guard', 'nurgle'], ['Thousand Sons', 'tzeentch'], ["Emperor's Children", 'slaanesh'],
@@ -543,7 +546,7 @@
     const own = poolItem(S.slots['army:' + k]);
     if (own) return `<img src="${own.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
     if (k === 'templars') return `<svg aria-hidden="true" viewBox="-24 -24 560 560">${gi('iron-cross', 'fill="#0E0D0C" stroke="#E8E0CC" stroke-width="18" stroke-linejoin="round" paint-order="stroke"')}</svg>`;
-    if (ARMY[k] && ARMY[k].lib) { const it = POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && (nameMatches(fileKey(x.name), ARMY[k].lib) || (ARMY[k].libRe && ARMY[k].libRe.test(fileKey(x.name))))); if (it) return `<img src="${it.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`; }
+    if (ARMY[k] && ARMY[k].lib) { const ok = (x) => !/^(bg|fleet)-/i.test(x.name); const it = (ARMY[k].libRe && POOL.find((x) => ok(x) && ARMY[k].libRe.test(fileKey(x.name)))) || POOL.find((x) => ok(x) && nameMatches(fileKey(x.name), ARMY[k].lib)); if (it) return `<img src="${it.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`; }
     if (k === 'carcharodons') return `<svg aria-hidden="true" viewBox="0 0 512 512">${gi('shark-jaws', 'fill="#CDBE9C"')}</svg>`;
     return `<svg aria-hidden="true" viewBox="0 0 768 512"><g transform="translate(224 0) scale(0.6)">${gi('eagle-emblem', 'fill="#D9C27A"')}</g><g transform="translate(70 230) scale(0.52)">${gi('daemon-skull', 'fill="#C9473A"')}</g><g transform="translate(432 230) scale(0.52)">${gi('alien-skull', 'fill="#9CCB5A"')}</g></svg>`;
   }
@@ -629,7 +632,7 @@
   const HOMEWORLDS = { wolves: ['Fenris', 'wolves-storm'], necron: ['The Tomb World', 'necrons-tomb-city'], asuryani: ['The Craftworld', 'aeldari-autarch'], deathwatch: ['Erioch', 'deathwatch-fortress'] };
   function homeWorld() { const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
   const OWNER = /^f\.weir88@gmail\.com$/i;
-  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch' };
+  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch', 'Imperial Fists': 'fists' };
   const myArmies = () => (!Array.isArray(S.mine) ? ['templars'] : S.mine.filter((k) => ARMY[k] && k !== 'carcharodons'));
   const mainFor = (L) => (L ? MAINABLE[listFaction(L)] || MAINABLE[L.subfaction] || MAINABLE[L.faction] || null : null);
   // a list loaded through Other is kept by its army: the last one per army, the two most recent armies
@@ -704,7 +707,7 @@
     undo: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 10 L9 15"></path><path d="M4 10 H15 A5 5 0 0 1 15 20 H10"></path></svg>',
     list: '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 6 H20 M8 12 H20 M8 18 H20 M4 6 H4.5 M4 12 H4.5 M4 18 H4.5"></path></svg>'
   };
-  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : S.army === 'deathwatch' ? ICON.omega : ICON.cross);
+  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : S.army === 'fists' ? ICON.blade : S.army === 'deathwatch' ? ICON.omega : ICON.cross);
 
   // ---------- list parser (40k app text export) ----------
   // Any list as plain text (Warhammer app, Warmind, New Recruit, Listforge, BattleScribe, typed by hand):
@@ -741,7 +744,7 @@
     // the army: Space Marine chapters sit under "Space Marines"
     const facHits = facNames.filter((f) => new RegExp('\\b' + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(text));
     const chapter = facHits.find((f) => f !== 'Space Marines' && f !== 'Adeptus Astartes' && FACTION_FILES[f] && /space-marines|templars|angels|wolves|ultramarines|carcharodons/.test(FACTION_FILES[f] || ''));
-    if (chapter || facHits.some((f) => /Space Marines|Adeptus Astartes|Black Templars|Dark Angels|Space Wolves|Blood Angels|Ultramarines|Deathwatch/.test(f))) { r.faction = 'Space Marines'; r.subfaction = chapter || facHits.find((f) => /Black Templars|Dark Angels|Space Wolves|Blood Angels|Ultramarines|Deathwatch/.test(f)) || null; }
+    if (chapter || facHits.some((f) => /Space Marines|Adeptus Astartes|Black Templars|Dark Angels|Space Wolves|Blood Angels|Ultramarines|Deathwatch|Imperial Fists/.test(f))) { r.faction = 'Space Marines'; r.subfaction = chapter || facHits.find((f) => /Black Templars|Dark Angels|Space Wolves|Blood Angels|Ultramarines|Deathwatch/.test(f)) || null; }
     else r.faction = facHits[0] || null;
     r.detachments = [...new Set(allDets.filter((d) => low.includes(d.toLowerCase())))];
     let unit = null, firstText = '';
@@ -1172,7 +1175,8 @@
     img.src = it.src;
   }
   let flagSrc = '', flagBusy = false;
-  const FLAG = () => S.army === 'templars';
+  const FLAG = () => S.army === 'templars' || S.army === 'fists';
+  const FLAGSHIP = () => (S.army === 'fists' ? 'the Phalanx' : 'the Eternal Crusader');
   function prepFlag() {
     if (flagSrc || flagBusy) return; const it = POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && /gloriana|invincible|reason|barge|battleship|vessel|ship/i.test(x.name)); if (!it) return;
     flagBusy = true; makeBarge(it, (r) => { flagBusy = false; if (r) { flagSrc = r.src; document.querySelectorAll('.flagship img').forEach((im) => { im.src = flagSrc; }); } });
@@ -1311,8 +1315,8 @@
       <span class="sun" aria-hidden="true"></span>
       <${FLAG() ? 'div' : 'button'} class="world terra ${FLAG() ? 'static' : ''}" ${FLAG() ? '' : 'data-fx="terra" data-act="terra"'} style="left: 50%; top: 45%; --s: 124px" ${FLAG() ? 'aria-hidden="true"' : `aria-label="${esc(homeWorld().name)}: ${B ? 'resume the battle in progress' : 'battle'}"`}>
         <span class="orb" aria-hidden="true">${homeWorld().img ? `<span class="terra-art home-art"><img src="${homeWorld().img}" alt=""></span>` : `<span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span>`}</span>
-        <span class="w-name">${esc(homeWorld().name)}</span>${FLAG() ? `<span class="w-sub">${B ? 'Board the Eternal Crusader to resume' : 'Board the Eternal Crusader to fight'}</span></div>
-      <div class="flag-orbit" aria-hidden="false"><button class="flagship" data-act="terra" aria-label="The Eternal Crusader: ${B ? 'resume the battle in progress' : 'battle'}"><img src="${flagSrc || ''}" alt=""></button></div>` : `<span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>`}
+        <span class="w-name">${esc(homeWorld().name)}</span>${FLAG() ? `<span class="w-sub">${B ? 'Board ' + FLAGSHIP() + ' to resume' : 'Board ' + FLAGSHIP() + ' to fight'}</span></div>
+      <div class="flag-orbit" aria-hidden="false"><button class="flagship" data-act="terra" aria-label="${FLAGSHIP().replace(/^t/, 'T')}: ${B ? 'resume the battle in progress' : 'battle'}"><img src="${flagSrc || ''}" alt=""></button></div>` : `<span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>`}
       ${world('ulthwe', 'updates', 49, 11, 32, 'Ulthwé', 'App updates', '', false, (() => { const it = POOL.find((x) => /ulthwe|craftworld/.test(fileKey(x.name))); return it ? it.src : ''; })())}
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
       ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', '', !UI.cogOK)}
@@ -1398,7 +1402,7 @@
     }
     return `<div class="clash" aria-label="${esc(A().label)} versus ${esc(fi.display)}">
       <div class="mine" style="${S.army === 'templars' ? 'border-bottom: 3px solid var(--accent)' : ''}">${deco}${otherPic() ? `<img src="${otherPic().src}" alt="" style="position: relative; height: 44px; width: 44px; object-fit: contain; margin-right: 8px">` : ''}<span class="name">${esc(S.army === 'other' ? (list() ? list().subfaction || list().faction || 'You' : 'You') : A().short || A().label)}</span></div>
-      <div class="theirs foe-fill"><span class="name foe-font" style="font-family: var(--foe-font); font-weight: 700">${esc(fi.display)}</span></div>
+      <div class="theirs foe-fill"><span class="name foe-font ${fi.display.length > 12 ? 'long' : ''}" style="font-family: var(--foe-font); font-weight: 700">${esc(fi.display)}</span></div>
       <div class="vs"><span>VS</span></div></div>`;
   }
 
@@ -1674,9 +1678,9 @@
     }
     if (o === 'coming') {
       // which armies have their full look so far; everything else works fully, with the standard look
-      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons)', 'Asuryani (Aeldari)', 'Deathwatch'];
-      const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch'];
-      const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Space Marines (other chapter)', 'Alpha Legion']);
+      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists'];
+      const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists'];
+      const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Space Marines (other chapter)', 'Alpha Legion']);
       const todo = FACTIONS.map((f) => f[0]).filter((n) => !done.has(n));
       const li = (l) => l.map((n) => `<li>${esc(n)}</li>`).join('');
       return sheet('Coming soon', `<p style="margin: 0">Every army works fully in the app: lists, battles, rules, the Cogitator and Footfall. Some armies also have their own look: frames, words, battle screen, colours and art. The rest use the standard look for now, and all of them will get theirs.</p>
@@ -1882,8 +1886,8 @@
   // ---------- Combat Doctrines (11th edition Space Marine army rule) and phase reminders ----------
   const DOCTRINES = { assault: ['Assault Doctrine', 'Units can still declare a charge after Advancing.'], devastator: ['Devastator Doctrine', 'Ranged weapons gain [ASSAULT].'], tactical: ['Tactical Doctrine', 'Units can still shoot and declare a charge after Falling Back.'] };
   function isAstartes() {
-    if (S.army !== 'other') return ['templars', 'carcharodons', 'wolves', 'dark', 'deathwatch'].includes(S.army);
-    const L = list(); return !!(L && /space marine|astartes|dark angels|blood angels|space wolves|deathwatch|templar|carcharodon/i.test((L.faction || '') + ' ' + (L.detachments || []).join(' ')));
+    if (S.army !== 'other') return ['templars', 'carcharodons', 'wolves', 'dark', 'deathwatch', 'fists'].includes(S.army);
+    const L = list(); return !!(L && /space marine|astartes|dark angels|blood angels|space wolves|deathwatch|templar|carcharodon|imperial fists/i.test((L.faction || '') + ' ' + (L.detachments || []).join(' ')));
   }
   function docLimits() {
     const det = (list() && list().detachments) || [];
@@ -1998,7 +2002,7 @@
       <div class="unit-actions"><button data-act="hurt" data-k="${u.id}" ${n ? '' : 'disabled'}>−1 WOUND</button><button data-act="kill" data-k="${u.id}" ${n ? '' : 'disabled'}>MODEL LOST</button><button data-act="heal" data-k="${u.id}">UNDO</button></div></div>`;
   }
   // small in-world wording on the opponent's side (their screens keep plain words otherwise)
-  const FOE_WORDS = { sw: { army: 'Law of the Pack', det: 'Saga', spotted: 'Wolves sighted' }, necron: { army: 'Protocol', det: 'Dynastic directive', spotted: 'Phalanxes detected' }, da: { army: 'Rite of the Order', det: 'Edict', spotted: 'Marked by the Watch' }, ae: { army: 'Path', det: 'Host', spotted: 'Seen in the mists' } };
+  const FOE_WORDS = { sw: { army: 'Law of the Pack', det: 'Saga', spotted: 'Wolves sighted' }, necron: { army: 'Protocol', det: 'Dynastic directive', spotted: 'Phalanxes detected' }, da: { army: 'Rite of the Order', det: 'Edict', spotted: 'Marked by the Watch' }, ae: { army: 'Path', det: 'Host', spotted: 'Seen in the mists' }, if: { army: 'Chapter rule', det: 'Siege doctrine', spotted: 'Sighted on the walls' } };
   function renderFoeView() {
     const F = foe(), fi = factionInfo(F.faction), B = S.battle; const W = FOE_WORDS[fi.theme] || { army: 'Army rule', det: 'Detachment', spotted: 'Spotted so far' };
     const fd = FD(F.faction); const isNec = !!fd;
@@ -2043,6 +2047,22 @@
       <span class="tnum" style="font-size: 18px; font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span><span class="small" style="color: var(--accent-text); font-weight: 600">${esc(a.oath)}: ${esc(a.oathText)}</span>`;
     const armyQ = `<span class="qt" style="font-size: calc(19px * var(--head-size))">${esc(a.armyQ)}</span><span class="small" style="font-weight: 700">${standing} of ${units.length}</span>`;
     const foeQ = `<span class="qt" style="font-size: calc(19px * var(--head-size)); color: ${t[4]}">${esc(a.foeQ)}</span><span class="small" style="font-weight: 700; color: ${t[4]}">${B.spotted.length} seen<br>${B.cp.foe} CP</span>`;
+    if (a.emblem === 'phalanx') {
+      // the great hall of the Phalanx: the arches are the screen's doors, the aquila above holds the Strategium's counsel
+      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
+      const hp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.81).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.81).toFixed(2)}%`;
+      const lastP = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const door = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q ph-door ${foeTint ? 'ph-foe' : ''}" style="${hp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="ph-plq"><span class="ph-t">${esc(top)}</span>${sub ? `<span class="ph-s">${sub}</span>` : ''}</span></button>`;
+      return `<div class="emblem phalanx"><img class="ph-art" src="${img('if-phalanx-hall')}" alt="">
+        <svg viewBox="0 0 390 581" aria-hidden="true" class="ch-ov"><defs>${grad}</defs><path d="M304 280 H384 V404 H304 Z" fill="url(#fg)" opacity="0.45" style="mix-blend-mode: color"></path></svg>
+        <span class="ph-glow" aria-hidden="true"></span>
+        <button class="q ph-eagle" style="${hp(206, 58, 96, 78)}" data-act="view" data-k="counsel" aria-label="${esc(a.counsel)}"><span class="eyebrow">${esc(a.counsel)}</span></button>
+        <button class="q ph-core" style="${hp(166, 258, 126, 88)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
+        ${door(46, 282, 82, 122, 'view', 'army', a.armyQ.replace('The ', ''), `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
+        ${door(190, 356, 78, 62, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
+        ${door(304, 282, 80, 122, 'view', 'foe', a.foeQ.replace('The ', ''), `${B.cp.foe} CP`, true)}
+        <button class="q ph-log" style="${hp(24, 498, 342, 76)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastP}</button></div>`;
+    }
     if (a.emblem === 'vault') {
       // the Omega Vault of the Watch Fortress: the sealed door is the screen; its omega seal is the Inquisitor's counsel
       const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
