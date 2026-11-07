@@ -43,6 +43,31 @@
     if (!rulesStatusP || fresh) rulesStatusP = fetch('rules-status.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return rulesStatusP;
   }
+  // the live check: our server reads the army's rules page now (it keeps the answer for a few hours); null when it can't
+  async function rulesLive(slug) {
+    if (!STANDALONE || !STANDALONE.client) return null;
+    try {
+      const go = STANDALONE.client.functions.invoke('rules-live', { body: { slugs: [slug] } });
+      const { data, error } = await Promise.race([go, new Promise((r) => setTimeout(() => r({ error: 'slow' }), 9000))]);
+      return !error && data && data.versions ? data.versions[slug] || null : null;
+    } catch (e) { return null; }
+  }
+  // before a battle: are the rules this app holds for both armies still the current ones?
+  async function rulesGate() {
+    const names = [...new Set([listFaction(list()), foe().faction])].filter((n) => n && FACTION_PAGE[n] && FACTION_VER[n]);
+    if (!names.length) { UI.gatePassed = true; ACT.fight(); save(); render(); return; }
+    UI.sheet = { type: 'rulesGate', busy: true }; render();
+    await Promise.all(names.map((n) => checkFaction(n, false)));
+    if (!UI.sheet || UI.sheet.type !== 'rulesGate') return;
+    const res = names.map((n) => ({ n, c: S.factionChecks[n] || {} }));
+    const stale = res.filter((x) => x.c.ver && !x.c.ok);
+    if (!stale.length) {
+      UI.sheet = null; UI.gatePassed = true;
+      toast(res.some((x) => x.c.error || x.c.unknown) ? 'Could not check the rules just now' : 'Rules current for both armies');
+      ACT.fight(); save(); render(); return;
+    }
+    UI.sheet = { type: 'rulesGate', stale: stale.map((x) => ({ n: x.n, ver: x.c.ver })) }; render();
+  }
   async function checkFaction(name, force) {
     if (!name || !FACTION_PAGE[name] || !FACTION_VER[name]) return;
     S.factionChecks = S.factionChecks || {};
@@ -50,7 +75,9 @@
     if (!force && prev && prev.ok && Date.now() - new Date(prev.at).getTime() < 12 * 3600 * 1000) return;
     if (STANDALONE || !(window.claude && window.claude.use)) {
       S.factionChecks[name] = { busy: true, at: new Date().toISOString() }; render();
-      const st = await rulesStatus(force); const ver = st && st.factions ? st.factions[FACTION_PAGE[name].split('/factions/')[1]] : null;
+      const slug = FACTION_PAGE[name].split('/factions/')[1];
+      const live = await rulesLive(slug);
+      const st = live ? { factions: { [slug]: live } } : await rulesStatus(force); const ver = st && st.factions ? st.factions[slug] : null;
       S.factionChecks[name] = st ? { at: new Date().toISOString(), ver, ok: ver === FACTION_VER[name], unknown: !ver } : { at: new Date().toISOString(), error: true };
       save(); render(); return;
     }
@@ -249,6 +276,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Before every battle, the app checks the rules it holds for both armies against the current ones. If either army\'s rules have changed, it tells you before the fight starts, so you can check points and datasheets first.',
       'Your battle world is named for your army\'s home: Fenris for the Vlka Fenryka, The Tomb World for the Infinite Empire, The Craftworld for the Asuryani, Erioch for the Deathwatch. Dark Angels live on the Rock, so they keep Terra. Black Templars keep Terra at the heart of the map, but you board the Eternal Crusader to fight: tap the ship as it circles the world.',
       'Lists can come from anywhere: paste text from the Warhammer 40,000 app, Warmind, New Recruit, Listforge or BattleScribe, or type it yourself with one unit per line and its points. The app finds the army, detachment, units, model counts and your warlord.',
       'Black Templars: the battle screen is now the chapel aboard the Eternal Crusader. The great window (Sigismund against Abaddon) holds the round, phase, CP and VP; the four lesser windows are your Crusade, Counsel, Round and Foe buttons; censers, incense and candles from the chapel spill past the frame.',
@@ -2238,6 +2266,12 @@
         <p class="small muted" style="margin: 0">Use your keyboard's mic to speak the note. Or leave it for later: it waits in the ${esc(A().log)}.</p>`,
         `<div class="grid2"><button class="btn" data-act="closeAll">LATER</button><button class="btn solid" data-act="voxSave" data-k="${e.id}">SAVE NOTE</button></div>`);
     }
+    if (sh.type === 'rulesGate') {
+      if (sh.busy) return sheet('Checking the rules', `<p class="small muted" style="margin: 0">Making sure the rules this app holds for both armies are the current ones.</p>`, '');
+      return sheet('Rules have changed', `${sh.stale.map((x) => `<p style="margin: 0"><b>${esc(factionInfo(x.n).display)}</b>: now ${esc(x.ver)}. This app holds ${esc(FACTION_VER[x.n])}.</p>`).join('')}
+        <p class="small muted" style="margin: 0">Points, datasheets or stratagems may differ from what the app shows. Check the changes before you rely on them.</p>`,
+        `<div class="grid2"><button class="btn" data-act="closeAll">BACK</button><button class="btn solid" data-act="gateGo">FIGHT ANYWAY</button></div>`);
+    }
     if (sh.type === 'newConfirm') {
       syncScores();
       return sheet('Battle in progress', `<p style="margin: 0">Round ${roman(B.round)} against ${esc(factionInfo(foe().faction).display)}, ${B.vp.me}–${B.vp.foe}.</p><p class="small muted" style="margin: 0">Carry on with it, or end it and set up a new one. You choose whether the old one is kept.</p>`,
@@ -2446,8 +2480,11 @@
     fight() {
       if (!list()) return;
       if (S.battle && !S.battle.ended && S.screen !== 'battle') { UI.sheet = { type: 'newConfirm' }; return; }
+      if (STANDALONE && !UI.gatePassed) { rulesGate(); return 'skip'; }
+      UI.gatePassed = false; UI.sheet = null; UI.overlay = null;
       newBattle(); S.screen = 'battle'; UI.view = 'emblem'; UI.undo = []; window.scrollTo(0, 0);
     },
+    gateGo() { UI.gatePassed = true; return ACT.fight(); },
     startNew(k) {
       if (k === 'save') { archiveBattle('unfinished'); toast('Saved to ' + A().hist + ' as unfinished'); }
       UI.sheet = null; S.battle = null; S.screen = 'muster'; UI.undo = []; window.scrollTo(0, 0);
