@@ -883,6 +883,8 @@ button.chip { background: transparent; color: var(--text); min-height: 34px; }
 .ff-seal-in small { font-size: 11px; color: var(--muted); }
 .ff-seal-cap { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-align: center; color: var(--gold); }
 .ff-seal.bad .ff-seal-cap { color: var(--accent-text); }
+.ff-seal-go { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 8px; border: 1px solid var(--gold); color: var(--gold); text-align: center; line-height: 1.2; }
+.ff-seal.full .ff-seal-go { background: var(--gold); color: var(--bg); }
 .ff-line { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); text-align: left; font-size: 14px; min-height: 44px; }
 .ff-errs { border-color: color-mix(in srgb, var(--accent-text) 50%, var(--line)); }
 .ff-unit.bad { border-color: color-mix(in srgb, var(--accent-text) 60%, var(--line)); }
@@ -923,12 +925,12 @@ button.chip { background: transparent; color: var(--text); min-height: 34px; }
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=67"></script>
-<script src="lib-v15.js?v=67"></script>
-<script src="footfall.js?v=67"></script>
-<script src="data.js?v=67"></script>
-<script src="foes.js?v=67"></script>
-<script src="app.js?v=67"></script>
+<script src="sb.js?v=68"></script>
+<script src="lib-v15.js?v=68"></script>
+<script src="footfall.js?v=68"></script>
+<script src="data.js?v=68"></script>
+<script src="foes.js?v=68"></script>
+<script src="app.js?v=68"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

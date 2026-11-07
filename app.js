@@ -276,7 +276,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
-      'Footfall, the list builder: the void port on the main screen. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
+      'Footfall, the list builder: the void port on the main screen. A legal list carries its army\'s seal (Chapter Master Approved, High Marshal Approved, Silent King Approved, Nurgle Approved and more), and you send it to battle the way that army goes to war: Board the Thunderhawks, Board the Night Scythes, Launch the Tyrannocytes. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
       'Before every battle, the app checks the rules it holds for both armies against the current ones. If either army\'s rules have changed, it tells you before the fight starts, so you can check points and datasheets first.',
       'Your battle world is named for your army\'s home: Fenris for the Vlka Fenryka, The Tomb World for the Infinite Empire, The Craftworld for the Asuryani, Erioch for the Deathwatch. Dark Angels live on the Rock, so they keep Terra. Black Templars keep Terra at the heart of the map, but you board the Eternal Crusader to fight: tap the ship as it circles the world.',
       'Lists can come from anywhere: paste text from the Warhammer 40,000 app, Warmind, New Recruit, Listforge or BattleScribe, or type it yourself with one unit per line and its points. The app finds the army, detachment, units, model counts and your warlord.',
@@ -2982,13 +2982,31 @@
     const inList = new Set(ev.S.force.kids.map((k) => k.r.id));
     return pool.sort((a, b) => (spare - a.pts) - (spare - b.pts) - (inList.has(FF.R(Dd, a.key).id) ? 40 : 0) + (inList.has(FF.R(Dd, b.key).id) ? 40 : 0)).slice(0, 3);
   }
+  // who signs off a legal list, and how it goes to war: researched per army (vessels are units in the current data where one fits)
+  const FF_SEAL = {
+    'Space Marines': ['Chapter Master', 'Board the Thunderhawks'], 'Ultramarines': ['Chapter Master', 'Board the Thunderhawks'], 'Imperial Fists': ['Chapter Master', 'Board the Thunderhawks'],
+    'Iron Hands': ['Chapter Master', 'Board the Thunderhawks'], 'Raven Guard': ['Chapter Master', 'Board the Thunderhawks'], 'Salamanders': ['Chapter Master', 'Board the Thunderhawks'],
+    'White Scars': ['Chapter Master', 'Board the Thunderhawks'], 'Blood Angels': ['Chapter Master', 'Board the Thunderhawks'],
+    'Black Templars': ['High Marshal', 'Board the Thunderhawks'], 'Space Wolves': ['Great Wolf', 'Board the Stormwolves'], 'Dark Angels': ['Supreme Grand Master', 'Board the Thunderhawks'],
+    'Deathwatch': ['Watch Master', 'Board the Corvus Blackstars'], 'Grey Knights': ['Supreme Grand Master', 'Board the Stormravens'],
+    'Adeptus Custodes': ['Emperor', 'Board the Orions'], 'Adepta Sororitas': ['Abbess Sanctorum', 'Board the Immolators'], 'Astra Militarum': ['Munitorum', 'Board the Valkyries'],
+    'Adeptus Mechanicus': ['Fabricator-General', 'Board the Archaeopters'], 'Imperial Knights': ['Emperor', 'Stride to war'], 'Agents of the Imperium': ['Inquisition', 'Board the Valkyries'],
+    'Adeptus Titanicus': ['Omnissiah', 'Stride to war'],
+    'Chaos Space Marines': ['Dark Gods', 'Board the Rhinos'], 'Death Guard': ['Nurgle', 'Board the Rhinos'], 'Thousand Sons': ['Tzeentch', 'Board the Rhinos'],
+    'World Eaters': ['Khorne', 'Board the Rhinos'], "Emperor's Children": ['Slaanesh', 'Board the Rhinos'], 'Chaos Daemons': ['Dark Gods', 'Tear open the Warp'],
+    'Chaos Knights': ['Dark Gods', 'Stride to war'], 'Titanicus Traitoris': ['Dark Mechanicum', 'Stride to war'],
+    'Necrons': ['Silent King', 'Board the Night Scythes'], 'Aeldari': ['Seer Council', 'Board the Wave Serpents'], 'Drukhari': ['Archon', 'Board the Raiders'],
+    'Orks': ['Warboss', 'Get in da Battlewagonz'], "T'au Empire": ['Ethereal', 'Board the Devilfish'], 'Tyranids': ['Hive Mind', 'Launch the Tyrannocytes'],
+    'Genestealer Cults': ['Patriarch', 'Board the Goliath Trucks'], 'Leagues of Votann': ['Votann', 'Board the Sagitaurs'],
+  };
+  const ffSealOf = (Dd) => FF_SEAL[ffShort(Dd.facName)] || ['Commander', 'To war'];
   function ffSeal(Dd, ev) {
     const ok = !ev.errors.length; const pct = ev.limit ? Math.min(1, ev.pts / ev.limit) : 0; const C = 2 * Math.PI * 52;
     const near = ev.limit && ev.limit - ev.pts < 30 && ev.pts <= ev.limit;
-    return `<button class="ff-seal ${ok ? 'ok' : 'bad'} ${ok && near ? 'full' : ''}" data-act="ffSeal" aria-label="${ok ? 'List is legal. Take it to ' + esc(homeWorld().name) : ev.errors.length + ' problems to fix'}">
+    return `<button class="ff-seal ${ok ? 'ok' : 'bad'} ${ok && near ? 'full' : ''}" data-act="ffSeal" aria-label="${ok ? esc(ffSealOf(Dd)[1]) + ': take this list to ' + esc(homeWorld().name) : ev.errors.length + ' problems to fix'}">
       <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="trk" cx="60" cy="60" r="52"></circle><circle class="arc" cx="60" cy="60" r="52" stroke-dasharray="${(C * pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"></circle><circle class="wax" cx="60" cy="60" r="${(14 + 30 * pct).toFixed(1)}"></circle></svg>
       <span class="ff-seal-in"><b>${ev.pts.toLocaleString()}</b><small>of ${(ev.limit || 0).toLocaleString()}</small></span>
-      <span class="ff-seal-cap">${ok ? (near ? 'Approved · To ' + esc(homeWorld().name) : 'Legal · To ' + esc(homeWorld().name)) : ev.errors.length + (ev.errors.length === 1 ? ' problem' : ' problems')}</span></button>`;
+      <span class="ff-seal-cap">${ok ? (near ? esc(ffSealOf(Dd)[0]) + ' Approved' : 'Legal') : ev.errors.length + (ev.errors.length === 1 ? ' problem' : ' problems')}</span>${ok ? `<span class="ff-seal-go">${esc(ffSealOf(Dd)[1])}</span>` : ''}</button>`;
   }
   function renderFootfall() {
     const st = ffState(); const L = ffCur();
@@ -3232,7 +3250,7 @@
       const key = ({ 'Black Templars': 'templars', ...MAINABLE })[short];
       if (key && myArmies().includes(key)) { S.army = key; S.lists[key] = parsed; }
       else { S.army = 'other'; S.facKey = null; S.lists.other = parsed; rememberFac(parsed); }
-      S.screen = 'muster'; UI.sheet = null; toast(L.name + ' is ready on ' + homeWorld().name); window.scrollTo(0, 0); return 'top';
+      S.screen = 'muster'; UI.sheet = null; toast(ffSealOf(Dd)[1] + ': ' + L.name + ' is bound for ' + homeWorld().name); window.scrollTo(0, 0); return 'top';
     },
     ffUnit(u) { UI.sheet = { type: 'ffUnit', u }; },
     ffAddOpen() { UI.sheet = { type: 'ffAdd' }; UI.ffQ = ''; },
