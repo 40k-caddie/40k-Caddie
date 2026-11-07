@@ -1,15 +1,22 @@
 name: Meta probe (one-off)
 on:
   push:
-    paths: ['tools/probe_meta.py']
+    paths: ['tools/probe_meta.py', '.github/workflows/meta-probe.yml']
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/probe_meta.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: probe
-          path: probe
+      - name: Push the pages to a scratch branch
+        run: |
+          git config user.name "40k Caddie probe"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan probe-out
+          git rm -rq --cached . 
+          git add -f probe
+          git commit -qm "probe pages"
+          git push -f origin probe-out
