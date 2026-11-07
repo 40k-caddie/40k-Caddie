@@ -1691,12 +1691,20 @@
       const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)'];
       const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes'];
       const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Space Marines (other chapter)', 'Alpha Legion']);
-      const todo = FACTIONS.map((f) => f[0]).filter((n) => !done.has(n));
+      // the rest, most played first (11th edition games, from the weekly meta numbers), so they get their look in that order
+      ffMetaLoad();
+      const GAMES = { Tyranids: 14375, "T'au Empire": 12428, 'Chaos Space Marines': 11376, 'World Eaters': 11067, "Emperor's Children": 10869, 'Death Guard': 10700, 'Imperial Knights': 10119, 'Chaos Daemons': 9717, 'Leagues of Votann': 8977, 'Astra Militarum': 8718, 'Thousand Sons': 8439, 'Blood Angels': 7337, 'Chaos Knights': 6405, 'Grey Knights': 6390, 'Adepta Sororitas': 6110, 'Adeptus Mechanicus': 6049, Drukhari: 5917, 'Black Templars': 3830, 'Genestealer Cults': 3734, 'Imperial Agents': 893 };
+      const META_NAME = { 'Genestealer Cults': 'Genestealer Cult' };
+      const games = (n) => { const f = FFMETA && FFMETA.factions && FFMETA.factions[META_NAME[n] || n]; return f && f.games ? f.games : GAMES[n] || 0; };
+      const todo = FACTIONS.map((f) => f[0]).filter((n) => !done.has(n)).concat(['Black Templars as an opponent'])
+        .map((n) => ({ n, g: games(n.replace(' as an opponent', '')) })).sort((a, b) => b.g - a.g);
       const li = (l) => l.map((n) => `<li>${esc(n)}</li>`).join('');
+      const liG = (l) => l.map((x) => `<li>${esc(x.n)}${x.g ? ` <span class="muted">· ${x.g.toLocaleString()} games</span>` : ' <span class="muted">· counted with Space Marines</span>'}</li>`).join('');
       return sheet('Coming soon', `<p style="margin: 0">Every army works fully in the app: lists, battles, rules, the Cogitator and Footfall. Some armies also have their own look: frames, words, battle screen, colours and art. The rest use the standard look for now, and all of them will get theirs.</p>
         <div class="stack" style="gap: 4px"><span class="eyebrow">Full look as your main army</span><ul class="small" style="margin: 0; padding-left: 18px">${li(DONE_MAIN)}</ul></div>
         <div class="stack" style="gap: 4px"><span class="eyebrow">Full look as an opponent</span><ul class="small" style="margin: 0; padding-left: 18px">${li(DONE_FOE)}</ul></div>
-        <div class="stack" style="gap: 4px"><span class="eyebrow">Standard look for now, theirs on the way</span><ul class="small" style="margin: 0; padding-left: 18px">${li(todo)}<li>Black Templars as an opponent</li></ul></div>`,
+        <div class="stack" style="gap: 4px"><span class="eyebrow">Standard look for now, theirs on the way · most played first</span><ul class="small" style="margin: 0; padding-left: 18px">${liG(todo)}</ul></div>
+        <p class="small muted" style="margin: 0">Order by games played in 11th edition, from the weekly 40k-analytics numbers.</p>`,
         `<button class="btn solid block" data-act="closeAll">DONE</button>`);
     }
     if (o === 'about') {
