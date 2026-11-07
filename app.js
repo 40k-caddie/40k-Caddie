@@ -249,6 +249,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
+      'Lists can come from anywhere: paste text from the Warhammer 40,000 app, Warmind, New Recruit, Listforge or BattleScribe, or type it yourself with one unit per line and its points. The app finds the army, detachment, units, model counts and your warlord.',
       'Black Templars: the battle screen is now the chapel aboard the Eternal Crusader. The great window (Sigismund against Abaddon) holds the round, phase, CP and VP; the four lesser windows are your Crusade, Counsel, Round and Foe buttons; censers, incense and candles from the chapel spill past the frame.',
       'Deathwatch can be a main army: the Watch Fortress, the Omega Vault as the battle emblem, Kill Team and Inquisitor wording, and "The Xenos" or "The Target" depending on who you face. Deathwatch can now also be picked as an opponent.',
       'Other users\' armies can now be their main army: load a Space Wolves, Dark Angels, Necron or Aeldari list through Other and tap "Make ... your main army". Each gets its own frame, words, battle cry and battle emblem, checked against the lore.',
@@ -660,7 +661,81 @@
   const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : S.army === 'deathwatch' ? ICON.omega : ICON.cross);
 
   // ---------- list parser (40k app text export) ----------
+  // Any list as plain text (Warhammer app, Warmind, New Recruit, Listforge, BattleScribe, typed by hand):
+  // try the Warhammer app layout first; if that doesn't fit, read the text for units, points, models, the army and detachment.
   function parseList(text) {
+    let r = null, err = null;
+    try { r = parseGW(text); } catch (e) { err = e; }
+    if (r && r.units.length && r.units.every((u) => u.points)) return r;
+    const g = parseAnyText(text);
+    if (g.units.length) return g;
+    if (r) return r;
+    throw err || new Error('No units found. Paste a list with each unit and its points, for example "Necron Warriors (90 points)".');
+  }
+  function knownUnitNames() {
+    const set = new Set(Object.keys(D.units));
+    Object.values(FOES).forEach((f) => { if (f && f.units) Object.keys(f.units).forEach((n) => set.add(n)); });
+    Object.keys((window.IT_FOES && window.IT_FOES.smUnits) || {}).forEach((n) => set.add(n));
+    return [...set];
+  }
+  function parseAnyText(text) {
+    const lines = text.replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+$/, ''));
+    const PTS = /[\(\[\{]?\s*(\d{1,2},\d{3}|\d{2,4})\s*(?:pts|points|pt|p)\b\.?\s*[\)\]\}]?/i;
+    const LEAD = /^\s*(?:[-*•▪◦+>.]\s*)*/;
+    const COUNT = /^(\d+)\s*[x×]\s*(.+)$|^(.+?)\s*[x×]\s*(\d+)$|^(.+?)\s+(\d+)\s*[x×]$/i;
+    const cnum = (m) => +(m[1] || m[4] || m[6]), cname = (m) => (m[2] || m[3] || m[5]).trim();
+    const SKIP = /^(characters?|battleline|other datasheets|dedicated transports|allied units|attached units?|epic heroes|infantry|vehicles?|monsters?|beasts?|fast attack|heavy support|elites|troops|hq|lord of war|flyers?|fortifications?|units?|enhancements?|total|army|list)\s*:?$/i;
+    const ind = (l) => l.length - l.replace(/^\s+/, '').length;
+    const known = knownUnitNames(); const kn = known.map((n) => [n, norm(n)]);
+    const findUnit = (name) => { const n = norm(name); return (kn.find((x) => x[1] === n) || kn.find((x) => x[1] === n.replace(/s$/, '')) || kn.find((x) => n.startsWith(x[1] + ' ') || x[1].startsWith(n + ' ')) || [null])[0]; };
+    const facNames = FACTIONS.map((f) => f[0]).concat(['Space Marines', 'Adeptus Astartes']);
+    const allDets = D.rulesSM.detachments.map((d) => d.name).concat(...Object.values(FOES).map((f) => ((f && f.detachments) || []).map((d) => d.name)));
+    const low = text.toLowerCase();
+    const r = { name: '', faction: null, subfaction: null, detachments: [], detachment_points: null, force_disposition: null, battle_size: null, points_limit: null, units: [] };
+    // the army: Space Marine chapters sit under "Space Marines"
+    const facHits = facNames.filter((f) => new RegExp('\\b' + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(text));
+    const chapter = facHits.find((f) => f !== 'Space Marines' && f !== 'Adeptus Astartes' && FACTION_FILES[f] && /space-marines|templars|angels|wolves|ultramarines|carcharodons/.test(FACTION_FILES[f] || ''));
+    if (chapter || facHits.some((f) => /Space Marines|Adeptus Astartes|Black Templars|Dark Angels|Space Wolves|Blood Angels|Ultramarines|Deathwatch/.test(f))) { r.faction = 'Space Marines'; r.subfaction = chapter || facHits.find((f) => /Black Templars|Dark Angels|Space Wolves|Blood Angels|Ultramarines|Deathwatch/.test(f)) || null; }
+    else r.faction = facHits[0] || null;
+    r.detachments = [...new Set(allDets.filter((d) => low.includes(d.toLowerCase())))];
+    let unit = null, firstText = '';
+    lines.forEach((raw) => {
+      if (/^\s*\+/.test(raw) && !/\d\s*(pts|points)/i.test(raw)) return;
+      const lineTxt = raw.replace(LEAD, '').replace(/^\++\s*|\s*\++$/g, '').trim(); if (!lineTxt) return;
+      if (!firstText) firstText = lineTxt;
+      if (SKIP.test(lineTxt.replace(PTS, '').trim())) return;
+      if (/warlord/i.test(lineTxt) && unit && !PTS.test(lineTxt)) { unit.warlord = true; return; }
+      const enh = lineTxt.match(/^enhancements?\s*:\s*(.+?)(?:\s*[\(\[].*)?$/i);
+      if (enh && unit) { unit.enhancements.push(enh[1].trim()); return; }
+      const pm = lineTxt.match(PTS);
+      if (pm) {
+        let name = lineTxt.replace(PTS, '').replace(/[-–—:|,]+\s*$/, '').replace(/^[-–—:|,]+/, '').trim();
+        let cnt = null; name = name.replace(/\s*:\s*.*$/, '').trim(); const cm = name.match(COUNT); if (cm) { cnt = cnum(cm); name = cname(cm); }
+        if (/warlord/i.test(name)) { name = name.replace(/\s*[\(\[]?\s*warlord\s*[\)\]]?\s*/i, ' ').trim(); }
+        const hit = findUnit(name);
+        if (!hit && (+pm[1] >= 500 || /strike force|incursion|onslaught|combat patrol/i.test(lineTxt) || r.units.length === 0 && !findUnit(name) && lineTxt === firstText)) { if (+pm[1] >= 500) { r.points_limit = r.points_limit || +pm[1]; r.battle_size = r.battle_size || name; } if (!r.name) r.name = name; return; }
+        unit = { name: hit || name, points: +pm[1], section: null, attached_group: null, role: null, battleline: false, warlord: /warlord/i.test(lineTxt), enhancements: [], models: [], wargear: [], depth: ind(raw) };
+        if (cnt) unit.models.push({ count: cnt, name: hit || name, wargear: [] });
+        r.units.push(unit); return;
+      }
+      if (!unit) { if (!r.name) r.name = lineTxt.replace(/\s*[\(\[].*$/, '').replace(/\s*[-–—]\s*\d.*$/, '').trim(); return; }
+      const head = lineTxt.split(':')[0].trim();
+      const cx = head.match(COUNT), cy = cx ? null : head.match(/^(\d+)\s+(.+)$/);
+      if (cx || cy) {
+        const n = cx ? cnum(cx) : +cy[1], what = cx ? cname(cx) : cy[2].trim();
+        // a model line names a model or the unit; anything else is wargear
+        const isModel = findUnit(what) || norm(unit.name).includes(norm(what).replace(/s$/, '')) || norm(what).includes(norm(unit.name).replace(/s$/, '')) || (ds(unit.name) && (ds(unit.name).m || []).some((m) => norm(m.name).replace(/s$/, '') === norm(what).replace(/s$/, '')));
+        if (isModel) unit.models.push({ count: n, name: what, wargear: [] });
+        else unit.wargear.push({ count: n, name: what });
+      }
+    });
+    r.units.forEach((u) => { if (!u.models.length) u.models = [{ count: 1, name: u.name, wargear: u.wargear }]; delete u.wargear; delete u.depth; u.model_count = u.models.reduce((a, m) => a + m.count, 0); });
+    if (!r.name) r.name = (r.subfaction || r.faction || 'My army') + ' list';
+    r.points_total = r.units.reduce((a, u) => a + u.points, 0);
+    r.source = 'text';
+    return r;
+  }
+  function parseGW(text) {
     const lines = text.replace(/\r/g, '').split('\n').map((l) => l.replace(/\s+$/, ''));
     const unitRe = /^(.+?) \((\d+) points\)$/;
     const countRe = /^(\d+)x (.+)$/;
@@ -716,7 +791,7 @@
       u.model_count = u.models.reduce((a, m) => a + m.count, 0);
     });
     r.points_total = r.units.reduce((a, u) => a + u.points, 0);
-    if (!r.units.length) throw new Error('No units found. Paste the full text export from the Warhammer 40,000 app.');
+    if (!r.units.length) throw new Error('No units found.');
     return r;
   }
 
@@ -1395,7 +1470,7 @@
       const otherTop = isOther ? `<div class="panel row" style="gap: 12px; padding: 10px 12px; align-items: center"><span style="flex: 0 0 64px; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--line2)">${li ? `<img src="${li.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">` : '<span class="small muted">No image</span>'}</span>
         <span class="stack" style="gap: 4px; flex: 1; min-width: 0"><span class="eyebrow">Army image</span><span class="small muted">${li ? 'Change it from Image library at the bottom of the main screen.' : 'Add one from Image library at the bottom of the main screen.'}</span></span></div>
         ${list() ? `<div class="small">Current list: <b>${esc(list().name)}</b> · ${list().units.length} units. Paste below only to replace it.</div>` : ''}` : '';
-      return sheet(isOther ? 'Your army' : 'Paste your list', `${otherTop}<p class="muted" style="margin: 0">In the Warhammer 40,000 app, open your army, choose Share, then Copy as text, and paste it here.</p>
+      return sheet(isOther ? 'Your army' : 'Paste your list', `${otherTop}<p class="muted" style="margin: 0">Paste your list as text from any app (Warhammer 40,000, Warmind, New Recruit, Listforge, BattleScribe) or type it: one unit per line with its points.</p>
         <label class="field"><span class="eyebrow">List text</span><textarea id="paste-text" rows="10" placeholder="Paste the full export, including the line with Detachment Points"></textarea></label>
         <div id="paste-err" class="small" style="color: var(--accent-text)"></div>`,
         isOther && list() ? `<div class="grid2"><button class="btn" data-act="closeAll">KEEP CURRENT</button><button class="btn solid" data-act="parse">LOAD NEW LIST</button></div>` : `<button class="btn solid block" data-act="parse">LOAD THIS LIST</button>`);
@@ -1451,7 +1526,7 @@
       const L = UI.wwNeedList && !(S.army === 'other' && list() && UI.wwPasted) ? null : list();
       return sheet('Join a battle', `<label class="field"><span class="eyebrow">Battle code</span><input id="ww-code" autocapitalize="characters" autocomplete="off" maxlength="7" value="${esc(UI.wwCode || '')}" placeholder="ABC123" style="font-size: 22px; letter-spacing: 0.2em; text-transform: uppercase"></label>
         ${L ? `<p class="small" style="margin: 0">You'll play <b>${esc(L.name)}</b>${L.faction ? ' (' + esc(L.faction) + ')' : ''}. <button class="linkish" data-act="wwNewList">Use a different list</button></p>`
-          : `<p class="small muted" style="margin: 0">In the Warhammer 40,000 app, open your army, choose Share, then Copy as text, and paste it here.</p>
+          : `<p class="small muted" style="margin: 0">Paste your list as text from any app (Warhammer 40,000, Warmind, New Recruit, Listforge, BattleScribe) or type it: one unit per line with its points.</p>
         <label class="field"><span class="eyebrow">Your army list</span><textarea id="paste-text" rows="7" placeholder="Paste the full export"></textarea></label><div id="paste-err" class="small" style="color: var(--accent-text)"></div>`}${err}`,
         `<button class="btn solid block" data-act="wwJoin" ${UI.liveBusy ? 'disabled' : ''}>${UI.liveBusy ? 'JOINING…' : 'JOIN THE BATTLE'}</button>`);
     }
