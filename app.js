@@ -249,7 +249,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
-      'Your battle world is named for your army\'s home: Fenris for the Vlka Fenryka, The Tomb World for the Infinite Empire, The Craftworld for the Asuryani, Erioch for the Deathwatch. Black Templars and Dark Angels live on a ship and a rock, so they keep Terra.',
+      'Your battle world is named for your army\'s home: Fenris for the Vlka Fenryka, The Tomb World for the Infinite Empire, The Craftworld for the Asuryani, Erioch for the Deathwatch. Dark Angels live on the Rock, so they keep Terra. Black Templars keep Terra at the heart of the map, but you board the Eternal Crusader to fight: tap the ship as it circles the world.',
       'Lists can come from anywhere: paste text from the Warhammer 40,000 app, Warmind, New Recruit, Listforge or BattleScribe, or type it yourself with one unit per line and its points. The app finds the army, detachment, units, model counts and your warlord.',
       'Black Templars: the battle screen is now the chapel aboard the Eternal Crusader. The great window (Sigismund against Abaddon) holds the round, phase, CP and VP; the four lesser windows are your Crusade, Counsel, Round and Foe buttons; censers, incense and candles from the chapel spill past the frame.',
       'Deathwatch can be a main army: the Watch Fortress, the Omega Vault as the battle emblem, Kill Team and Inquisitor wording, and "The Xenos" or "The Target" depending on who you face. Deathwatch can now also be picked as an opponent.',
@@ -1129,7 +1129,14 @@
     img.onerror = () => done(null);
     img.src = it.src;
   }
+  let flagSrc = '', flagBusy = false;
+  const FLAG = () => S.army === 'templars';
+  function prepFlag() {
+    if (flagSrc || flagBusy) return; const it = POOL.find((x) => !/^(bg|fleet)-/i.test(x.name) && /gloriana|invincible|reason|barge|battleship|vessel|ship/i.test(x.name)); if (!it) return;
+    flagBusy = true; makeBarge(it, (r) => { flagBusy = false; if (r) { flagSrc = r.src; document.querySelectorAll('.flagship img').forEach((im) => { im.src = flagSrc; }); } });
+  }
   function launchFleet(net, at) {
+    if (FLAG()) { prepFlag(); const fl = document.querySelector('.sol .fleet'); if (fl) fl.innerHTML = ''; return; }
     const fleet = document.querySelector('.sol .fleet'); if (!fleet || reduceMotion) return;
     fleet.innerHTML = '';
     const it = bargeItem(); if (!it || !it.src) return;
@@ -1260,9 +1267,10 @@
         return `<svg class="net" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${E.map((e, i) => line(e, e[0] === 'terra' ? 'spoke' : 'ring', i)).join('')}</svg><div class="fleet" aria-hidden="true"></div>`;
       })()}
       <span class="sun" aria-hidden="true"></span>
-      <button class="world terra" data-fx="terra" data-act="terra" style="left: 50%; top: 45%; --s: 124px" aria-label="${esc(homeWorld().name)}: ${B ? 'resume the battle in progress' : 'battle'}">
+      <${FLAG() ? 'div' : 'button'} class="world terra ${FLAG() ? 'static' : ''}" ${FLAG() ? '' : 'data-fx="terra" data-act="terra"'} style="left: 50%; top: 45%; --s: 124px" ${FLAG() ? 'aria-hidden="true"' : `aria-label="${esc(homeWorld().name)}: ${B ? 'resume the battle in progress' : 'battle'}"`}>
         <span class="orb" aria-hidden="true">${homeWorld().img ? `<span class="terra-art home-art"><img src="${homeWorld().img}" alt=""></span>` : `<span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span>`}</span>
-        <span class="w-name">${esc(homeWorld().name)}</span><span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>
+        <span class="w-name">${esc(homeWorld().name)}</span>${FLAG() ? `<span class="w-sub">${B ? 'Board the Eternal Crusader to resume' : 'Board the Eternal Crusader to fight'}</span></div>
+      <div class="flag-orbit" aria-hidden="false"><button class="flagship" data-act="terra" aria-label="The Eternal Crusader: ${B ? 'resume the battle in progress' : 'battle'}"><img src="${flagSrc || ''}" alt=""></button></div>` : `<span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>`}
       ${world('ulthwe', 'updates', 49, 11, 32, 'Ulthwé', 'App updates', '', false, (() => { const it = POOL.find((x) => /ulthwe|craftworld/.test(fileKey(x.name))); return it ? it.src : ''; })())}
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
       ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', '', !UI.cogOK)}
