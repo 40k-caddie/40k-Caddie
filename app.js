@@ -15,12 +15,14 @@
   const FACTION_VER = {"Necrons": "2.8.1 October 2026", "Aeldari": "1.4 October 2026", "Adeptus Custodes": "2.8.1 October 2026", "Grey Knights": "2.8.1 October 2026", "Adepta Sororitas": "1.4 October 2026", "Astra Militarum": "2.8.1 October 2026", "Adeptus Mechanicus": "1.4 October 2026", "Imperial Knights": "2.8.1 October 2026", "Imperial Agents": "1.3 October 2026", "World Eaters": "2.8.1 October 2026", "Death Guard": "2.8.1 October 2026", "Thousand Sons": "2.8.1 October 2026", "Emperor's Children": "2.8.1 October 2026", "Chaos Space Marines": "2.8.1 October 2026", "Alpha Legion": "2.8.1 October 2026", "Chaos Daemons": "2.8.1 October 2026", "Chaos Knights": "2.8.1 October 2026", "Orks": "2.8.1 October 2026", "Tyranids": "1.3 October 2026", "Genestealer Cults": "2.8.1 October 2026", "T'au Empire": "2.8.1 October 2026", "Drukhari": "2.8.1 October 2026", "Leagues of Votann": "1.2 October 2026", "Black Templars": "2.8.1 October 2026", "Blood Angels": "2.8.1 October 2026", "Dark Angels": "2.8.1 October 2026", "Space Wolves": "2.8.1 October 2026", "Ultramarines": "2.8.1 October 2026", "Carcharodons": "2.8.1 October 2026", "Space Marines (other chapter)": "2.8.1 October 2026"};
   const FACTION_PAGE = {"Necrons": "https://wahapedia.ru/wh40k11ed/factions/necrons", "Aeldari": "https://wahapedia.ru/wh40k11ed/factions/aeldari", "Adeptus Custodes": "https://wahapedia.ru/wh40k11ed/factions/adeptus-custodes", "Grey Knights": "https://wahapedia.ru/wh40k11ed/factions/grey-knights", "Adepta Sororitas": "https://wahapedia.ru/wh40k11ed/factions/adepta-sororitas", "Astra Militarum": "https://wahapedia.ru/wh40k11ed/factions/astra-militarum", "Adeptus Mechanicus": "https://wahapedia.ru/wh40k11ed/factions/adeptus-mechanicus", "Imperial Knights": "https://wahapedia.ru/wh40k11ed/factions/imperial-knights", "Imperial Agents": "https://wahapedia.ru/wh40k11ed/factions/imperial-agents", "World Eaters": "https://wahapedia.ru/wh40k11ed/factions/world-eaters", "Death Guard": "https://wahapedia.ru/wh40k11ed/factions/death-guard", "Thousand Sons": "https://wahapedia.ru/wh40k11ed/factions/thousand-sons", "Emperor's Children": "https://wahapedia.ru/wh40k11ed/factions/emperor-s-children", "Chaos Space Marines": "https://wahapedia.ru/wh40k11ed/factions/chaos-space-marines", "Alpha Legion": "https://wahapedia.ru/wh40k11ed/factions/chaos-space-marines", "Chaos Daemons": "https://wahapedia.ru/wh40k11ed/factions/chaos-daemons", "Chaos Knights": "https://wahapedia.ru/wh40k11ed/factions/chaos-knights", "Orks": "https://wahapedia.ru/wh40k11ed/factions/orks", "Tyranids": "https://wahapedia.ru/wh40k11ed/factions/tyranids", "Genestealer Cults": "https://wahapedia.ru/wh40k11ed/factions/genestealer-cults", "T'au Empire": "https://wahapedia.ru/wh40k11ed/factions/t-au-empire", "Drukhari": "https://wahapedia.ru/wh40k11ed/factions/drukhari", "Leagues of Votann": "https://wahapedia.ru/wh40k11ed/factions/leagues-of-votann", "Black Templars": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Blood Angels": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Dark Angels": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Space Wolves": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Ultramarines": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Carcharodons": "https://wahapedia.ru/wh40k11ed/factions/space-marines", "Space Marines (other chapter)": "https://wahapedia.ru/wh40k11ed/factions/space-marines"};
   const FACTION_FILES_V = 2;
+  // armies that borrow another army's rules file (the Deathwatch fight from the Space Marine codex)
+  const FACTION_ALIAS = { Deathwatch: 'Space Marines (other chapter)' }; FACTION_FILES.Deathwatch = FACTION_FILES[FACTION_ALIAS.Deathwatch];
   const factionLoading = {}, factionTried = {};
   function loadFaction(name) {
     if (!name || FOES[name] || factionLoading[name] || !FACTION_FILES[name]) return;
     factionLoading[name] = true;
     const sc = document.createElement('script'); sc.src = 'factions/' + FACTION_FILES[name] + '.js?v=' + FACTION_FILES_V;
-    sc.onload = () => { const f = window.IT_FOES_MORE && window.IT_FOES_MORE[name]; if (f) { FOES[name] = f; delete unitCache[name]; } factionLoading[name] = false; factionTried[name] = true; render(); checkFaction(name); };
+    sc.onload = () => { const f = window.IT_FOES_MORE && (window.IT_FOES_MORE[name] || window.IT_FOES_MORE[FACTION_ALIAS[name]]); if (f) { FOES[name] = f; delete unitCache[name]; } factionLoading[name] = false; factionTried[name] = true; render(); checkFaction(name); };
     sc.onerror = () => { factionLoading[name] = 'failed'; render(); };
     document.head.appendChild(sc);
   }
@@ -247,7 +249,9 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '7 Nov 2026', items: [
-      'Your mates\' armies can now be their main army: load a Space Wolves, Dark Angels, Necron or Aeldari list through Other and tap "Make ... your main army". Each gets its own frame, words, battle cry and battle emblem, checked against the lore.',
+      'Black Templars: the battle screen is now the chapel aboard the Eternal Crusader. The great window (Sigismund against Abaddon) holds the round, phase, CP and VP; the four lesser windows are your Crusade, Counsel, Round and Foe buttons; censers, incense and candles from the chapel spill past the frame.',
+      'Deathwatch can be a main army: the Watch Fortress, the Omega Vault as the battle emblem, Kill Team and Inquisitor wording, and "The Xenos" or "The Target" depending on who you face. Deathwatch can now also be picked as an opponent.',
+      'Other users\' armies can now be their main army: load a Space Wolves, Dark Angels, Necron or Aeldari list through Other and tap "Make ... your main army". Each gets its own frame, words, battle cry and battle emblem, checked against the lore.',
       'Vlka Fenryka: Fenris storm fading into the feast halls, the wolf badge as the emblem. Dark Angels: the Rock, stained glass, a lancet window emblem. The Infinite Empire: the tomb city, a monolith emblem, and dynasty colours to choose from. Asuryani: the craftworld, a spirit-stone emblem.',
       'Each army is called by its own name by its own player (Vlka Fenryka, The Infinite Empire, Asuryani) and by its standard name when it is the foe.',
       'Your opponent\'s side now carries their own army\'s flavour, built from their lore: Space Wolves (Fenris winter, fur, runes, a cord of fangs and runestones), Dark Angels (the Rock, stained glass, a hidden shame), Necrons (tomb world dust, waking glyphs) and Aeldari (wraithbone, the infinity circuit, spirit stones).',
@@ -268,12 +272,13 @@
     ] },
   ];
   const ARMY = {
-    templars: { label: 'Black Templars', cls: 'army-templars', muster: 'Muster', eyebrow: 'BEFORE THE BATTLE', steps: ['I · Your Force', 'II · Your Foe', 'III · The Field'], fightingAs: 'Fighting as', cry: 'For the God-Emperor!', counsel: 'Counsel', log: 'Battle Log', vox: 'Vox Report', voxShort: 'VOX', armyQ: 'My Crusade', foeQ: 'The Foe', results: 'Reckoning', emblem: 'cross', oath: 'Your vow', oathText: 'Score before you slay', roll: 'Roll Call', end: 'End the battle', hist: 'Archives' },
+    templars: { label: 'Black Templars', cls: 'army-templars', muster: 'Muster', eyebrow: 'BEFORE THE BATTLE', steps: ['I · Your Force', 'II · Your Foe', 'III · The Field'], fightingAs: 'Fighting as', cry: 'For the God-Emperor!', counsel: 'Counsel', log: 'Battle Log', vox: 'Vox Report', voxShort: 'VOX', armyQ: 'My Crusade', foeQ: 'The Foe', results: 'Reckoning', emblem: 'chapel', oath: 'Your vow', oathText: 'Score before you slay', roll: 'Roll Call', end: 'End the battle', hist: 'Archives' },
     carcharodons: { label: 'Carcharodons', cls: 'army-carc', muster: 'The Gathering', eyebrow: 'BEFORE THE HUNT', steps: ['I · The Pack', 'II · The Prey', 'III · Hunting Grounds'], fightingAs: 'Hunting as', cry: "In Rangu's Name!", counsel: 'The Deep', log: 'The Wake', vox: 'Blood Scent', voxShort: 'SCENT', armyQ: 'The Pack', foeQ: 'The Prey', results: 'The Red Tithe', emblem: 'jaws', oath: 'Your oath', oathText: 'Feed on objectives first', roll: 'Count the Pack', end: 'End the hunt', hist: 'The Voyage' },
     wolves: { label: 'Vlka Fenryka', cls: 'army-wolves', muster: 'The Fang', eyebrow: 'BEFORE THE HUNT', steps: ['I · The Great Company', 'II · The Quarry', 'III · The Hunting Ground'], fightingAs: 'Running with', cry: 'For Russ and the Allfather!', counsel: 'Rune Priest', log: 'The Saga', vox: 'Mark the Saga', voxShort: 'SAGA', armyQ: 'The Pack', foeQ: 'The Quarry', results: 'The Saga Told', emblem: 'ward', oath: 'Your saga', oathText: 'Earn a deed worth the telling', roll: 'Count the Pack', end: 'End the hunt', hist: 'The Sagas', lib: 'Space Wolves' },
     dark: { label: 'Dark Angels', cls: 'army-dark', muster: 'The Rock', eyebrow: 'THE INNER CIRCLE CONVENES', steps: ['I · The Order', 'II · The Unrepentant', 'III · The Field of Battle'], fightingAs: 'Sworn to', cry: 'Repent! For tomorrow you die!', counsel: 'The Inner Circle', log: 'The Record', vox: 'Seal the Record', voxShort: 'SEAL', armyQ: 'The Order', foeQ: 'The Unrepentant', results: 'Judgement', emblem: 'lancet', oath: 'Your penance', oathText: 'Make the foe repent', roll: 'Call the Order', end: 'End the battle', hist: 'The Sealed Archive', lib: 'Dark Angels', libRe: /dab3|darkangel/ },
     necron: { label: 'The Infinite Empire', short: 'Infinite Empire', cls: 'army-necron', muster: 'The Tomb', eyebrow: 'STASIS ENDED', steps: ['I · The Phalanx', 'II · The Lesser Race', 'III · The Battlefield'], fightingAs: 'Awakened as', cry: 'The stars are ours once more!', counsel: 'The Cryptek', log: 'Dynastic Record', vox: 'Record this', voxShort: 'RECORD', armyQ: 'The Phalanx', foeQ: 'The Lesser Race', results: 'The Reckoning of Ages', emblem: 'monolith', oath: 'Your directive', oathText: 'Reclaim what was ours', roll: 'Count the Legions', end: 'End the engagement', hist: 'The Eternal Archive', lib: 'Necrons' },
     asuryani: { label: 'Asuryani', cls: 'army-asuryani', muster: 'The Craftworld', eyebrow: 'THE SEER COUNCIL GATHERS', steps: ['I · The Warhost', 'II · The Enemy', 'III · The Path of Battle'], fightingAs: 'Walking the path of', cry: 'By the light of Asuryan!', counsel: 'The Farseer', log: 'The Skeins', vox: 'Read the runes', voxShort: 'RUNES', armyQ: 'The Warhost', foeQ: 'The Enemy', results: 'The Weave of Fate', emblem: 'stone', oath: 'Your path', oathText: 'Spend no life that fate does not demand', roll: 'Count the Host', end: 'End the battle', hist: 'The Infinity Circuit', lib: 'Aeldari', libRe: /^eldar$/ },
+    deathwatch: { label: 'Deathwatch', cls: 'army-deathwatch', muster: 'The Watch Fortress', eyebrow: 'THE LONG VIGIL', steps: ['I · The Kill Team', 'II · The Target', 'III · The Hunting Grounds'], fightingAs: 'Keeping watch as', cry: 'Suffer not the alien to live!', counsel: 'The Inquisitor', log: 'The Bestiarium', vox: 'Report to the Ordo', voxShort: 'ORDO', armyQ: 'The Kill Team', foeQ: 'The Target', results: 'Sworn to Silence', emblem: 'vault', oath: 'Your vigil', oathText: 'Leave no xenos threat standing', roll: 'Muster the Kill Team', end: 'End the mission', hist: 'The Catacombs', lib: 'Deathwatch' },
     other: { label: 'Other', cls: 'army-other', muster: 'Setup', eyebrow: 'BEFORE THE GAME', steps: ['I · Your Army', 'II · Opponent', 'III · Mission'], fightingAs: 'Playing as', cry: 'Fight', counsel: 'Advice', log: 'Battle Log', vox: 'Mark moment', voxShort: 'MARK', armyQ: 'Your Army', foeQ: 'Opponent', results: 'Results', emblem: 'plain', oath: 'Your focus', oathText: 'Score before you kill', roll: 'Roll Call', end: 'End the game', hist: 'Battle history' }
   };
 
@@ -290,6 +295,7 @@
     slaanesh: ['#FFD9F5', '#D98AE8', '#8E3AB0', '#E8C766', '#180A1C', '#E7A9F0', '#180D1C', '#7A3A90'],
     alpha: ['#CFF7EE', '#4FC2B0', '#2F5F78', '#7A8A99', '#061412', '#8FDCCF', '#0B1716', '#3A7A86'],
     chaos: ['#E8D3A0', '#B8863A', '#5A3A1A', '#2A1A0E', '#140C06', '#E0B97A', '#1A120A', '#7A5A2A'],
+    dw: ['#E8ECEF', '#B9C2CA', '#7E8A94', '#3A4148', '#07090B', '#D6DEE4', '#0E1216', '#5E6A74'],
     loyal: ['#E6E9EE', '#A9B4C2', '#5E6B7D', '#2C3440', '#0B0E12', '#C3CBD6', '#12151A', '#4E5968'],
     blood: ['#FFD6D0', '#E8786A', '#B0261E', '#5A0E0A', '#1A0505', '#F09A8E', '#1E0A0A', '#8A2A24'],
     templars: ['#F2EAD6', '#B8AE98', '#6B5B45', '#2A2520', '#0B0A09', '#E8DFC9', '#14110E', '#6B5B45'],
@@ -301,7 +307,7 @@
   };
   const FACTIONS = [
     ['Necrons', 'necron'], ['Dark Angels', 'da'], ['Space Wolves', 'sw'], ['Aeldari', 'ae'], ['Adeptus Custodes', 'custodes'],
-    ['Ultramarines', 'ultra', 'Parade-Born'], ['Blood Angels', 'blood'], ['Black Templars', 'templars'], ['Carcharodons', 'carc'],
+    ['Ultramarines', 'ultra', 'Parade-Born'], ['Deathwatch', 'dw'], ['Blood Angels', 'blood'], ['Black Templars', 'templars'], ['Carcharodons', 'carc'],
     ['Space Marines (other chapter)', 'loyal'], ['Grey Knights', 'loyal'], ['Adepta Sororitas', 'blood'], ['Astra Militarum', 'loyal'],
     ['Adeptus Mechanicus', 'blood'], ['Imperial Knights', 'loyal'], ['Imperial Agents', 'loyal'],
     ['World Eaters', 'khorne'], ['Death Guard', 'nurgle'], ['Thousand Sons', 'tzeentch'], ["Emperor's Children", 'slaanesh'],
@@ -562,7 +568,7 @@
 
   // ---------- helpers ----------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const A = () => ARMY[S.army];
+  const A = () => { const a = ARMY[S.army]; if (S.army !== 'deathwatch') return a; const xen = foe() && XENOS.test(foe().faction); return xen ? Object.assign({}, a, { foeQ: 'The Xenos', steps: [a.steps[0], 'II · The Xenos', a.steps[2]] }) : a; };
   const list = () => S.lists[S.army];
   const foe = () => S.rivals[S.foeKey];
   function factionInfo(name) { const f = FACTIONS.find((x) => x[0] === name); return { theme: f ? f[1] : 'loyal', display: f && f[2] ? f[2] : name }; }
@@ -574,8 +580,9 @@
     return /space marine|astartes/i.test(L.faction || '') ? FOE_THEMES.loyal : null;
   }
   // whose armies get their own buttons: the owner's two, or none for everyone else (they build theirs up through Other)
+  const XENOS = /necron|aeldari|drukhari|ork|tyranid|genestealer|t'au|votann|harlequin/i;
   const OWNER = /^f\.weir88@gmail\.com$/i;
-  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani' };
+  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch' };
   const myArmies = () => (!Array.isArray(S.mine) ? ['templars'] : S.mine.filter((k) => ARMY[k] && k !== 'carcharodons'));
   const mainFor = (L) => (L ? MAINABLE[listFaction(L)] || MAINABLE[L.subfaction] || MAINABLE[L.faction] || null : null);
   // a list loaded through Other is kept by its army: the last one per army, the two most recent armies
@@ -640,6 +647,7 @@
     next: '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L16 12 L9 19"></path></svg>',
     close: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>',
     cross: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path d="M9 2 H15 L13.2 10.8 L22 9 V15 L13.2 13.2 L15 22 H9 L10.8 13.2 L2 15 V9 L10.8 10.8 Z" fill="currentColor"></path></svg>',
+    omega: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17 H7 V14 A6.5 6.5 0 1 1 13 14 V17 H17"></path></svg>',
     tear: '<svg aria-hidden="true" width="14" height="22" viewBox="0 0 14 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 1 C 9 7 13 11 13 15 A6 6 0 0 1 1 15 C 1 11 5 7 7 1 Z"></path><circle cx="7" cy="15" r="2" fill="currentColor"></circle></svg>',
     glyph: '<svg aria-hidden="true" width="16" height="22" viewBox="-8 -11 16 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="0" cy="-3" r="4"></circle><path d="M0 1 V10 M-3.5 10 H3.5 M-6 -3 H-4 M4 -3 H6 M0 -9 V-7"></path></svg>',
     blade: '<svg aria-hidden="true" width="14" height="24" viewBox="0 0 14 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M7 1 V5"></path><path d="M2 5.5 H12"></path><path d="M5.4 6 V17 L7.4 15.4 L6.2 18.4 L8.6 16.6 V6"></path><path d="M6.6 21 L7.6 20 L8 23.4 L7 25.6 L6.2 23 Z" fill="currentColor" fill-opacity="0.5"></path></svg>',
@@ -649,7 +657,7 @@
     undo: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 10 L9 15"></path><path d="M4 10 H15 A5 5 0 0 1 15 20 H10"></path></svg>',
     list: '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 6 H20 M8 12 H20 M8 18 H20 M4 6 H4.5 M4 12 H4.5 M4 18 H4.5"></path></svg>'
   };
-  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : ICON.cross);
+  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : S.army === 'deathwatch' ? ICON.omega : ICON.cross);
 
   // ---------- list parser (40k app text export) ----------
   function parseList(text) {
@@ -1176,7 +1184,7 @@
       <button class="world terra" data-fx="terra" data-act="terra" style="left: 50%; top: 45%; --s: 124px" aria-label="Terra: ${B ? 'resume the battle in progress' : 'battle'}">
         <span class="orb" aria-hidden="true"><span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span></span>
         <span class="w-name">Terra</span><span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>
-      ${world('ulthwe', 'updates', 49, 11, 32, 'Ulthwé', 'App updates', '', S.seenUpd === UPDATES[0].d ? false : 'New', (() => { const it = POOL.find((x) => /ulthwe|craftworld/.test(fileKey(x.name))); return it ? it.src : ''; })())}
+      ${world('ulthwe', 'updates', 49, 11, 32, 'Ulthwé', 'App updates', '', false, (() => { const it = POOL.find((x) => /ulthwe|craftworld/.test(fileKey(x.name))); return it ? it.src : ''; })())}
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
       ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', '', !UI.cogOK)}
       <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span></a>
@@ -1208,7 +1216,7 @@
     <header class="band wrap" style="padding-block: 10px 8px; text-align: center">
       <button class="icon-btn" data-act="home" aria-label="Main page" style="position: absolute; left: 4px; top: 8px">${ICON.back}</button>
       <div class="eyebrow">${esc(a.eyebrow)}</div>
-      <h1 class="h" style="font-size: calc(38px * var(--head-size))">${esc(a.muster)}</h1>
+      <h1 class="h" style="font-size: calc(${a.muster.length > 15 ? 30 : 38}px * var(--head-size)); padding-inline: 40px">${esc(a.muster)}</h1>
     </header>
     <main class="main wrap stack">
       <nav class="grid3" aria-label="Setup steps">
@@ -1401,7 +1409,7 @@
         : c.remote ? (c.remote > DATA_STAMP ? `<div class="panel small" style="padding: 10px 12px; border-color: var(--gold)"><b style="color: var(--gold)">Updates available.</b> Wahapedia changed on ${esc(c.remote.slice(0, 10))}, after this app's data. Tell Claude "refresh the 40k Caddie rules" to bring them in.<br><span class="muted">Checked ${esc(fmt(c.at))}</span></div>`
           : `<div class="panel small" style="padding: 10px 12px"><b>Up to date.</b> Wahapedia hasn't changed since this app's data.<br><span class="muted">Checked ${esc(fmt(c.at))}</span></div>`) : '';
       return sheet('Macragge · Rules data', `
-        <div class="panel stack" style="padding: 10px 12px; gap: 4px"><span class="eyebrow">Your mates' armies and the missions</span><span>Wahapedia 11th edition data, as of <b>${RULES_ASOF}</b>: Necrons, Dark Angels, Space Wolves and Aeldari (army rules, detachments, stratagems, datasheets), plus the 2026-27 Mission Deck.</span></div>
+        <div class="panel stack" style="padding: 10px 12px; gap: 4px"><span class="eyebrow">Opponents' armies and the missions</span><span>Wahapedia 11th edition data, as of <b>${RULES_ASOF}</b>: Necrons, Dark Angels, Space Wolves and Aeldari (army rules, detachments, stratagems, datasheets), plus the 2026-27 Mission Deck.</span></div>
         <div class="panel stack" style="padding: 10px 12px; gap: 4px"><span class="eyebrow">Your armies</span><span>The full Space Marine codex with every chapter supplement, Black Templars included: ${D.rulesSM.detachments.length} detachments, ${D.rulesSM.stratagems.length} detachment stratagems, ${D.rulesSM.enhancements.length} enhancements and the ${D.rulesSM.core.length} core stratagems. Same Wahapedia export, as of <b>${RULES_ASOF}</b>.</span></div>
         ${verdict}
         <button class="btn solid block" data-act="rulesCheck" ${UI.rulesBusy ? 'disabled' : ''}>CHECK FOR UPDATES</button>
@@ -1731,7 +1739,7 @@
   // ---------- Combat Doctrines (11th edition Space Marine army rule) and phase reminders ----------
   const DOCTRINES = { assault: ['Assault Doctrine', 'Units can still declare a charge after Advancing.'], devastator: ['Devastator Doctrine', 'Ranged weapons gain [ASSAULT].'], tactical: ['Tactical Doctrine', 'Units can still shoot and declare a charge after Falling Back.'] };
   function isAstartes() {
-    if (S.army !== 'other') return ['templars', 'carcharodons', 'wolves', 'dark'].includes(S.army);
+    if (S.army !== 'other') return ['templars', 'carcharodons', 'wolves', 'dark', 'deathwatch'].includes(S.army);
     const L = list(); return !!(L && /space marine|astartes|dark angels|blood angels|space wolves|deathwatch|templar|carcharodon/i.test((L.faction || '') + ' ' + (L.detachments || []).join(' ')));
   }
   function docLimits() {
@@ -1892,6 +1900,38 @@
       <span class="tnum" style="font-size: 18px; font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span><span class="small" style="color: var(--accent-text); font-weight: 600">${esc(a.oath)}: ${esc(a.oathText)}</span>`;
     const armyQ = `<span class="qt" style="font-size: calc(19px * var(--head-size))">${esc(a.armyQ)}</span><span class="small" style="font-weight: 700">${standing} of ${units.length}</span>`;
     const foeQ = `<span class="qt" style="font-size: calc(19px * var(--head-size)); color: ${t[4]}">${esc(a.foeQ)}</span><span class="small" style="font-weight: 700; color: ${t[4]}">${B.spotted.length} seen<br>${B.cp.foe} CP</span>`;
+    if (a.emblem === 'vault') {
+      // the Omega Vault of the Watch Fortress: the sealed door is the screen; its omega seal is the Inquisitor's counsel
+      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
+      const vp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 6.15).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 6.15).toFixed(2)}%`;
+      const lastV = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      return `<div class="emblem vault"><img class="vt-art" src="${img('deathwatch-omega-vault')}" alt="">
+        <svg viewBox="0 0 390 615" aria-hidden="true" class="ch-ov"><defs>${grad}</defs><path d="M200 330 H268 V470 H200 Z" fill="url(#fg)" opacity="0.5" style="mix-blend-mode: color"></path><circle cx="194" cy="281" r="50" fill="none" stroke="#D6DEE4" stroke-width="1.5" opacity="0.6" class="vt-seal"></circle></svg>
+        <button class="q vt-plq" style="${vp(70, 70, 250, 112)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
+        <button class="q vt-seal-btn" style="${vp(144, 231, 100, 100)}" data-act="view" data-k="counsel" aria-label="${esc(a.counsel)}"><span class="eyebrow" style="font-size: 7px">${esc(a.counsel)}</span><span class="qt" style="font-size: 12px">Options<br>now</span></button>
+        <button class="q vt-plq" style="${vp(112, 350, 82, 92)}" data-act="view" data-k="army">${armyQ}</button>
+        <button class="q vt-plq" style="${vp(200, 350, 82, 92)}" data-act="view" data-k="foe">${foeQ.split(t[4]).join(t[5])}</button>
+        <button class="q vt-log" style="${vp(36, 470, 318, 120)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastV}</button></div>`;
+    }
+    if (a.emblem === 'chapel') {
+      // aboard the Eternal Crusader: the chapel's great window (Sigismund against Abaddon) is the heart of the screen;
+      // the four lesser windows are buttons; candles, censers and incense from the chapel itself spill out past the frame
+      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
+      const cp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.26).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.26).toFixed(2)}%`;
+      const lastC = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const win = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q ch-win ${foeTint ? 'ch-foe' : ''}" style="${cp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="ch-plq"><span class="ch-t">${esc(top)}</span>${sub ? `<span class="ch-s">${sub}</span>` : ''}</span></button>`;
+      return `<div class="emblem chapel"><img class="ch-art" src="${img('tmpl-chapel-emblem')}" alt="">
+        <svg viewBox="0 0 390 526" aria-hidden="true" class="ch-ov"><defs>${grad}</defs><path d="M342 145 H381 V279 H342 Z" fill="url(#fg)" opacity="0.55" style="mix-blend-mode: color"></path></svg>
+        <span class="ch-censer l"><img src="${img('tmpl-censer')}" alt=""></span><span class="ch-censer r"><img src="${img('tmpl-censer')}" alt=""></span>
+        <span class="ch-smoke l"></span><span class="ch-smoke r"></span>
+        <span class="ch-candles l"><img src="${img('tmpl-candles-left')}" alt=""></span><span class="ch-candles r"><img src="${img('tmpl-candles-right')}" alt=""></span>
+        <button class="q ch-core" style="${cp(132, 226, 145, 66)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
+        ${win(9, 145, 42, 134, 'view', 'army', a.armyQ.replace('My ', ''), `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
+        ${win(61, 108, 43, 171, 'view', 'counsel', a.counsel, 'now')}
+        ${win(288, 108, 41, 171, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
+        ${win(340, 145, 41, 134, 'view', 'foe', 'Foe', `${B.cp.foe} CP`, true)}
+        <button class="q ch-log" style="${cp(46, 410, 298, 104)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastC}</button></div>`;
+    }
     if (a.emblem === 'cross') {
       return `<div class="emblem"><svg viewBox="0 30 390 780" aria-hidden="true"><defs>${grad}<filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter></defs>
         <path d="${CROSS}" fill="#141110" stroke="#DCD2BC" stroke-width="7" filter="url(#rough)" style="filter: drop-shadow(0 0 14px rgba(158,27,27,0.5))"></path>
@@ -2003,8 +2043,8 @@
         <path id="rl" d="M52 262 L188 66"></path><path id="rr" d="M202 66 L338 262"></path><path id="rb" d="M60 300 L188 486"></path></defs>
         <image href="${(POOL.find((x) => x.name === 'wolves-badge') || {}).src || ''}" x="-6" y="40" width="402" height="456" preserveAspectRatio="xMidYMid meet" style="filter: brightness(0.5) saturate(0.85) contrast(1.05)"></image><path d="M195 52 L360 280 L195 508 L30 280 Z" fill="url(#fg)" opacity="0.0"></path><g clip-path="url(#wi)"><path d="M195 280 L420 120 L420 440 Z" fill="url(#fg)" opacity="0.4" style="mix-blend-mode: color"></path></g><radialGradient id="wv" cx="0.5" cy="0.5" r="0.6"><stop offset="0.3" stop-color="#05080B" stop-opacity="0.15"></stop><stop offset="1" stop-color="#05080B" stop-opacity="0.75"></stop></radialGradient><rect x="0" y="0" width="390" height="560" fill="url(#wv)" clip-path="url(#wi)"></rect><circle cx="195" cy="280" r="40" fill="#05080B" fill-opacity="0.72" stroke="#0A0E12" stroke-width="5"></circle><circle cx="195" cy="280" r="40" fill="none" stroke="#C9962E" stroke-width="1.2" opacity="0.55"></circle></svg>
         <button class="q jw" style="${jp(120, 148, 150, 96)}" data-act="view" data-k="counsel">${statusW}</button>
-        <button class="q jw" style="${jp(54, 250, 92, 60)}" data-act="view" data-k="army">${armyQ}</button>
-        <button class="q jw" style="${jp(244, 250, 92, 60)}; text-shadow: none" data-act="view" data-k="foe">${foeQ}</button>
+        <button class="q jw" style="${jp(50, 242, 100, 76)}" data-act="view" data-k="army">${armyQ}</button>
+        <button class="q jw" style="${jp(240, 242, 100, 76)}; text-shadow: none" data-act="view" data-k="foe">${foeQ}</button>
         <button class="q jw" style="${jp(161, 246, 68, 68)}; border-radius: 50%" data-act="view" data-k="counsel"><span class="eyebrow" style="font-size: 8px">${esc(a.counsel)}</span><span class="qt" style="font-size: 12px; line-height: 1.1">Options<br>now</span></button>
         <button class="q jw jw-wake" style="${jp(108, 322, 174, 86)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastW}</button></div>`;
     }

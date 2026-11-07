@@ -771,6 +771,87 @@ body.army-asuryani .fight-btn { background-image: linear-gradient(180deg, #1E7A8
 @media (prefers-reduced-motion: reduce) { body[data-foe] .foe-panel, body[data-foe] .strat.foe, body[data-foe] .foe-panel::before, body[data-foe] .foe-panel::after, body[data-foe] .strat.foe::before, body[data-foe] .strat.foe::after, body.foe-scored .foe-fill::after, body[data-foe="sw"] .foe-head::after, body[data-foe="da"] .foe-head, body[data-foe="da"] .foe-head::after, body[data-foe="necron"] .foe-head::after, body[data-foe] .band::before, body[data-foe="ae"] .foe-head::after, .emblem.lancet .ln-candle, .emblem.stone .as-soul, body.army-wolves #void > .wolf-snow, .emblem.monolith .nec-edge, body.army-necron .band::after { animation: none !important; } }
 .hue-sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); box-shadow: inset 0 0 8px rgba(0,0,0,0.6); padding: 0; }
 .hue-sw.on { border-color: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.8), 0 0 12px currentColor; }
+
+/* ===== Black Templars: the chapel of the Eternal Crusader ===== */
+.emblem.chapel { aspect-ratio: 390 / 526; container-type: inline-size; overflow: visible; margin-top: 34px; margin-bottom: 26px; }
+.emblem.chapel .ch-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 3px; box-shadow: 0 0 0 1px #2A231B, 0 10px 40px rgba(0,0,0,0.8); filter: brightness(0.92) contrast(1.05);
+  -webkit-mask-image: radial-gradient(130% 100% at 50% 40%, #000 62%, rgba(0,0,0,0.75) 82%, transparent); mask-image: radial-gradient(130% 100% at 50% 40%, #000 62%, rgba(0,0,0,0.75) 82%, transparent); }
+.emblem.chapel .ch-ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.emblem.chapel .q { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 0; background: transparent; padding: 0; color: #F2EAD6; }
+.emblem.chapel .ch-core { background: linear-gradient(rgba(10,7,4,0), rgba(10,7,4,0.62) 30%, rgba(10,7,4,0.72)); gap: 0; border-radius: 2px; }
+.emblem.chapel .ch-core .eyebrow { font-size: clamp(8px, 2.5cqw, 11px); }
+.emblem.chapel .ch-core .qt { font-family: var(--head); font-size: clamp(18px, 6.6cqw, 28px); line-height: 1; text-shadow: 0 0 10px rgba(255,160,60,0.5), 0 1px 2px #000; }
+.emblem.chapel .ch-core .tnum { font-weight: 700; font-size: clamp(12px, 3.9cqw, 16px); }
+.emblem.chapel .ch-win { justify-content: flex-end; }
+.emblem.chapel .ch-win:hover .ch-plq, .emblem.chapel .ch-win:focus-visible .ch-plq { border-color: var(--gold); }
+.emblem.chapel .ch-plq { display: flex; flex-direction: column; align-items: center; width: 118%; margin-bottom: -2px; padding: 3px 1px; background: rgba(10,7,4,0.82); border: 1px solid #5A4A30; border-radius: 2px; }
+.emblem.chapel .ch-t { font-weight: 700; font-size: clamp(8.5px, 2.65cqw, 11px); line-height: 1.05; letter-spacing: 0.02em; }
+.emblem.chapel .ch-s { font-size: clamp(8px, 2.4cqw, 10px); opacity: 0.85; }
+.emblem.chapel .ch-foe .ch-t, .emblem.chapel .ch-foe .ch-s { color: var(--foe-soft); }
+.emblem.chapel .ch-log { justify-content: center; align-items: stretch; text-align: left; padding: 6px 10px; background: linear-gradient(rgba(10,7,4,0), rgba(10,7,4,0.7) 30%); gap: 2px; }
+.emblem.chapel .ch-log .eyebrow { text-align: center; }
+.emblem.chapel .jw-line { font-size: clamp(10px, 3.1cqw, 13px); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px #000; }
+/* censers hang in from above the frame and sway; incense rises; candles spill out of the lower corners and flicker */
+.emblem.chapel .ch-censer { position: absolute; top: -34px; width: 11%; transform-origin: 50% 0; pointer-events: none; z-index: 2; animation: chSway 7s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.7)); }
+.emblem.chapel .ch-censer img { width: 100%; display: block; }
+.emblem.chapel .ch-censer.l { left: -3%; } .emblem.chapel .ch-censer.r { right: -3%; animation-delay: -3.4s; } .emblem.chapel .ch-censer.r img { transform: scaleX(-1); }
+@keyframes chSway { 0%, 100% { transform: rotate(-2.2deg); } 50% { transform: rotate(2.2deg); } }
+.emblem.chapel .ch-smoke { position: absolute; top: 4%; width: 26%; height: 44%; pointer-events: none; z-index: 2; background: url("lib/pmwtmpl6.webp") 50% 100% / cover no-repeat; mix-blend-mode: screen; opacity: 0.35;
+  -webkit-mask-image: radial-gradient(50% 50% at 50% 60%, #000 30%, transparent 75%); mask-image: radial-gradient(50% 50% at 50% 60%, #000 30%, transparent 75%); animation: chSmoke 14s ease-in-out infinite; }
+.emblem.chapel .ch-smoke.l { left: -9%; } .emblem.chapel .ch-smoke.r { right: -9%; animation-delay: -7s; }
+@keyframes chSmoke { 0% { transform: translateY(18%) scale(0.95); opacity: 0; } 30% { opacity: 0.4; } 70% { opacity: 0.3; } 100% { transform: translateY(-22%) scale(1.15); opacity: 0; } }
+.emblem.chapel .ch-candles { position: absolute; bottom: -24px; width: 46%; pointer-events: none; z-index: 2; filter: drop-shadow(0 0 10px rgba(255,170,70,0.45)); animation: chFlick 3.1s steps(1) infinite; }
+.emblem.chapel .ch-candles img { width: 100%; display: block; }
+.emblem.chapel .ch-candles.l { left: -7%; } .emblem.chapel .ch-candles.r { right: -6%; width: 30%; animation-delay: -1.3s; animation-duration: 2.7s; }
+@keyframes chFlick { 0%, 100% { filter: brightness(1) drop-shadow(0 0 10px rgba(255,170,70,0.45)); } 13% { filter: brightness(0.86) drop-shadow(0 0 7px rgba(255,170,70,0.35)); } 21% { filter: brightness(1.08) drop-shadow(0 0 12px rgba(255,170,70,0.55)); } 47% { filter: brightness(0.93) drop-shadow(0 0 9px rgba(255,170,70,0.4)); } 63% { filter: brightness(1.04) drop-shadow(0 0 11px rgba(255,170,70,0.5)); } 82% { filter: brightness(0.9) drop-shadow(0 0 8px rgba(255,170,70,0.4)); } }
+@media (prefers-reduced-motion: reduce) { .emblem.chapel .ch-censer, .emblem.chapel .ch-smoke, .emblem.chapel .ch-candles { animation: none !important; } }
+
+/* ===== Deathwatch as YOUR army: the Watch Fortress, the archives, the Omega Vault. Black, silver, cold light ===== */
+body.army-deathwatch {
+  --bg: #06080A; --panel: rgba(13,16,19,0.9); --panel2: rgba(16,20,24,0.92); --line: #2A3138; --line2: #6E7A84;
+  --text: #EDF1F4; --muted: #B4BEC6; --dim: #808A92; --accent: #8E1B1B; --accent-text: #D6DEE4; --gold: #D6DEE4; --good: #B9C2CA;
+  --head: 'Cinzel', Georgia, serif; --head-weight: 700; --head-size: 0.8;
+}
+body.army-deathwatch #void { display: block; background: #06080A; }
+body.army-deathwatch #void::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 64%;
+  background: linear-gradient(rgba(6,8,10,0.5), rgba(6,8,10,0.42)), url("lib/pmwdw2.webp") 50% 30% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+body.army-deathwatch #void::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60%;
+  background: linear-gradient(rgba(6,8,10,0.55), rgba(6,8,10,0.6)), url("lib/pmwdw3.webp") 50% 60% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(transparent, #000 45%); mask-image: linear-gradient(transparent, #000 45%); }
+body.army-deathwatch .band { border-top-color: #8E1B1B; background-color: rgba(13,16,19,0.92); background-image: linear-gradient(90deg, rgba(6,8,10,0.94) 40%, rgba(6,8,10,0.6) 80%, rgba(6,8,10,0.85)), url("lib/pmwdw5.webp"), var(--grime), linear-gradient(180deg, #1A2026, #0B0E11);
+  background-size: 100% 100%, auto 100%, 180px 180px, 100% 100%; background-position: 0 0, right 10px top 30%, 0 0, 0 0; background-repeat: no-repeat, no-repeat, repeat, no-repeat; box-shadow: inset 0 -2px 0 #9AA6B0; }
+body.army-deathwatch .panel { background-image: linear-gradient(90deg, transparent, rgba(214,222,228,0.45) 50%, transparent), var(--grime), var(--stain), linear-gradient(175deg, rgba(22,27,32,0.92), rgba(10,12,15,0.95));
+  background-size: 100% 1px, 180px 180px, 420px 420px, 100% 100%; background-repeat: no-repeat, repeat, repeat, no-repeat; border-color: #343C44; }
+body.army-deathwatch .banner { border-color: #6E7A84; background-image: var(--grime), linear-gradient(180deg, rgba(26,32,38,0.92), rgba(11,14,17,0.95)); background-size: 180px 180px, 100% 100%; }
+body.army-deathwatch .sheet { background: #0A0D10; }
+body.army-deathwatch .clash .mine { background-image: var(--grime), linear-gradient(100deg, #2A3138, #0B0E11); background-size: 180px 180px, 100% 100%; }
+body.army-deathwatch .fight-btn { background-image: linear-gradient(180deg, #2A3138, #0B0E11); border-color: #D6DEE4; }
+.emblem.vault { aspect-ratio: 390 / 615; container-type: inline-size; overflow: visible; }
+.emblem.vault .vt-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.82) contrast(1.08); box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 45%, #000 66%, transparent); mask-image: radial-gradient(120% 100% at 50% 45%, #000 66%, transparent); }
+.emblem.vault .q { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 0; padding: 2px; color: #EDF1F4; text-shadow: 0 1px 3px #000; }
+.emblem.vault .vt-plq { background: rgba(6,8,10,0.7); border: 1px solid rgba(154,166,176,0.35); }
+.emblem.vault .vt-plq .qt { font-family: var(--head); font-size: clamp(14px, 5cqw, 24px); line-height: 1.05; }
+.emblem.vault .vt-plq .tnum { font-weight: 700; font-size: clamp(12px, 3.8cqw, 16px); }
+.emblem.vault .vt-plq .small { font-size: clamp(10px, 3cqw, 12px); }
+.emblem.vault .vt-seal-btn { border-radius: 50%; background: rgba(6,8,10,0.45); }
+.emblem.vault .vt-log { justify-content: center; align-items: stretch; text-align: left; padding: 6px 10px; background: linear-gradient(rgba(6,8,10,0), rgba(6,8,10,0.72) 30%); gap: 2px; }
+.emblem.vault .vt-log .eyebrow { text-align: center; }
+.emblem.vault .jw-line { font-size: clamp(10px, 3.1cqw, 13px); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.emblem.vault .vt-seal { animation: vtSeal 6s ease-in-out infinite; }
+@keyframes vtSeal { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.85; } }
+/* Deathwatch as the foe */
+body[data-foe="dw"] { --foe-font: 'Cinzel', serif; }
+body[data-foe="dw"] .foe-head { animation: none; color: #EDF1F4; text-shadow: 0 1px 3px #000;
+  background-image: linear-gradient(90deg, rgba(6,8,10,0.95) 40%, rgba(6,8,10,0.35) 75%, rgba(6,8,10,0.55)), url("lib/pmwdw4.webp"), var(--grime), linear-gradient(170deg, #1A2026, #07090B);
+  background-size: 100% 100%, auto 160%, 180px 180px, 100% 100%; background-position: 0 0, right -10px top 30%, 0 0, 0 0; background-repeat: no-repeat, no-repeat, repeat, no-repeat; box-shadow: inset 0 -2px 0 #9AA6B0; }
+body[data-foe="dw"] .foe-panel, body[data-foe="dw"] .strat.foe { background-image: linear-gradient(90deg, transparent, rgba(214,222,228,0.4) 50%, transparent), var(--grime), var(--stain), linear-gradient(175deg, #161B20, #0A0C0F);
+  background-size: 100% 1px, 180px 180px, 420px 420px, 100% 100%; background-repeat: no-repeat, repeat, repeat, no-repeat; border-color: #3A4148; }
+@media (prefers-reduced-motion: reduce) { .emblem.vault .vt-seal { animation: none !important; } }
+/* battle log lines sit centred in every emblem */
+.emblem .jw-wake, .emblem.chapel .ch-log, .emblem.vault .vt-log { align-items: center !important; text-align: center !important; }
+.emblem .jw-line { text-align: center; }
 </style>
 </head>
 <body>
@@ -782,11 +863,11 @@ body.army-asuryani .fight-btn { background-image: linear-gradient(180deg, #1E7A8
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=58"></script>
-<script src="lib-v12.js?v=58"></script>
-<script src="data.js?v=58"></script>
-<script src="foes.js?v=58"></script>
-<script src="app.js?v=58"></script>
+<script src="sb.js?v=59"></script>
+<script src="lib-v14.js?v=59"></script>
+<script src="data.js?v=59"></script>
+<script src="foes.js?v=59"></script>
+<script src="app.js?v=59"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
