@@ -228,7 +228,7 @@ table.wpn th { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
 .sol .net .spoke { stroke: rgba(217,194,122,0.42); stroke-width: 1.2; }
 .sol .net .ring { stroke: rgba(217,194,122,0.22); stroke-width: 1; stroke-dasharray: 3 5; }
 .sol .fleet { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.sol .barge { position: absolute; left: 0; top: 0; width: 56px; height: 16px; will-change: transform, opacity; }
+.sol .barge { position: absolute; left: 0; top: 0; width: 67px; height: 16px; will-change: transform, opacity; }
 .sol .barge img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 0 1.5px rgba(200,220,255,0.35)); }
 .sol .barge::before { content: ""; position: absolute; left: -7px; top: 50%; width: 12px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: radial-gradient(#FFFFFF 0%, #BFE6FF 35%, rgba(74,168,255,0) 72%); }
 .sol .net .pulse { stroke: #FFE9A8; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 4 400; stroke-dashoffset: 404; opacity: 0.9; filter: drop-shadow(0 0 3px #FFD86A); animation: netPulse 6s linear infinite; }
@@ -876,7 +876,7 @@ body[data-foe="dw"] .foe-panel, body[data-foe="dw"] .strat.foe { background-imag
 /* Black Templars: Terra at the heart, but you board the Eternal Crusader to fight; it circles the world */
 .world.terra.static { cursor: default; }
 .sol .flag-orbit { position: absolute; left: 50%; top: 45%; width: 0; height: 0; z-index: 5; animation: flagOrbit 48s linear infinite; }
-.sol .flagship { position: absolute; left: 50px; top: -26px; width: 104px; height: 52px; padding: 6px; border: 0; background: transparent; transform: rotate(-90deg); cursor: pointer;
+.sol .flagship { position: absolute; left: 50px; top: -31px; width: 125px; height: 62px; padding: 6px; border: 0; background: transparent; transform: rotate(-90deg); cursor: pointer;
   filter: drop-shadow(0 0 6px rgba(217,194,122,0.55)) drop-shadow(0 4px 8px rgba(0,0,0,0.8)); animation: flagGlow 3.5s ease-in-out infinite; }
 .sol .flagship img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .sol .flagship:focus-visible { outline: 2px solid var(--gold); border-radius: 8px; }
@@ -1126,12 +1126,12 @@ body.army-templars[data-foe="custodes"] .band::before { content: ""; position: a
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=76"></script>
-<script src="lib-v18.js?v=76"></script>
-<script src="footfall.js?v=76"></script>
-<script src="data.js?v=76"></script>
-<script src="foes.js?v=76"></script>
-<script src="app.js?v=76"></script>
+<script src="sb.js?v=77"></script>
+<script src="lib-v18.js?v=77"></script>
+<script src="footfall.js?v=77"></script>
+<script src="data.js?v=77"></script>
+<script src="foes.js?v=77"></script>
+<script src="app.js?v=77"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

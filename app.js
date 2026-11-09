@@ -1213,7 +1213,7 @@
       const ux = dx / len, uy = dy / len; const s0 = a[2] + 30, s1 = len - b[2] - 30; if (s1 - s0 < 40) return; // depart and arrive clear of the worlds themselves
       const ang = Math.atan2(dy, dx) * 180 / Math.PI; const flip = dx < 0 ? ' scaleY(-1)' : '';
       const pos = (t) => `translate(${(a[0] + ux * t).toFixed(1)}px, ${(a[1] + uy * t).toFixed(1)}px) translate(-50%, -50%) rotate(${ang.toFixed(1)}deg)${flip}`;
-      const el = document.createElement('div'); el.className = 'barge'; el.style.height = (56 * bargeSrc.ratio).toFixed(1) + 'px'; el.innerHTML = `<img src="${bargeSrc.src}" alt="">`; fleet.appendChild(el);
+      const el = document.createElement('div'); el.className = 'barge'; el.style.height = (67 * bargeSrc.ratio).toFixed(1) + 'px'; el.innerHTML = `<img src="${bargeSrc.src}" alt="">`; fleet.appendChild(el);
       el.animate([{ transform: pos(s0), opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.88 }, { transform: pos(s1), opacity: 0 }],
         { duration: Math.max(14000, len * 90), delay: -delay * 1000, iterations: Infinity, easing: 'linear' });
     });
@@ -3714,12 +3714,12 @@
   const SB_URL = 'https://tgwhmyktpibcpivakwwn.supabase.co';
   const SB_PUB = 'sb_publishable_OQUa3i86YIeb_IG3B8EbjQ_x5oh7VX5'; // the publishable key: public by design
   const VES = {
-    inq: { who: 'The Inquisition', ship: 'Inquisitorial cruiser', img: 'lib/pmwves_inq.webp', w: 118, face: 1, beam: '255, 70, 50', line: 'The Inquisition hears every fault. Report a bug, or ask for something the app should do.' },
-    tau: { who: 'The Edification Corps', ship: 'Manta', img: 'lib/pmwves_tau.webp', w: 96, face: 0, beam: '90, 190, 255', line: 'The Edification Corps records every fault for the Greater Good. Report a bug, or ask for something the app should do.' },
-    nec: { who: 'The Triarch Praetorians', ship: 'Night Scythe', img: 'lib/pmwves_nec.webp', w: 84, face: 0, beam: '120, 255, 110', line: 'The Triarch Praetorians judge every breach of the codes. Report a bug, or ask for something the app should do.' },
-    chs: { who: 'The Cognitae', ship: 'Chaos cruiser', img: 'lib/pmwves_chs.webp', w: 118, face: 1, beam: '230, 40, 40', line: 'The Cognitae hear every flaw. Report a bug, or ask for something the app should do.' },
-    eld: { who: 'The Harlequins', ship: 'Starweaver', img: 'lib/pmwves_eld.webp', w: 84, face: -1, beam: '120, 240, 230', line: 'The Masque has seen every misstep. Report a bug, or ask for something the app should do.' },
-    dru: { who: 'The Incubi', ship: 'Raider', img: 'lib/pmwves_dru.webp', w: 90, face: -1, beam: '200, 80, 255', line: 'The Incubi have marked every weakness. Report a bug, or ask for something the app should do.' },
+    inq: { who: 'The Inquisition', ship: 'Inquisitorial cruiser', img: 'lib/pmwves_inq.webp', w: 71, face: 1, beam: '255, 70, 50', line: 'The Inquisition hears every fault. Report a bug, or ask for something the app should do.' },
+    tau: { who: 'The Edification Corps', ship: 'Manta', img: 'lib/pmwves_tau.webp', w: 58, face: 0, beam: '90, 190, 255', line: 'The Edification Corps records every fault for the Greater Good. Report a bug, or ask for something the app should do.' },
+    nec: { who: 'The Triarch Praetorians', ship: 'Night Scythe', img: 'lib/pmwves_nec.webp', w: 50, face: 0, beam: '120, 255, 110', line: 'The Triarch Praetorians judge every breach of the codes. Report a bug, or ask for something the app should do.' },
+    chs: { who: 'The Cognitae', ship: 'Chaos cruiser', img: 'lib/pmwves_chs.webp', w: 71, face: 1, beam: '230, 40, 40', line: 'The Cognitae hear every flaw. Report a bug, or ask for something the app should do.' },
+    eld: { who: 'The Harlequins', ship: 'Starweaver', img: 'lib/pmwves_eld.webp', w: 50, face: -1, beam: '120, 240, 230', line: 'The Masque has seen every misstep. Report a bug, or ask for something the app should do.' },
+    dru: { who: 'The Incubi', ship: 'Raider', img: 'lib/pmwves_dru.webp', w: 54, face: -1, beam: '200, 80, 255', line: 'The Incubi have marked every weakness. Report a bug, or ask for something the app should do.' },
   };
   const ARMY_VES = { necron: 'nec', asuryani: 'eld' };
   function vesselKey() {
