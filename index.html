@@ -341,6 +341,25 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 .undo-fab { position: fixed; z-index: 55; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 6px; align-items: center; padding: 6px 12px 6px 10px; min-height: 44px; background: var(--panel2); border: 1px solid var(--gold); color: var(--text); font-weight: 700; font-size: 13px; letter-spacing: 0.06em; box-shadow: 0 4px 14px rgba(0,0,0,0.5); text-align: left; }
 .undo-fab svg { grid-row: 1 / 3; color: var(--gold); }
 .undo-fab small { font-size: 11px; font-weight: 600; letter-spacing: 0; color: var(--muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the vessel: each army's watchers; tap to send a report */
+#vessels { position: fixed; inset: 0; z-index: 35; pointer-events: none; overflow: hidden; }
+#vessels[hidden] { display: none; }
+.vessel { position: absolute; left: 0; top: 0; padding: 6px; margin: 0; border: 0; background: none; opacity: 0; will-change: transform; transform-origin: 50% 50%; }
+.vessel.mine { pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.vessel img { display: block; height: auto; pointer-events: none; transition: transform .5s ease; filter: drop-shadow(0 4px 6px rgba(0,0,0,.7)) drop-shadow(0 0 6px rgba(var(--beam), .35)); }
+.vessel.mine:hover img, .vessel.mine:focus-visible img { filter: drop-shadow(0 4px 6px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(var(--beam), .9)); }
+.vessel.mine:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.vscan { position: absolute; height: 46px; margin-top: -23px; transform-origin: 0 50%; clip-path: polygon(0 46%, 100% 0, 100% 100%, 0 54%); background: linear-gradient(90deg, rgba(var(--beam), .55), rgba(var(--beam), .08)); animation: vScan 1.3s ease-in-out forwards; }
+@keyframes vScan { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: .8; } 100% { opacity: 0; } }
+.vping { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; border: 2px solid rgba(var(--beam), .9); animation: vPing 1.3s ease-out forwards; }
+@keyframes vPing { 0% { transform: scale(.3); opacity: 1; } 100% { transform: scale(4.5); opacity: 0; } }
+.vbolt { position: absolute; height: 3px; margin-top: -1.5px; transform-origin: 0 50%; border-radius: 2px; background: linear-gradient(90deg, rgba(var(--beam), 0), rgb(var(--beam)) 30%, #fff 90%); box-shadow: 0 0 8px rgb(var(--beam)); animation: vBolt .36s ease-out forwards; }
+@keyframes vBolt { 0% { clip-path: inset(0 100% 0 0); opacity: 1; } 45% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 70%); opacity: 0; } }
+.vflash { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: radial-gradient(#fff, rgba(var(--beam), .9) 40%, rgba(var(--beam), 0) 70%); animation: vPing .42s ease-out forwards; }
+.vboom { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: radial-gradient(#fff 0, #ffd27a 18%, #ff6a1a 38%, rgba(120, 20, 0, .5) 58%, rgba(0,0,0,0) 72%); animation: vBoom .9s ease-out forwards; }
+@keyframes vBoom { 0% { transform: scale(.2); opacity: 1; } 60% { opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+.vgate { position: absolute; width: 120px; height: 150px; pointer-events: none; }
+.vgate img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; mix-blend-mode: screen; -webkit-mask: radial-gradient(closest-side, #000 55%, transparent 100%); mask: radial-gradient(closest-side, #000 55%, transparent 100%); }
 .toast { position: fixed; z-index: 60; left: 50%; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 10px 14px; background: var(--panel2); border: 1px solid var(--gold); color: var(--text); font-weight: 600; max-width: 90%; }
 @media (prefers-reduced-motion: reduce) { .sigil-mask, body.army-templars .band::after, .foe-fill, .chain, .maw-top, .maw-bot, .maw-dark, #void svg, .anim { animation: none !important; } }
 .ww-qr { width: min(70vw, 260px); background: #fff; padding: 6px; border-radius: 8px; }
@@ -1107,12 +1126,12 @@ body.army-templars[data-foe="custodes"] .band::before { content: ""; position: a
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=75"></script>
-<script src="lib-v18.js?v=75"></script>
-<script src="footfall.js?v=75"></script>
-<script src="data.js?v=75"></script>
-<script src="foes.js?v=75"></script>
-<script src="app.js?v=75"></script>
+<script src="sb.js?v=76"></script>
+<script src="lib-v18.js?v=76"></script>
+<script src="footfall.js?v=76"></script>
+<script src="data.js?v=76"></script>
+<script src="foes.js?v=76"></script>
+<script src="app.js?v=76"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

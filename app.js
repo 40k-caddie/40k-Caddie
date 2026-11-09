@@ -285,6 +285,9 @@
 
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
+    { d: '9 Nov 2026', items: [
+      'Report bugs and send ideas: your army\'s watchers now fly every screen, scanning worlds and buttons as they go. Tap the vessel to write to them. The Imperium, Orks, Tyranids, Genestealer Cults and Votann answer to the Inquisition\'s cruiser; T\'au to the Edification Corps\' Manta; Necrons to the Triarch Praetorians\' Night Scythe; Chaos to the Cognitae\'s cruiser; Drukhari to the Incubi\'s Raider; and Aeldari to the Harlequins, whose Starweaver comes and goes through the Webway. Now and then another faction\'s vessel tries to intercept your reports. Yours always wins.',
+    ] },
     { d: '7 Nov 2026', items: [
       'The Adeptus Custodes can be a main army, and have their own look as an opponent: the Ten Thousand. The Imperial Palace takes Terra\'s place at the heart of the map; the battle screen is the Palace\'s spires, the golden tower the Round, the balcony your Shield Host and the great lions the Captain-General and the Threat; crimson-and-gold armour trim runs under the header; the battle cry is "We are the Ten Thousand.". Pick your Shield Host in the Tower of Hegemon: Emperor\'s Chosen, Solar Watch, Dread Host, Aquilan Shield, Shadowkeepers or Emissaries Imperatus.',
       'Orks can be a main army, and have their own look as an opponent. Da Rok, an asteroid fortress, takes Terra\'s place at the heart of the map and Roks drift between the worlds; the battle screen is a Rok comin\' down, its burning hatches Da Boyz and the Round, the incoming meteor Da Gitz and the Nob\'s glyph banner Da Warboss; rusted choppas and shootas run under the header. Pick yer klan on Da Mob (Goffs, Bad Moons, Evil Sunz, Blood Axes, Snakebites, Deathskulls or Freebooterz) for its badge and colours. WAAAGH!',
@@ -2331,6 +2334,7 @@
   function renderSheet() {
     const sh = UI.sheet; if (!sh) return '';
     if (sh.type && sh.type.indexOf('ff') === 0) return ffSheet(sh);
+    if (sh.type === 'feedback') return feedbackSheet();
     const B = S.battle;
     if (sh.type === 'strat') {
       const s = allMyStrats().find((x) => x.name === sh.name && x.det === sh.det);
@@ -2511,7 +2515,7 @@
     document.getElementById('overlay').innerHTML = (UI.sheet ? renderSheet() : renderOverlay())
       + (S.screen === 'battle' && S.battle && last && !UI.sheet && !UI.overlay ? `<button class="undo-fab" data-act="undo" aria-label="Undo the last change: ${esc(last.label)}">${ICON.undo}<span>UNDO</span><small>${esc(last.label)}</small></button>` : '');
     const nb = document.querySelector('#overlay .sheet-body'); if (nb) { nb.dataset.key = sKey; nb.scrollTop = keep; }
-    startChains();
+    startChains(); vesselSync();
     window.scrollTo(0, y);
   }
   function renderResults() {
@@ -2556,6 +2560,9 @@
     poolDelete() { const id = UI.libPick; allSlots().forEach((sl) => { if (slotId(sl) === id) clearSlot(sl); }); const gone = POOL.find((x) => x.id === id); if (gone) forgetImage(gone); POOL = POOL.filter((x) => x.id !== id); poolSave(); UI.libPick = null; toast('Image removed'); },
     libBack() { UI.overlay = UI.assign && UI.assign.startsWith('rival:') ? 'foedetail' : UI.assign === 'list:other' ? 'paste' : null; UI.assign = null; },
     overlay(k) { UI.overlay = k; UI.sheet = null; },
+    feedback() { UI.overlay = null; UI.sheet = { type: 'feedback' }; UI.fbErr = ''; },
+    fbKind(k) { UI.fbDraft = val('fbText'); UI.fbKind = k; },
+    fbSend() { sendFeedback(); return 'skip'; },
     closeAll() { UI.overlay = null; UI.sheet = null; },
     parse() {
       try {
@@ -3703,6 +3710,209 @@
     if ((act === 'phase' || act === 'startRound' || act === 'nextRound') && B.turn !== 'me') return 'Their turn. They move the game on from their phone.';
     return '';
   };
+  // ---------- the vessel: each army's watchers fly every screen; tap one to send a report ----------
+  const SB_URL = 'https://tgwhmyktpibcpivakwwn.supabase.co';
+  const SB_PUB = 'sb_publishable_OQUa3i86YIeb_IG3B8EbjQ_x5oh7VX5'; // the publishable key: public by design
+  const VES = {
+    inq: { who: 'The Inquisition', ship: 'Inquisitorial cruiser', img: 'lib/pmwves_inq.webp', w: 118, face: 1, beam: '255, 70, 50', line: 'The Inquisition hears every fault. Report a bug, or ask for something the app should do.' },
+    tau: { who: 'The Edification Corps', ship: 'Manta', img: 'lib/pmwves_tau.webp', w: 96, face: 0, beam: '90, 190, 255', line: 'The Edification Corps records every fault for the Greater Good. Report a bug, or ask for something the app should do.' },
+    nec: { who: 'The Triarch Praetorians', ship: 'Night Scythe', img: 'lib/pmwves_nec.webp', w: 84, face: 0, beam: '120, 255, 110', line: 'The Triarch Praetorians judge every breach of the codes. Report a bug, or ask for something the app should do.' },
+    chs: { who: 'The Cognitae', ship: 'Chaos cruiser', img: 'lib/pmwves_chs.webp', w: 118, face: 1, beam: '230, 40, 40', line: 'The Cognitae hear every flaw. Report a bug, or ask for something the app should do.' },
+    eld: { who: 'The Harlequins', ship: 'Starweaver', img: 'lib/pmwves_eld.webp', w: 84, face: -1, beam: '120, 240, 230', line: 'The Masque has seen every misstep. Report a bug, or ask for something the app should do.' },
+    dru: { who: 'The Incubi', ship: 'Raider', img: 'lib/pmwves_dru.webp', w: 90, face: -1, beam: '200, 80, 255', line: 'The Incubi have marked every weakness. Report a bug, or ask for something the app should do.' },
+  };
+  const ARMY_VES = { necron: 'nec', asuryani: 'eld' };
+  function vesselKey() {
+    const vk = (location.search.match(/[?&]vk=(\w+)/) || [])[1]; if (vk && VES[vk]) return vk; // for checking each vessel
+    if (ARMY_VES[S.army]) return ARMY_VES[S.army];
+    const f = (S.army === 'other' ? listFaction(list()) || (list() && list().faction) || '' : (ARMY[S.army] && (ARMY[S.army].lib || ARMY[S.army].label)) || '').toLowerCase();
+    if (/t'?au\b/.test(f)) return 'tau';
+    if (/necron/.test(f)) return 'nec';
+    if (/drukhari/.test(f)) return 'dru';
+    if (/aeldari|asuryani|harlequin|ynnari|craftworld/.test(f)) return 'eld';
+    if (/chaos|death guard|thousand sons|world eaters|emperor's children|daemon|heretic/.test(f)) return 'chs';
+    return 'inq'; // the Imperium, and Orks, Tyranids, Genestealer Cults and Votann
+  }
+  const VS = { key: null, gen: 0, el: null, x: 0, y: 0, anim: null, hold: false, shown: false, nextRaid: 0, raiding: false };
+  const vwait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const vrand = (a, b) => a + Math.random() * (b - a);
+  const vlayer = () => { let l = document.getElementById('vessels'); if (!l) { l = document.createElement('div'); l.id = 'vessels'; document.body.appendChild(l); } return l; };
+  const vbusy = () => !!(UI.sheet || UI.overlay) || document.hidden;
+  function vmake(k, mine) {
+    const V = VES[k]; const b = document.createElement(mine ? 'button' : 'div');
+    b.className = 'vessel ' + (mine ? 'mine' : 'raider') + ' v-' + k;
+    if (mine) { b.type = 'button'; b.dataset.act = 'feedback'; b.setAttribute('aria-label', V.who + ': report a bug or send feedback'); b.title = V.who + ' · report a bug or send feedback'; }
+    b.innerHTML = `<img src="${V.img}" alt="" draggable="false" style="width: ${V.w}px">`;
+    b.style.setProperty('--beam', V.beam);
+    vlayer().appendChild(b); return b;
+  }
+  const vplace = (el, x, y) => { el.style.transform = `translate(${x}px, ${y}px)`; };
+  // turn to face where it is heading (ships drawn side-on flip; top-down ones only tilt)
+  function vface(el, k, dx, dy) {
+    const V = VES[k]; const img = el.querySelector('img'); if (!img) return;
+    const flip = V.face && dx ? (Math.sign(dx) === V.face ? 1 : -1) : 1;
+    const tilt = Math.max(-10, Math.min(10, (dy / (Math.abs(dx) + 40)) * 10)) * (V.face ? flip * V.face : 1);
+    img.style.transform = `scaleX(${flip}) rotate(${V.face ? tilt * flip : tilt}deg)`;
+  }
+  async function vmove(el, k, x0, y0, x1, y1, ms, gen, pts) {
+    vface(el, k, x1 - x0, y1 - y0);
+    const frames = (pts || [[x0, y0], [x1, y1]]).map(([x, y]) => ({ transform: `translate(${x}px, ${y}px)` }));
+    const a = el.animate(frames, { duration: ms, easing: pts ? 'linear' : 'cubic-bezier(.45,.05,.4,1)', fill: 'forwards' });
+    if (el === VS.el) { VS.anim = a; if (VS.hold) a.pause(); }
+    try { await a.finished; } catch (e) { /* cancelled */ }
+    if (gen !== VS.gen) return false;
+    vplace(el, x1, y1); a.cancel(); if (el === VS.el) { VS.anim = null; VS.x = x1; VS.y = y1; }
+    return true;
+  }
+  // something on screen worth scanning: a world, a button, a heading, a panel
+  function vtarget() {
+    const W = innerWidth, H = innerHeight;
+    const els = [...document.querySelectorAll('#root .world, #root .btn, #root .army-btn, #root h1, #root h2, #root .panel, #root .chip, #root .sol')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 10 && r.bottom > 60 && r.top < H - 60 && r.left < W && r.right > 0; });
+    if (els.length && Math.random() < 0.8) { const r = els[Math.floor(Math.random() * els.length)].getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
+    return [vrand(40, W - 40), vrand(80, H - 80)];
+  }
+  const vclamp = (x, y, w) => [Math.max(4, Math.min(innerWidth - w - 4, x)), Math.max(56, Math.min(innerHeight - 90, y))];
+  function vscan(fromEl, tx, ty, rgb, ms) {
+    const r = fromEl.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const len = Math.hypot(tx - cx, ty - cy); const ang = Math.atan2(ty - cy, tx - cx) * 180 / Math.PI;
+    const beam = document.createElement('div'); beam.className = 'vscan';
+    Object.assign(beam.style, { left: cx + 'px', top: cy + 'px', width: Math.max(30, len) + 'px', transform: `rotate(${ang}deg)` }); beam.style.setProperty('--beam', rgb);
+    const ping = document.createElement('div'); ping.className = 'vping'; Object.assign(ping.style, { left: tx + 'px', top: ty + 'px' }); ping.style.setProperty('--beam', rgb);
+    vlayer().append(beam, ping); setTimeout(() => { beam.remove(); ping.remove(); }, ms);
+  }
+  function vbolt(fromEl, toEl, rgb, hit) {
+    const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+    const ax = a.left + a.width / 2, ay = a.top + a.height / 2; let bx = b.left + b.width / 2, by = b.top + b.height / 2;
+    if (!hit) { bx += vrand(-1, 1) > 0 ? vrand(40, 70) : -vrand(40, 70); by += vrand(-50, 50); }
+    const d = document.createElement('div'); d.className = 'vbolt';
+    Object.assign(d.style, { left: ax + 'px', top: ay + 'px', width: Math.hypot(bx - ax, by - ay) + 'px', transform: `rotate(${Math.atan2(by - ay, bx - ax) * 180 / Math.PI}deg)` }); d.style.setProperty('--beam', rgb);
+    vlayer().appendChild(d); setTimeout(() => d.remove(), 360);
+    if (hit) { const f = document.createElement('div'); f.className = 'vflash'; Object.assign(f.style, { left: bx + 'px', top: by + 'px' }); f.style.setProperty('--beam', rgb); vlayer().appendChild(f); setTimeout(() => f.remove(), 420); }
+  }
+  // the Webway: a gate opens, the craft comes through, and the gate closes behind it
+  async function vgate(x, y, open) {
+    const g = document.createElement('div'); g.className = 'vgate'; g.innerHTML = '<img src="lib/pmwves_gate.webp" alt="">';
+    Object.assign(g.style, { left: x + 'px', top: y + 'px' }); vlayer().appendChild(g);
+    g.animate([{ transform: 'translate(-50%, -50%) scale(.1) rotate(-40deg)', opacity: 0 }, { transform: 'translate(-50%, -50%) scale(1) rotate(0deg)', opacity: 1 }], { duration: 700, easing: 'ease-out', fill: 'forwards' });
+    await vwait(700); return g;
+  }
+  async function vgateClose(g) {
+    if (!g) return; const a = g.animate([{ transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }, { transform: 'translate(-50%, -50%) scale(.1) rotate(40deg)', opacity: 0 }], { duration: 600, easing: 'ease-in', fill: 'forwards' });
+    try { await a.finished; } catch (e) { /* gone */ } g.remove();
+  }
+  async function vthrough(el, gx, gy, out) {
+    const w = el.offsetWidth, h = el.offsetHeight; const x = gx - w / 2, y = gy - h / 2;
+    const k0 = { transform: `translate(${x}px, ${y}px) scale(.15)`, opacity: 0 }, k1 = { transform: `translate(${x}px, ${y}px) scale(1)`, opacity: 1 };
+    const a = el.animate(out ? [k1, k0] : [k0, k1], { duration: 650, easing: out ? 'ease-in' : 'ease-out', fill: 'forwards' });
+    try { await a.finished; } catch (e) { /* gone */ } a.cancel(); vplace(el, x, y); el.style.opacity = out ? '0' : '1';
+    return [x, y];
+  }
+  async function vloop(gen) {
+    const k = VS.key, V = VES[k], el = VS.el;
+    await vwait(50); if (gen !== VS.gen) return;
+    const w = el.offsetWidth || V.w, h = el.offsetHeight || 60;
+    if (reduceMotion) { el.style.opacity = '1'; vplace(el, innerWidth - w - 8, Math.round(innerHeight * 0.55)); return; }
+    let gate = null;
+    if (k === 'eld') { const [gx, gy] = [vrand(60, innerWidth - 60), vrand(120, innerHeight - 160)]; gate = await vgate(gx, gy); [VS.x, VS.y] = await vthrough(el, gx, gy, false); }
+    else { VS.x = Math.random() < 0.5 ? -w : innerWidth; VS.y = vrand(90, innerHeight * 0.6); vplace(el, VS.x, VS.y); el.style.opacity = '1'; }
+    let legs = 0;
+    while (gen === VS.gen) {
+      while (gen === VS.gen && (vbusy() || VS.raiding)) await vwait(400);
+      if (gen !== VS.gen) return;
+      if (gate && legs === 0) { await vwait(300); vgateClose(gate); gate = null; }
+      const [tx, ty] = vtarget();
+      // erratic: sometimes a quick dart, sometimes a slow drift, never straight onto the target
+      const [nx, ny] = vclamp(tx - w / 2 + vrand(-90, 90), ty - h / 2 + vrand(-110, -40), w);
+      const dist = Math.hypot(nx - VS.x, ny - VS.y);
+      const ms = Math.max(700, dist * (Math.random() < 0.3 ? 2.2 : vrand(4, 7)));
+      if (k === 'eld' && Math.random() < 0.5) {
+        // the Starweaver circles what it is looking at
+        const R = vrand(60, 100), a0 = Math.atan2(VS.y + h / 2 - ty, VS.x + w / 2 - tx), pts = [];
+        for (let i = 0; i <= 24; i++) { const a = a0 + (i / 24) * Math.PI * 2; const [px, py] = vclamp(tx + Math.cos(a) * R * 1.4 - w / 2, ty + Math.sin(a) * R - h / 2, w); pts.push([px, py]); }
+        if (!(await vmove(el, k, VS.x, VS.y, pts[0][0], pts[0][1], Math.max(600, dist * 3), gen))) return;
+        if (!(await vmove(el, k, pts[0][0], pts[0][1], pts[24][0], pts[24][1], 4200, gen, pts))) return;
+      } else if (!(await vmove(el, k, VS.x, VS.y, nx, ny, ms, gen))) return;
+      if (vbusy()) continue;
+      vscan(el, tx, ty, V.beam, 1300); await vwait(vrand(1300, 2200));
+      legs++;
+      if (Date.now() > VS.nextRaid && !vbusy() && !VS.hold) { await vraid(gen); continue; }
+      if (k === 'eld' && legs >= 3 + Math.floor(Math.random() * 3)) {
+        // back through a gate, and out of another somewhere else a little later
+        const cx = VS.x + w / 2, cy = VS.y + h / 2; const g = await vgate(cx, cy); await vthrough(el, cx, cy, true); vgateClose(g);
+        await vwait(vrand(2500, 6000)); if (gen !== VS.gen) return;
+        while (gen === VS.gen && vbusy()) await vwait(400);
+        const [gx, gy] = [vrand(60, innerWidth - 60), vrand(120, innerHeight - 160)]; gate = await vgate(gx, gy); [VS.x, VS.y] = await vthrough(el, gx, gy, false); legs = 0;
+      } else await vwait(vrand(200, 900));
+    }
+  }
+  // now and then another faction's watchers come for your reports; yours always win
+  async function vraid(gen) {
+    VS.nextRaid = Date.now() + vrand(180000, 360000);
+    const mine = VS.el, k = VS.key; const others = Object.keys(VES).filter((x) => x !== k); const rk = others[Math.floor(Math.random() * others.length)];
+    const R = VES[rk], M = VES[k]; const foe = vmake(rk, false); VS.raiding = true;
+    try {
+      await vwait(30);
+      const fw = foe.offsetWidth || R.w, fh = foe.offsetHeight || 60; const mw = mine.offsetWidth;
+      const left = VS.x + mw / 2 > innerWidth / 2; // come in from the far side
+      const [sx, sy] = vclamp(left ? VS.x - 190 - fw : VS.x + mw + 190, VS.y + vrand(-60, 60), fw);
+      let ex, ey;
+      if (rk === 'eld') { const g = await vgate(sx + fw / 2, sy + fh / 2); [ex, ey] = await vthrough(foe, sx + fw / 2, sy + fh / 2, false); vgateClose(g); vface(foe, rk, VS.x - ex, 0); }
+      else { const ox = left ? -fw - 10 : innerWidth + 10; vplace(foe, ox, sy); foe.style.opacity = '1'; await vmove(foe, rk, ox, sy, sx, sy, 1600, gen); ex = sx; ey = sy; }
+      if (gen !== VS.gen) return;
+      vface(mine, k, ex - VS.x, 0); vface(foe, rk, VS.x - ex, 0);
+      for (let i = 0; i < 4; i++) {
+        vbolt(foe, mine, R.beam, false); await vwait(260);
+        vbolt(mine, foe, M.beam, true); await vwait(320);
+        foe.animate([{ transform: `translate(${ex}px, ${ey}px)` }, { transform: `translate(${ex + vrand(-6, 6)}px, ${ey + vrand(-6, 6)}px)` }, { transform: `translate(${ex}px, ${ey}px)` }], { duration: 160 });
+      }
+      const boom = document.createElement('div'); boom.className = 'vboom'; const r = foe.getBoundingClientRect();
+      Object.assign(boom.style, { left: r.left + r.width / 2 + 'px', top: r.top + r.height / 2 + 'px' }); boom.style.setProperty('--beam', M.beam); vlayer().appendChild(boom);
+      const fall = foe.animate([{ transform: `translate(${ex}px, ${ey}px) rotate(0deg) scale(1)`, opacity: 1, filter: 'brightness(1)' }, { transform: `translate(${ex + (left ? -40 : 40)}px, ${ey + 70}px) rotate(${left ? -35 : 35}deg) scale(.5)`, opacity: 0, filter: 'brightness(3)' }], { duration: 900, easing: 'ease-in', fill: 'forwards' });
+      try { await fall.finished; } catch (e) { /* gone */ }
+      setTimeout(() => boom.remove(), 300);
+      toast(`${R.who} tried to intercept your reports. ${M.who} drove them off.`);
+    } finally { foe.remove(); VS.raiding = false; }
+  }
+  function vesselSync() {
+    const l = vlayer(); l.hidden = vbusy() && !VS.raiding;
+    const k = vesselKey();
+    if (k === VS.key && VS.el && VS.el.isConnected) return;
+    VS.gen++; VS.key = k; if (VS.el) VS.el.remove(); l.querySelectorAll('.vessel, .vgate, .vscan, .vping').forEach((e) => e.remove());
+    VS.el = vmake(k, true); VS.el.style.opacity = '0'; VS.hold = false; VS.raiding = false;
+    if (!VS.nextRaid) VS.nextRaid = /[?&]vraid/.test(location.search) ? 1 : Date.now() + vrand(90000, 180000);
+    vloop(VS.gen);
+  }
+  // hold still while someone reaches for it: a moving target is hard to tap
+  const vnear = (x, y) => { if (!VS.el) return false; const r = VS.el.getBoundingClientRect(); return x > r.left - 40 && x < r.right + 40 && y > r.top - 40 && y < r.bottom + 40; };
+  const vholdSet = (on) => { if (VS.hold === on) return; VS.hold = on; if (VS.anim) { if (on) VS.anim.pause(); else VS.anim.play(); } };
+  document.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') vholdSet(vnear(e.clientX, e.clientY)); }, { passive: true });
+  document.addEventListener('pointerdown', (e) => { if (vnear(e.clientX, e.clientY)) { vholdSet(true); clearTimeout(vholdSet.t); vholdSet.t = setTimeout(() => vholdSet(false), 2500); } }, { passive: true });
+  async function sendFeedback() {
+    const text = val('fbText').trim(); const kind = UI.fbKind || 'bug';
+    if (text.length < 3) { toast('Write a few words first.'); return; }
+    UI.fbBusy = true; UI.fbErr = ''; UI.fbDraft = text; render();
+    const v = (document.querySelector('script[src*="app.js"]') || {}).src || ''; const vm = v.match(/[?&]v=([^&]+)/);
+    const body = { kind, text, screen: S.screen, army: ARMY[S.army] ? ARMY[S.army].label : S.army, faction: listFaction(list()) || '', version: vm ? vm[1] : 'claude' };
+    let res = null;
+    try {
+      if (STANDALONE && STANDALONE.client) { const { data } = await STANDALONE.client.functions.invoke('feedback', { body }); res = data; }
+      else { const r = await fetch(SB_URL + '/functions/v1/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SB_PUB, Authorization: 'Bearer ' + SB_PUB }, body: JSON.stringify(body) }); res = await r.json(); }
+    } catch (e) { res = null; }
+    UI.fbBusy = false;
+    if (res && res.ok) { UI.fbDraft = ''; UI.sheet = null; toast(`${VES[VS.key || 'inq'].who} received your report. Thank you.`); }
+    else UI.fbErr = (res && res.why) || 'Could not send it just now. Check your connection and try again.';
+    render();
+  }
+  function feedbackSheet() {
+    const V = VES[vesselKey()]; const kind = UI.fbKind || 'bug';
+    const chips = [['bug', 'Bug'], ['idea', 'Idea'], ['other', 'Other']].map(([k, n]) => `<button class="chip ${kind === k ? 'on' : ''}" data-act="fbKind" data-k="${k}" aria-pressed="${kind === k}">${n}</button>`).join('');
+    return sheet(V.who, `<div class="row" style="gap: 12px; align-items: center"><img src="${V.img}" alt="" style="width: 92px; flex: none; filter: drop-shadow(0 0 8px rgba(${V.beam}, .45))"><p style="margin: 0">${esc(V.line)}</p></div>
+      <div class="row" style="gap: 6px">${chips}</div>
+      <label class="stack" style="gap: 4px"><span class="eyebrow">${kind === 'bug' ? 'What went wrong, and where?' : kind === 'idea' ? 'What should the app do?' : 'Your message'}</span><textarea id="fbText" rows="6" maxlength="4000" placeholder="${kind === 'bug' ? 'For example: on the battle screen, tapping Next phase in round 3 did nothing.' : ''}" style="width: 100%; resize: vertical">${esc(UI.fbDraft || '')}</textarea></label>
+      <p class="small muted" style="margin: 0">The screen you are on, your army and the app version are sent with it, so the fault can be found. Only the app's owner reads these.</p>
+      ${UI.fbErr ? `<p class="small" style="margin: 0; color: var(--red, #e55)">${esc(UI.fbErr)}</p>` : ''}`,
+      `<button class="btn solid block" data-act="fbSend" ${UI.fbBusy ? 'disabled' : ''}>${UI.fbBusy ? 'SENDING…' : 'SEND REPORT'}</button>`);
+  }
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) { /* optional */ }
   lastSaved = JSON.stringify(Object.assign({}, S, { updatedAt: 0 }));
   render();
