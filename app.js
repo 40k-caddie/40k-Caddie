@@ -285,6 +285,10 @@
 
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
+    { d: '11 Nov 2026', items: [
+      'Scoring follows the mission caps: 15 VP primary and 15 VP secondary a round, 45 of each a game, and 20 VP for a fixed secondary card. Each primary condition scores once a round (twice where it can score at the end of either turn); tap it again to take it back.',
+      'Lists pasted with a comma in their points ("1,250 pts") now read correctly, and a list saved with missing numbers no longer stops the muster screen opening.',
+    ] },
     { d: '9 Nov 2026', items: [
       'Report bugs and send ideas: your army\'s watchers now fly every screen, scanning worlds and buttons as they go. Tap the vessel to write to them. The Imperium, Orks, Tyranids, Genestealer Cults and Votann answer to the Inquisition\'s cruiser; T\'au to the Edification Corps\' Manta; Necrons to the Triarch Praetorians\' Night Scythe; Chaos to the Cognitae\'s cruiser; Drukhari to the Incubi\'s Raider; and Aeldari to the Harlequins, whose Starweaver comes and goes through the Webway. Now and then another faction\'s vessel tries to intercept your reports. Yours always wins.',
     ] },
@@ -725,7 +729,21 @@
   // ---------- list parser (40k app text export) ----------
   // Any list as plain text (Warhammer app, Warmind, New Recruit, Listforge, BattleScribe, typed by hand):
   // try the Warhammer app layout first; if that doesn't fit, read the text for units, points, models, the army and detachment.
+  // a saved list with a missing or broken number (an import that read "1,250" as nothing) is mended, not fatal
+  function cleanList(L) {
+    if (!L || typeof L !== 'object') return L;
+    if (!Array.isArray(L.units)) L.units = [];
+    if (!Array.isArray(L.detachments)) L.detachments = L.detachments ? [String(L.detachments)] : [];
+    L.units.forEach((u) => { if (!Number.isFinite(+u.points) || u.points === null) u.points = 0; else u.points = +u.points; if (!Array.isArray(u.models)) u.models = [{ count: 1, name: u.name || 'Unit', wargear: [] }]; if (!Array.isArray(u.enhancements)) u.enhancements = []; if (!u.name) u.name = 'Unknown unit'; });
+    L.points_total = L.units.reduce((a, u) => a + u.points, 0);
+    if (L.points_limit !== null && L.points_limit !== undefined && !Number.isFinite(+L.points_limit)) L.points_limit = null;
+    if (!L.name) L.name = (L.subfaction || L.faction || 'My army') + ' list';
+    return L;
+  }
   function parseList(text) {
+    return cleanList(parseListRaw(text));
+  }
+  function parseListRaw(text) {
     let r = null, err = null;
     try { r = parseGW(text); } catch (e) { err = e; }
     if (r && r.units.length && r.units.every((u) => u.points)) return r;
@@ -770,6 +788,7 @@
       const enh = lineTxt.match(/^enhancements?\s*:\s*(.+?)(?:\s*[\(\[].*)?$/i);
       if (enh && unit) { unit.enhancements.push(enh[1].trim()); return; }
       const pm = lineTxt.match(PTS);
+      if (pm) pm[1] = String(+pm[1].replace(/,/g, '') || 0);
       if (pm) {
         let name = lineTxt.replace(PTS, '').replace(/[-–—:|,]+\s*$/, '').replace(/^[-–—:|,]+/, '').trim();
         let cnt = null; name = name.replace(/\s*:\s*.*$/, '').trim(); const cm = name.match(COUNT); if (cm) { cnt = cnum(cm); name = cname(cm); }
@@ -1041,10 +1060,26 @@
     if (!B.doctrine) B.doctrine = { active: '', used: {} };
     return B.rounds[r];
   }
+  const CAPS = Object.assign({ primaryPerRound: 15, primaryTotal: 45, secondaryPerRound: 15, secondaryTotal: 45, fixedCardMax: 20, battleReady: 10 }, (D.missions && D.missions.caps) || {});
+  // what a player has banked so far, each round capped, then the game capped
+  function vpBank(who, kind, skip) {
+    let t = 0; Object.keys(S.battle.rounds || {}).forEach((r) => { if (+r !== skip) t += Math.min(CAPS[kind + 'PerRound'], S.battle.rounds[r][kind === 'primary' ? 'pri' : 'sec'][who]); });
+    return Math.min(CAPS[kind + 'Total'], t);
+  }
+  // how much more can go on: the round cap and what is left of the game cap
+  function vpRoom(who, kind, r) {
+    const R = ensureRound(r), cur = R[kind === 'primary' ? 'pri' : 'sec'][who];
+    return Math.max(0, Math.min(CAPS[kind + 'PerRound'], CAPS[kind + 'Total'] - vpBank(who, kind, r)) - cur);
+  }
+  function vpAdd(who, kind, r, v) {
+    const room = vpRoom(who, kind, r), got = Math.min(v, room);
+    ensureRound(r)[kind === 'primary' ? 'pri' : 'sec'][who] += got;
+    if (got < v) toast(got ? `+${got} VP: the ${kind} cap (${CAPS[kind + 'PerRound']} a round, ${CAPS[kind + 'Total']} a game) holds the rest` : `${kind === 'primary' ? 'Primary' : 'Secondary'} is capped: ${CAPS[kind + 'PerRound']} VP a round, ${CAPS[kind + 'Total']} a game`);
+    return got;
+  }
   function vpTotal(who) {
-    const B = S.battle; let t = 0;
-    Object.values(B.rounds || {}).forEach((R) => { t += Math.min(15, R.pri[who]) + Math.min(15, R.sec[who]); });
-    return t + (B.ready && B.ready[who] ? 10 : 0);
+    const B = S.battle;
+    return vpBank(who, 'primary') + vpBank(who, 'secondary') + (B.ready && B.ready[who] ? CAPS.battleReady : 0);
   }
   function syncScores() {
     const B = S.battle; if (!B || !B.rounds) return;
@@ -2400,9 +2435,10 @@
     const step = (kind, who) => `<div class="ctr ${who === 'foe' ? 'foe' : ''}" style="min-width: 120px"><button data-act="rv" data-k="${kind}" data-w="${who}" data-r="${r}" data-d="-1" aria-label="One less">−</button><b class="tnum">${R[kind][who]}</b><button data-act="rv" data-k="${kind}" data-w="${who}" data-r="${r}" data-d="1" aria-label="One more">+</button></div>`;
     const priRows = (name, who) => {
       if (!name) return '<p class="small muted" style="margin: 0">No primary set. Choose both dispositions in The Field.</p>';
-      return parseCard(M.primary[name], B.tactical).rows.map((row) => {
-        const ok = row.rounds.includes(r);
-        return `<div class="row" style="justify-content: space-between; gap: 8px; opacity: ${ok ? 1 : 0.45}"><span class="small" style="min-width: 0">${esc(row.cond)}<br><span class="muted">${esc(titleCase(row.hdr))} · ${esc(row.when)}</span></span><button class="btn small ${who === 'me' ? 'gold' : ''}" data-act="priAdd" data-k="${who}" data-r="${r}" data-v="${row.vp}" ${ok ? '' : 'disabled'} aria-label="Add ${row.vp} VP">+${row.vp}</button></div>`;
+      const hits = (R.priHits && R.priHits[who]) || {};
+      return parseCard(M.primary[name], B.tactical).rows.map((row, i) => {
+        const ok = row.rounds.includes(r); const max = /end of a turn/i.test(row.when) ? 2 : 1; const n = hits[i] ? hits[i].n : 0; const full = n >= max;
+        return `<div class="row" style="justify-content: space-between; gap: 8px; opacity: ${ok ? 1 : 0.45}"><span class="small" style="min-width: 0">${esc(row.cond)}<br><span class="muted">${esc(titleCase(row.hdr))} · ${esc(row.when)}${max > 1 ? ' · up to twice a round' : ''}</span></span><button class="btn small ${who === 'me' ? 'gold' : ''} ${n ? 'solid' : ''}" data-act="priAdd" data-k="${who}" data-r="${r}" data-i="${i}" data-max="${max}" data-v="${row.vp}" ${ok ? '' : 'disabled'} aria-pressed="${n > 0}" aria-label="${full ? 'Scored. Tap to take back' : 'Add ' + row.vp + ' VP'}">${full ? '✓ ' + (max > 1 ? '×2' : row.vp) : n ? '✓ +' + row.vp : '+' + row.vp}</button></div>`;
       }).join('');
     };
     const cardsFor = (who) => {
@@ -2490,6 +2526,7 @@
 
   // ---------- render ----------
   function render() {
+    Object.values(S.lists || {}).forEach(cleanList);
     if (S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
     document.body.className = ARMY[S.army].cls; applyArmyTheme(); applyNecronTheme();
     if (S.army === 'orks') { document.body.dataset.clan = orkClan()[1]; document.body.style.setProperty('--clan', orkClan()[2]); } else delete document.body.dataset.clan;
@@ -2729,9 +2766,20 @@
     logAdd() { const t = val('log-in').trim(); if (!t) return 'skip'; addLog(t, 'note'); },
     endBattle() { UI.sheet = { type: 'end' }; },
     round(k) { UI.sheet = { type: 'round', r: +k }; },
-    rv(k, el) { const R = ensureRound(+el.dataset.r); R[k][el.dataset.w] = Math.max(0, R[k][el.dataset.w] + (+el.dataset.d)); },
-    priAdd(k, el) { const R = ensureRound(+el.dataset.r); R.pri[k] += +el.dataset.v; toast('+' + el.dataset.v + ' VP primary'); },
-    secAdd(k, el) { const w = el.dataset.w, c = S.battle.cards[w][+k], R = ensureRound(+el.dataset.r); const v = +el.dataset.v; c.vp += v; R.sec[w] += v; toast('+' + v + ' VP ' + c.name); },
+    rv(k, el) { const r = +el.dataset.r, R = ensureRound(r), d = +el.dataset.d, w = el.dataset.w; if (d > 0) { vpAdd(w, k === 'pri' ? 'primary' : 'secondary', r, d); return; } R[k][w] = Math.max(0, R[k][w] + d); },
+    priAdd(k, el) {
+      const r = +el.dataset.r, R = ensureRound(r), i = el.dataset.i, max = +el.dataset.max || 1, v = +el.dataset.v;
+      R.priHits = R.priHits || { me: {}, foe: {} }; const h = R.priHits[k] || (R.priHits[k] = {}); const e = h[i] || { n: 0, got: [] };
+      if (e.n >= max) { const back = e.got.reduce((a, b) => a + b, 0); R.pri[k] = Math.max(0, R.pri[k] - back); delete h[i]; toast('Taken back: −' + back + ' VP primary'); return; }
+      const got = vpAdd(k, 'primary', r, v); if (!got) return;
+      e.n++; e.got.push(got); h[i] = e; if (got === v) toast('+' + got + ' VP primary');
+    },
+    secAdd(k, el) {
+      const w = el.dataset.w, c = S.battle.cards[w][+k], r = +el.dataset.r; const tac = w === 'me' ? S.battle.tactical : S.battle.foeTactical;
+      let v = +el.dataset.v; if (!tac) v = Math.min(v, Math.max(0, CAPS.fixedCardMax - c.vp));
+      if (!v) { toast(c.name + ' is capped at ' + CAPS.fixedCardMax + ' VP as a fixed card'); return; }
+      const got = vpAdd(w, 'secondary', r, v); if (!got) return; c.vp += got; if (got === +el.dataset.v) toast('+' + got + ' VP ' + c.name);
+    },
     cardDone(k, el) { const c = S.battle.cards[el.dataset.w][+k]; c.status = 'achieved'; c.to = +el.dataset.r; addLog((el.dataset.w === 'me' ? 'You achieved ' : 'They achieved ') + c.name + '.', 'event'); },
     cardDrop(k, el) { const w = el.dataset.w, c = S.battle.cards[w][+k]; c.status = 'discarded'; c.to = +el.dataset.r; S.battle.cp[w]++; addLog((w === 'me' ? 'You discarded ' : 'They discarded ') + c.name + ' (+1 CP).', 'event'); },
     objCycle(k, el) { const R = ensureRound(+el.dataset.r); const cur = R.obj[+k] || ''; R.obj[+k] = cur === '' ? 'me' : cur === 'me' ? 'foe' : ''; },
