@@ -141,15 +141,18 @@
       else { const top = scopeNode(S, c.scope, n); is = !!top && top !== S.force && matches(S, top, c.childId); if (top === S.force) is = c.childId === S.D.force.id; }
       return t === 'instanceOf' ? is : !is;
     }
-    if (t === 'before') return true;
+    if (t === 'before') return S._before ? S._before(n) : true; // "an earlier selection": only inside a local group, which sets the order
     const v = value(S, c, n), x = c.value;
     return t === 'atLeast' ? v >= x : t === 'atMost' ? v <= x : t === 'greaterThan' ? v > x : t === 'lessThan' ? v < x : t === 'equalTo' ? v === x : t === 'notEqualTo' ? v !== x : false;
   }
   function localGroup(S, g, n) {
     const top = scopeNode(S, g.scope, n); if (!top) return false;
+    // the selections in order, and where this one sits: "before" counts only those ahead of it (the second Banesword costs more, not the first)
+    const seq = []; const collect = (list) => { for (const k of list) { seq.push(k); if (g.includeChildSelections) collect(k.kids); } }; collect(top.kids || []);
+    let me = n; while (me && seq.indexOf(me) < 0) me = me.parent; const at = me ? seq.indexOf(me) : seq.length;
+    const prev = S._before; S._before = (k) => seq.indexOf(k) < at;
     let v = 0;
-    const walk = (list) => { for (const k of list) { if ((g.conditions || []).every((c) => cond(S, c, k))) v += k.sel.n || 0; if (g.includeChildSelections) walk(k.kids); } };
-    walk(top.kids || []);
+    try { for (const k of seq) if ((g.conditions || []).every((c) => cond(S, c, k))) v += k.sel.n || 0; } finally { S._before = prev; }
     const x = g.value; const t = g.type;
     return t === 'atLeast' ? v >= x : t === 'atMost' ? v <= x : t === 'greaterThan' ? v > x : t === 'lessThan' ? v < x : t === 'equalTo' ? v === x : v >= x;
   }

@@ -286,6 +286,8 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '11 Nov 2026', items: [
+      'My collection now has two modes: Complete, one collection of every unit you own across all your armies (a Rhino or an Inquisitor counts for every army that can take one), and By army, where each army keeps its own counts.',
+      'Footfall points: the second and later copies of a unit that costs more after the first (such as a second Banesword) are now priced correctly; the first is no longer charged the higher price.',
       'The Astra Militarum can be a main army, and have their own look as an opponent. Pick your regiment in Orders of Battle: Cadian Shock Troops, Catachan Jungle Fighters, Death Korps of Krieg, Vostroyan Firstborn, Mordian Iron Guard, Tallarn Desert Raiders, Valhallan Ice Warriors or Armageddon Steel Legion. Your regiment\'s home world takes Terra\'s place at the heart of the map, its badge and colours run through the app, and the battle cry is its own ("Cadia stands!", "No remorse, no mercy, no forgiveness."). The battle screen is a command hall: the aquila window is the Round, the gantry the Lord General, the blast doors your regiment and the enemy.',
       'Scoring follows the mission caps: 15 VP primary and 15 VP secondary a round, 45 of each a game, and 20 VP for a fixed secondary card. Each primary condition scores once a round (twice where it can score at the end of either turn); tap it again to take it back.',
       'Lists pasted with a comma in their points ("1,250 pts") now read correctly, and a list saved with missing numbers no longer stops the muster screen opening.',
@@ -298,7 +300,7 @@
       'Orks can be a main army, and have their own look as an opponent. Da Rok, an asteroid fortress, takes Terra\'s place at the heart of the map and Roks drift between the worlds; the battle screen is a Rok comin\' down, its burning hatches Da Boyz and the Round, the incoming meteor Da Gitz and the Nob\'s glyph banner Da Warboss; rusted choppas and shootas run under the header. Pick yer klan on Da Mob (Goffs, Bad Moons, Evil Sunz, Blood Axes, Snakebites, Deathskulls or Freebooterz) for its badge and colours. WAAAGH!',
       'Imperial Fists can be a main army, and have their own look as an opponent: the Sentinels of Terra. Terra stays at the heart of the map and you board the Phalanx, their star-fortress, to fight; the battle screen is the Phalanx\'s great hall, its arches your Company, Round and Besieger doors and the aquila the Strategium; black-and-yellow siege chevrons run under the header; the battle cry is "Primarch-Progenitor, to your glory!".',
       'Coming soon, at the bottom of the main screen: which armies already have their own full look, as your army and as an opponent, and which are still on the way.',
-      'My collection, in Footfall: record the units you actually own, for every army you collect (each army keeps its own collection). Open any Footfall list, tap My collection at the bottom, and set how many of each unit is on your shelf. Then, when adding units to a list, turn on "Only units I own": the builder offers only what you have (and no more copies than you own), and its suggestions for spare points stick to your shelf too. Your collection is saved to your account and never takes up a list slot.',
+      'My collection, in Footfall: record the units you actually own. Choose Complete (one collection of everything you own, where each unit counts for every army that can field it) or By army (each army keeps its own counts). Open any Footfall list, tap My collection at the bottom, and set how many of each unit is on your shelf. Then, when adding units to a list, turn on "Only units I own": the builder offers only what you have (and no more copies than you own), and its suggestions for spare points stick to your shelf too. Your collection is saved to your account and never takes up a list slot.',
       'Chasing the meta, in Footfall: your army\'s 11th edition win rate and rank, and beside each unit when you add one, how often it is taken, whether it clearly lifts the win rate, and how many recent winning lists took it. The Chasing the meta panel lists what recent winners took and the units that lift results, with one tap to add. Numbers update weekly from the 40k-analytics report and the Competitive Innovations column on Tabletop Battles.',
       'Footfall, the list builder: the void port on the main screen. A legal list carries its army\'s seal (Chapter Master Approved, High Marshal Approved, Silent King Approved, Nurgle Approved and more), and you send it to battle the way that army goes to war: Board the Thunderhawks, Board the Night Scythes, Launch the Tyrannocytes. Build a list for any army from the current points and rules, with every wargear choice, enhancements, leaders and support units. It checks the list as you go and says exactly what is wrong. The seal fills as you reach the points limit; when the list is legal, tap it to take the list to your home world. If you are 30 or more points short it suggests units that fit. Mark what you own in My collection and build only from that. The Cogitator can explain enhancements and detachments, or why something is not legal.',
       'Before every battle, the app checks the rules it holds for both armies against the current ones. If either army\'s rules have changed, it tells you before the fight starts, so you can check points and datasheets first.',
@@ -3189,6 +3191,10 @@
   }
   const ffOwnedKey = (Dd, key) => (FF.R(Dd, key) || {}).id;
   const ffOwned = (Dd) => { const st = ffState(); st.owned[Dd.file] = st.owned[Dd.file] || {}; return st.owned[Dd.file]; };
+  // My collection has two modes. Complete: one shelf for everything you own, counted by unit name, so a Rhino counts for every army that can take one.
+  // By army: each army keeps its own counts.
+  const ffOwnMode = () => (ffState().ownMode === 'complete' ? 'complete' : 'army');
+  const ffOwnCount = (Dd, o) => { const st = ffState(); if (ffOwnMode() === 'complete') return (st.ownedAll || {})[o.name] || 0; return ffOwned(Dd)[ffOwnedKey(Dd, o.key)] || 0; };
   const ffInList = (ev, id) => ev.S.force.kids.filter((k) => k.r.id === id).length;
   // what to add when the list is short: the biggest units that fit the points left
   function ffSuggest(Dd, ev) {
@@ -3196,7 +3202,7 @@
     const st = ffState(); const own = ffOwned(Dd);
     // big centrepieces and allies are a choice to make, not a gap-filler
     const pool = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model') && o.pts > 0 && o.pts <= spare && o.pts <= ev.limit * 0.3 && (o.max < 0 || o.count < o.max)
-      && !o.cats.some((c) => /^allies|titanic|lord of war|fortification|epic hero/i.test(ffCatName(Dd, c))) && (!st.ownedOnly || (own[ffOwnedKey(Dd, o.key)] || 0) > ffInList(ev, ffOwnedKey(Dd, o.key))))
+      && !o.cats.some((c) => /^allies|titanic|lord of war|fortification|epic hero/i.test(ffCatName(Dd, c))) && (!st.ownedOnly || ffOwnCount(Dd, o) > ffInList(ev, ffOwnedKey(Dd, o.key))))
       .filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i);
     // the closest fit first, then the most-used kinds of unit
     const inList = new Set(ev.S.force.kids.map((k) => k.r.id));
@@ -3352,7 +3358,7 @@
       const cats = Object.keys(byCat).sort((a, b) => ffCatRank(a) - ffCatRank(b) || a.localeCompare(b));
       return sheet('Add a unit', `<label class="field"><span class="eyebrow">Search</span><input type="search" id="ff-q" value="${esc(UI.ffQ || '')}" placeholder="Unit name" autocomplete="off"></label>
         <button class="ff-pick ${st.ownedOnly ? 'on' : ''}" data-act="ffOwnedOnly" aria-pressed="${st.ownedOnly}"><span class="ff-box" aria-hidden="true">${st.ownedOnly ? '✓' : ''}</span><span class="ff-nm">Only units I own <span class="small muted">(set them in My collection)</span></span></button>
-        ${cats.map((c) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((o) => { const id = ffOwnedKey(Dd, o.key); const have = ffInList(ev, id); const owned = own[id] || 0; const full = o.max >= 0 && o.count >= o.max; const noOwn = st.ownedOnly && owned <= have; const ml = ffMetaLine(M, o.name); const info = [have ? have + ' in list' : '', o.max >= 0 ? 'max ' + o.max : '', owned ? owned + ' owned' : ''].filter(Boolean).join(' · ');
+        ${cats.map((c) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((o) => { const id = ffOwnedKey(Dd, o.key); const have = ffInList(ev, id); const owned = ffOwnCount(Dd, o); const full = o.max >= 0 && o.count >= o.max; const noOwn = st.ownedOnly && owned <= have; const ml = ffMetaLine(M, o.name); const info = [have ? have + ' in list' : '', o.max >= 0 ? 'max ' + o.max : '', owned ? owned + ' owned' : ''].filter(Boolean).join(' · ');
           return `<button class="strat" data-act="ffAddKey" data-k="${esc(o.key)}" ${full || noOwn ? 'disabled' : ''} style="min-height: 46px"><span style="min-width: 0"><span class="nm">${esc(o.name)}</span>${info ? `<br><span class="ds">${esc(info)}</span>` : ''}${ml ? `<br><span class="ds ff-ml">${esc(ml)}</span>` : ''}</span><b class="ff-pts">${o.pts}</b></button>`; }).join('')}</div>`).join('') || '<p class="small muted">Nothing matches.</p>'}`, '');
     }
     if (sh.type === 'ffDet') {
@@ -3386,8 +3392,14 @@
     if (sh.type === 'ffOwn') {
       const own = ffOwned(Dd);
       const opts = FF.options(Dd, ev, null).filter((o) => !o.hidden && !o.group && (o.type === 'unit' || o.type === 'model') && !o.cats.some((c) => /^allies/i.test(ffCatName(Dd, c)))).filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i).sort((a, b) => a.name.localeCompare(b.name));
-      return sheet('My collection', `<p class="small muted" style="margin: 0">How many of each unit you own for ${esc(ffShort(L.facName))}. Turn on "Only units I own" when adding units to build from your shelf.</p>
-        ${opts.map((o) => { const id = ffOwnedKey(Dd, o.key); const v = own[id] || 0; return `<div class="ff-row"><span class="ff-nm">${esc(o.name)}</span><span class="ff-step"><button class="btn small" data-act="ffOwnN" data-k="${esc(id)}|-1" ${v <= 0 ? 'disabled' : ''} aria-label="One fewer">−</button><b>${v}</b><button class="btn small" data-act="ffOwnN" data-k="${esc(id)}|1" aria-label="One more">+</button></span></div>`; }).join('')}`, `<button class="btn solid block" data-act="closeAll">DONE</button>`);
+      const mode = ffOwnMode(); const all = ffState().ownedAll || {};
+      const row = (o) => { const k = mode === 'complete' ? 'c:' + o.name : 'a:' + ffOwnedKey(Dd, o.key); const v = ffOwnCount(Dd, o); return `<div class="ff-row"><span class="ff-nm">${esc(o.name)}</span><span class="ff-step"><button class="btn small" data-act="ffOwnN" data-k="${esc(k)}|-1" ${v <= 0 ? 'disabled' : ''} aria-label="One fewer">−</button><b>${v}</b><button class="btn small" data-act="ffOwnN" data-k="${esc(k)}|1" aria-label="One more">+</button></span></div>`; };
+      const here = new Set(opts.map((o) => o.name)); const elsewhere = Object.keys(all).filter((n) => all[n] > 0 && !here.has(n)).sort();
+      const total = Object.values(all).reduce((a, b) => a + b, 0);
+      return sheet('My collection', `<div class="grid2"><button class="btn ${mode === 'complete' ? 'solid' : ''}" data-act="ffOwnMode" data-k="complete" aria-pressed="${mode === 'complete'}">COMPLETE</button><button class="btn ${mode === 'army' ? 'solid' : ''}" data-act="ffOwnMode" data-k="army" aria-pressed="${mode === 'army'}">BY ARMY</button></div>
+        <p class="small muted" style="margin: 0">${mode === 'complete' ? `One collection of every unit you own, across all your armies (${total} so far). Each unit counts for every army that can field it, so a Rhino or an Inquisitor you own shows up wherever it can be taken. Below: the ${esc(ffShort(L.facName))} units.` : `Counts kept for ${esc(ffShort(L.facName))} only. Other armies keep their own.`} Turn on "Only units I own" when adding units to build from your shelf.</p>
+        ${opts.map(row).join('')}
+        ${mode === 'complete' && elsewhere.length ? `<div class="stack" style="gap: 4px"><span class="eyebrow">Also in your collection</span><p class="small muted" style="margin: 0">Owned units this army can't field.</p>${elsewhere.map((n) => `<div class="ff-row"><span class="ff-nm">${esc(n)}</span><span class="ff-step"><button class="btn small" data-act="ffOwnN" data-k="${esc('c:' + n)}|-1" aria-label="One fewer">−</button><b>${all[n]}</b><button class="btn small" data-act="ffOwnN" data-k="${esc('c:' + n)}|1" aria-label="One more">+</button></span></div>`).join('')}</div>` : ''}`, `<button class="btn solid block" data-act="closeAll">DONE</button>`);
     }
     if (sh.type === 'ffMore') return sheet('This list', `<label class="field"><span class="eyebrow">Name</span><input type="text" id="ff-rename" value="${esc(L.name)}" autocomplete="off"></label>`, `<div class="grid2"><button class="btn" data-act="ffDelList" style="color: var(--accent-text)">${UI.ffSure ? 'TAP AGAIN TO DELETE' : 'DELETE LIST'}</button><button class="btn solid" data-act="ffRename">SAVE NAME</button></div>`);
     return '';
@@ -3533,7 +3545,17 @@
     ffErrs() { UI.sheet = { type: 'ffErrs' }; },
     ffMetaOpen() { UI.sheet = { type: 'ffMeta' }; },
     ffOwnOpen() { UI.sheet = { type: 'ffOwn' }; },
-    ffOwnN(k) { const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return; const [id, d] = k.split('|'); const own = ffOwned(Dd); own[id] = Math.max(0, (own[id] || 0) + +d); if (!own[id]) delete own[id]; },
+    ffOwnN(k) {
+      const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return; const i = k.lastIndexOf('|'); const key = k.slice(0, i), d = +k.slice(i + 1);
+      const st = ffState(); const own = key.startsWith('c:') ? (st.ownedAll = st.ownedAll || {}) : ffOwned(Dd); const id = key.slice(2);
+      own[id] = Math.max(0, (own[id] || 0) + d); if (!own[id]) delete own[id];
+    },
+    // switching to Complete the first time carries over what this army already counted
+    ffOwnMode(k) {
+      const st = ffState(); st.ownMode = k === 'complete' ? 'complete' : 'army';
+      if (st.ownMode === 'complete') { const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return; st.ownedAll = st.ownedAll || {}; const own = ffOwned(Dd);
+        FF.options(Dd, FF.evaluate(Dd, L.roster), null).forEach((o) => { const v = own[ffOwnedKey(Dd, o.key)] || 0; if (v > (st.ownedAll[o.name] || 0)) st.ownedAll[o.name] = v; }); }
+    },
     ffOwnedOnly() { const st = ffState(); st.ownedOnly = !st.ownedOnly; },
     ffCopy() { const L = ffCur(); const Dd = L && FFX.data[L.file]; if (!Dd) return 'skip'; const t = ffText(Dd, FF.evaluate(Dd, L.roster), L); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('List copied'), () => toast('Could not copy on this device')); return 'skip'; },
     ffMore() { UI.sheet = { type: 'ffMore' }; UI.ffSure = false; },
