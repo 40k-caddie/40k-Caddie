@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '11 Nov 2026', items: [
+      'Footfall: tap a chosen enhancement (or any single upgrade) again to take it off, without removing the unit.',
       'My collection now has two modes: Complete, one collection of every unit you own across all your armies (a Rhino or an Inquisitor counts for every army that can take one), and By army, where each army keeps its own counts.',
       'Footfall points: the second and later copies of a unit that costs more after the first (such as a second Banesword) are now priced correctly; the first is no longer charged the higher price.',
       'The Astra Militarum can be a main army, and have their own look as an opponent. Pick your regiment in Orders of Battle: Cadian Shock Troops, Catachan Jungle Fighters, Death Korps of Krieg, Vostroyan Firstborn, Mordian Iron Guard, Tallarn Desert Raiders, Valhallan Ice Warriors or Armageddon Steel Legion. Your regiment\'s home world takes Terra\'s place at the heart of the map, its badge and colours run through the app, and the battle cry is its own ("Cadia stands!", "No remorse, no mercy, no forgiveness."). The battle screen is a command hall: the aquila window is the Round, the gantry the Lord General, the blast doors your regiment and the enemy.',
@@ -3534,7 +3535,8 @@
       ffMutate((Dd, L) => {
         const P = ffFind(L, pu); if (!P) return;
         const have = P.s.kids.find((x) => x.k === key);
-        if (have) { if (!gk) FF.remove(L.roster, have.u); return; }
+        // tap a chosen option again to take it off (an enhancement, a single upgrade); a choice the unit must make stays, swap it for another instead
+        if (have) { const g = gk && FF.options(Dd, FF.evaluate(Dd, L.roster), pu).find((x) => x.key === gk); if (!g || !(g.min > 0)) FF.remove(L.roster, have.u); return; }
         if (gk) P.s.kids.filter((x) => (x.gids || []).includes(gk)).forEach((x) => FF.remove(L.roster, x.u));
         const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, pu).find((x) => x.key === key); if (o) FF.add(Dd, L.roster, pu, o.key, o.gids, 1);
       });
