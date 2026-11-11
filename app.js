@@ -697,7 +697,7 @@
   // Necron dynasties: name, key, crown world (Lexicanum), the dynasty's hue, a crown-world image where there is one
   const NEC_DYN = [
     ['Sautekh', 'sautekh', 'Mandragora', 125, 'lib/pmwnec_w_mandragora.webp'],
-    ['Szarekhan', 'szarekhan', 'The Song of Oblivion', 30, ''],
+    ['Szarekhan', 'szarekhan', 'The Song of Oblivion', 30, 'lib/pmwnec_w_szarekhan.webp'],
     ['Mephrit', 'mephrit', 'The Tomb World', 22, ''],
     ['Nihilakh', 'nihilakh', 'Gheden', 172, ''],
     ['Novokh', 'novokh', 'Dhol VI', 356, ''],
