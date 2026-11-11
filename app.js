@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Ulthwé)
   const UPDATES = [
     { d: '11 Nov 2026', items: [
+      'Necrons: choose your dynasty in The Tomb (Sautekh, Szarekhan, Mephrit, Nihilakh, Novokh, Nephrekh or Thokt), then wear its colours or pick your own. The dynasty\'s face is your badge, and the heart of the map takes its crown world\'s name: Mandragora, Dhol VI, Gheden, Aryand, Meghoshta, or the Song of Oblivion for the Szarekhan.',
       'The Astra Militarum can be a main army, and have their own look as an opponent. Pick your regiment in Orders of Battle: Cadian Shock Troops, Catachan Jungle Fighters, Death Korps of Krieg, Vostroyan Firstborn, Mordian Iron Guard, Tallarn Desert Raiders, Valhallan Ice Warriors or Armageddon Steel Legion. Your regiment\'s home world takes Terra\'s place at the heart of the map, its badge and colours run through the app, and the battle cry is its own ("Cadia stands!", "No remorse, no mercy, no forgiveness."). The battle screen is a command hall: the aquila window is the Round, the gantry the Lord General, the blast doors your regiment and the enemy.',
       'Footfall: tap a chosen enhancement (or any single upgrade) again to take it off, without removing the unit.',
       'My collection now has two modes: Complete, one collection of every unit you own across all your armies (a Rhino or an Inquisitor counts for every army that can take one), and By army, where each army keeps its own counts.',
@@ -562,6 +563,7 @@
   function herald(k) {
     const own = poolItem(S.slots['army:' + k]);
     if (own) return `<img src="${own.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
+    if (k === 'necron') return `<img src="lib/pmwnec_d_${necDyn()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%">`;
     if (k === 'guard') return `<img src="lib/pmwam_c_${amReg()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
     if (k === 'orks') { const it = POOL.find((x) => x.name === 'orks-clan-' + orkClan()[1]); if (it) return `<img src="${it.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`; }
     if (k === 'templars') return `<svg aria-hidden="true" viewBox="-24 -24 560 560">${gi('iron-cross', 'fill="#0E0D0C" stroke="#E8E0CC" stroke-width="18" stroke-linejoin="round" paint-order="stroke"')}</svg>`;
@@ -649,7 +651,7 @@
   const XENOS = /necron|aeldari|drukhari|ork|tyranid|genestealer|t'au|votann|harlequin/i;
   // the battle world is your army's home: Templars and Dark Angels live on a ship and a rock, so they keep Terra
   const HOMEWORLDS = { wolves: ['Fenris', 'wolves-storm'], necron: ['The Tomb World', 'necrons-tomb-city'], asuryani: ['The Craftworld', 'aeldari-autarch'], deathwatch: ['Erioch', 'deathwatch-fortress'], orks: ['Da Rok', 'orks-rok'], custodes: ['The Imperial Palace', 'custodes-palace'] };
-  function homeWorld() { if (S.army === 'guard') return { name: amReg()[2], img: 'lib/pmwam_w_' + amReg()[1] + '.webp' }; const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
+  function homeWorld() { if (S.army === 'necron') { const d = necDyn(), it = POOL.find((x) => x.name === HOMEWORLDS.necron[1]); return { name: d[2], img: d[4] || (it ? it.src : '') }; } if (S.army === 'guard') return { name: amReg()[2], img: 'lib/pmwam_w_' + amReg()[1] + '.webp' }; const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
   const OWNER = /^f\.weir88@gmail\.com$/i;
   const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch', 'Imperial Fists': 'fists', Orks: 'orks', 'Adeptus Custodes': 'custodes', 'Astra Militarum': 'guard' };
   const myArmies = () => (!Array.isArray(S.mine) ? ['templars'] : S.mine.filter((k) => ARMY[k] && k !== 'carcharodons'));
@@ -692,7 +694,20 @@
   const amReg = () => AM_REGS.find((r) => r[1] === S.amReg) || AM_REGS[0];
   const cuHost = () => (CU_HOSTS.includes(S.cuHost) ? S.cuHost : CU_HOSTS[0]);
   const NEC_HUES = [['Sautekh green', 125], ['Pink', 333], ['Mephrit gold', 45], ['Novokh blood-red', 356], ['Nihilakh verdigris', 168], ['Void blue', 210], ['Purple', 280]];
-  const necHue = () => (S.hue && S.hue.necron !== undefined ? S.hue.necron : 125);
+  // Necron dynasties: name, key, crown world (Lexicanum), the dynasty's hue, a crown-world image where there is one
+  const NEC_DYN = [
+    ['Sautekh', 'sautekh', 'Mandragora', 125, 'lib/pmwnec_w_mandragora.webp'],
+    ['Szarekhan', 'szarekhan', 'The Song of Oblivion', 30, ''],
+    ['Mephrit', 'mephrit', 'The Tomb World', 22, ''],
+    ['Nihilakh', 'nihilakh', 'Gheden', 172, ''],
+    ['Novokh', 'novokh', 'Dhol VI', 356, ''],
+    ['Nephrekh', 'nephrekh', 'Aryand', 45, ''],
+    ['Thokt', 'thokt', 'Meghoshta', 205, ''],
+  ];
+  const necDyn = () => NEC_DYN.find((d) => d[1] === S.necDyn) || NEC_DYN[0];
+  // colours: the dynasty's own, or your own pick (anyone who chose a colour before keeps it)
+  const necColMode = () => S.necCol || (S.hue && S.hue.necron !== undefined ? 'own' : 'dyn');
+  const necHue = () => (necColMode() === 'own' && S.hue && S.hue.necron !== undefined ? S.hue.necron : necDyn()[3]);
   function hueShift(str, to) {
     const turn = (r, g, b) => {
       r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
@@ -1418,7 +1433,7 @@
     return `
     <header class="band wrap" style="padding-block: 10px 8px; text-align: center">
       <button class="icon-btn" data-act="home" aria-label="Main page" style="position: absolute; left: 4px; top: 8px">${ICON.back}</button>
-      <div class="eyebrow">${esc(S.army === 'custodes' ? a.eyebrow + ' · ' + cuHost().toUpperCase() : S.army === 'guard' ? a.eyebrow + ' · ' + amReg()[0].toUpperCase() : a.eyebrow)}</div>
+      <div class="eyebrow">${esc(S.army === 'custodes' ? a.eyebrow + ' · ' + cuHost().toUpperCase() : S.army === 'guard' ? a.eyebrow + ' · ' + amReg()[0].toUpperCase() : S.army === 'necron' ? a.eyebrow + ' · ' + necDyn()[0].toUpperCase() + ' DYNASTY' : a.eyebrow)}</div>
       <h1 class="h" style="font-size: calc(${a.muster.length > 15 ? 30 : 38}px * var(--head-size)); padding-inline: 40px">${esc(a.muster)}</h1>
     </header>
     <main class="main wrap stack">
@@ -1429,7 +1444,9 @@
       </nav>
       <section class="stack" style="gap: 6px"><div class="eyebrow">${esc(a.fightingAs)}</div><div style="display: grid; gap: 8px; grid-template-columns: repeat(${myArmies().length + (S.facs || []).length + 1}, minmax(0, 1fr))">${armyBtns}</div>
 </section>
-      ${S.army === 'guard' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your regiment</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AM_REGS.map(([n, k]) => `<button class="am-reg ${amReg()[1] === k ? 'on' : ''}" data-act="amReg" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${amReg()[1] === k}" title="${esc(n)}"><img src="lib/pmwam_c_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc(amReg()[0])} · ${esc(amReg()[2])} · "${esc(amReg()[4])}"</p></section>` : ''}${S.army === 'custodes' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Shield Host</div><div class="row" style="gap: 6px; flex-wrap: wrap">${CU_HOSTS.map((h) => `<button class="chip ${cuHost() === h ? 'on' : ''}" data-act="cuHost" data-k="${esc(h)}">${esc(h)}</button>`).join('')}</div></section>` : ''}${S.army === 'orks' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Yer klan</div><div class="row" style="gap: 6px; flex-wrap: wrap">${ORK_CLANS.map(([n, k]) => { const it = POOL.find((x) => x.name === 'orks-clan-' + k); return `<button class="ork-clan ${orkClan()[1] === k ? 'on' : ''}" data-act="orkClan" data-k="${k}" aria-label="${esc(n)}" title="${esc(n)}">${it ? `<img src="${it.src}" alt="">` : esc(n)}</button>`; }).join('')}</div><p class="small muted" style="margin: 0">${esc(orkClan()[0])}</p></section>` : ''}${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Dynasty colours</div><div class="row" style="gap: 8px; flex-wrap: wrap">${NEC_HUES.map(([n, h]) => `<button class="hue-sw ${necHue() === h ? 'on' : ''}" data-act="necHue" data-k="${h}" aria-label="${esc(n)}" title="${esc(n)}" style="background: hsl(${h} 85% 55%)"></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc((NEC_HUES.find((x) => x[1] === necHue()) || ['Custom'])[0])}</p></section>` : ''}<section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}${S.army === 'other' && mainFor(L) && !myArmies().includes(mainFor(L)) ? `<button class="btn block" data-act="makeMain" style="border-color: var(--gold); color: var(--gold)">MAKE ${esc(ARMY[mainFor(L)].label.toUpperCase())} YOUR MAIN ARMY</button><p class="small muted" style="margin: 0">Gives ${esc(ARMY[mainFor(L)].label)} the full treatment on every screen: their own frame, words, battle emblem and button.</p>` : ''}</section>
+      ${S.army === 'guard' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your regiment</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AM_REGS.map(([n, k]) => `<button class="am-reg ${amReg()[1] === k ? 'on' : ''}" data-act="amReg" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${amReg()[1] === k}" title="${esc(n)}"><img src="lib/pmwam_c_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc(amReg()[0])} · ${esc(amReg()[2])} · "${esc(amReg()[4])}"</p></section>` : ''}${S.army === 'custodes' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Shield Host</div><div class="row" style="gap: 6px; flex-wrap: wrap">${CU_HOSTS.map((h) => `<button class="chip ${cuHost() === h ? 'on' : ''}" data-act="cuHost" data-k="${esc(h)}">${esc(h)}</button>`).join('')}</div></section>` : ''}${S.army === 'orks' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Yer klan</div><div class="row" style="gap: 6px; flex-wrap: wrap">${ORK_CLANS.map(([n, k]) => { const it = POOL.find((x) => x.name === 'orks-clan-' + k); return `<button class="ork-clan ${orkClan()[1] === k ? 'on' : ''}" data-act="orkClan" data-k="${k}" aria-label="${esc(n)}" title="${esc(n)}">${it ? `<img src="${it.src}" alt="">` : esc(n)}</button>`; }).join('')}</div><p class="small muted" style="margin: 0">${esc(orkClan()[0])}</p></section>` : ''}${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your dynasty</div><div class="row" style="gap: 6px; flex-wrap: wrap">${NEC_DYN.map(([n, k]) => `<button class="am-reg nec-dyn ${necDyn()[1] === k ? 'on' : ''}" data-act="necDyn" data-k="${k}" aria-label="${esc(n)} Dynasty" aria-pressed="${necDyn()[1] === k}" title="${esc(n)}"><img src="lib/pmwnec_d_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">The ${esc(necDyn()[0])} Dynasty · ${esc(necDyn()[2])}</p>
+        <div class="eyebrow">Colours</div><div class="row" style="gap: 6px"><button class="chip ${necColMode() === 'dyn' ? 'on' : ''}" data-act="necCol" data-k="dyn" aria-pressed="${necColMode() === 'dyn'}">Dynasty colours</button><button class="chip ${necColMode() === 'own' ? 'on' : ''}" data-act="necCol" data-k="own" aria-pressed="${necColMode() === 'own'}">My own</button></div>
+        ${necColMode() === 'own' ? `<div class="row" style="gap: 8px; flex-wrap: wrap">${NEC_HUES.map(([n, h]) => `<button class="hue-sw ${necHue() === h ? 'on' : ''}" data-act="necHue" data-k="${h}" aria-label="${esc(n)}" title="${esc(n)}" style="background: hsl(${h} 85% 55%)"></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc((NEC_HUES.find((x) => x[1] === necHue()) || ['Custom'])[0])}</p>` : ''}</section>` : ''}<section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}${S.army === 'other' && mainFor(L) && !myArmies().includes(mainFor(L)) ? `<button class="btn block" data-act="makeMain" style="border-color: var(--gold); color: var(--gold)">MAKE ${esc(ARMY[mainFor(L)].label.toUpperCase())} YOUR MAIN ARMY</button><p class="small muted" style="margin: 0">Gives ${esc(ARMY[mainFor(L)].label)} the full treatment on every screen: their own frame, words, battle emblem and button.</p>` : ''}</section>
       <button class="foe-panel row" data-act="overlay" data-k="foe" style="gap: 12px; padding: 10px 12px; text-align: left; color: var(--text); align-items: center">
         <span style="flex: 0 0 64px; width: 64px; height: 64px; display: block">${sigil(F.faction, F)}</span>
         <span class="stack" style="gap: 3px; flex: 1; min-width: 0">
@@ -1747,7 +1764,7 @@
     }
     if (o === 'coming') {
       // which armies have their full look so far; everything else works fully, with the standard look
-      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)', 'Astra Militarum (with eight regiments)'];
+      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons, with seven dynasties)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)', 'Astra Militarum (with eight regiments)'];
       const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Astra Militarum'];
       const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Space Marines (other chapter)', 'Alpha Legion', 'Astra Militarum']);
       // the rest, most played first (11th edition games, from the weekly meta numbers), so they get their look in that order
@@ -2619,7 +2636,9 @@
     emInvert() { stashFoeInputs(); const R = foe(); R.emblemInvert = !R.emblemInvert; },
     emClear() { stashFoeInputs(); delete foe().emblemId; toast('Image moved back to the library'); },
     army(k) { S.army = k; if (k === 'other') { S.facKey = null; S.lists.other = null; } if (k === 'other' || !list()) UI.overlay = 'paste'; },
-    necHue(k) { S.hue = S.hue || {}; S.hue.necron = +k; },
+    necHue(k) { S.hue = S.hue || {}; S.hue.necron = +k; S.necCol = 'own'; },
+    necDyn(k) { S.necDyn = k; },
+    necCol(k) { S.necCol = k === 'own' ? 'own' : 'dyn'; if (S.necCol === 'own') { S.hue = S.hue || {}; if (S.hue.necron === undefined) S.hue.necron = necDyn()[3]; } },
     makeMain() {
       const L = list(); const k = mainFor(L); if (!k || !L) return;
       S.mine = myArmies().filter((x) => x !== k).concat(k); S.lists[k] = L; S.army = k;

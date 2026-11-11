@@ -1138,6 +1138,8 @@ body.army-guard .panel { background-image: linear-gradient(90deg, transparent, c
 body.army-guard .sheet { background: #0E0F0A; }
 body.army-guard .clash .mine { background-image: var(--grime), linear-gradient(100deg, color-mix(in srgb, var(--reg) 80%, #000), #12140C); background-size: 180px 180px, 100% 100%; }
 body.army-guard .fight-btn { background-image: var(--grime), linear-gradient(180deg, color-mix(in srgb, var(--reg) 85%, #fff 10%), color-mix(in srgb, var(--reg) 60%, #000)); background-size: 180px 180px, 100% 100%; border-color: #D9CF8E; color: #0E0F0A; text-shadow: 0 1px 0 rgba(255,255,230,0.3); }
+.am-reg.nec-dyn { width: 56px; height: 56px; padding: 2px; border-radius: 50%; }
+.am-reg.nec-dyn img { border-radius: 50%; object-fit: cover; }
 .am-reg { width: 58px; height: 66px; padding: 3px; border: 1px solid var(--line); background: rgba(0,0,0,0.35); border-radius: 6px; opacity: 0.62; }
 .am-reg img { width: 100%; height: 100%; object-fit: contain; }
 .am-reg.on { opacity: 1; border-color: var(--gold); box-shadow: 0 0 10px color-mix(in srgb, var(--reg) 70%, transparent); }
@@ -1168,12 +1170,12 @@ body.army-templars[data-foe="guard"] .band::before { content: ""; position: abso
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=83"></script>
-<script src="lib-v18.js?v=83"></script>
-<script src="footfall.js?v=83"></script>
-<script src="data.js?v=83"></script>
-<script src="foes.js?v=83"></script>
-<script src="app.js?v=83"></script>
+<script src="sb.js?v=84"></script>
+<script src="lib-v18.js?v=84"></script>
+<script src="footfall.js?v=84"></script>
+<script src="data.js?v=84"></script>
+<script src="foes.js?v=84"></script>
+<script src="app.js?v=84"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
