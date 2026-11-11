@@ -360,6 +360,10 @@ body.stasis #root, body.stasis #overlay { animation: stasisFlicker 0.7s steps(1)
 @keyframes vBoom { 0% { transform: scale(.2); opacity: 1; } 60% { opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
 .vgate { position: absolute; width: 120px; height: 150px; pointer-events: none; }
 .vgate img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; mix-blend-mode: screen; -webkit-mask: radial-gradient(closest-side, #000 55%, transparent 100%); mask: radial-gradient(closest-side, #000 55%, transparent 100%); }
+/* Menazoid Epsilon: the dead world behind the app updates */
+.mz-sheet + .scrim, .mz-sheet ~ .scrim { background: linear-gradient(rgba(5,6,6,0.35), rgba(5,6,6,0.55)), url("lib/pmwmz_bg.webp") center 20% / cover no-repeat; }
+.mz-sheet ~ .sheet { background: linear-gradient(rgba(10,12,12,0.45), rgba(8,9,9,0.7)), url("lib/pmwmz_bg.webp") center 30% / cover no-repeat; }
+.mz-sheet ~ .sheet .panel { background: rgba(10,12,12,0.62) !important; backdrop-filter: blur(2px); }
 .toast { position: fixed; z-index: 60; left: 50%; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 10px 14px; background: var(--panel2); border: 1px solid var(--gold); color: var(--text); font-weight: 600; max-width: 90%; }
 @media (prefers-reduced-motion: reduce) { .sigil-mask, body.army-templars .band::after, .foe-fill, .chain, .maw-top, .maw-bot, .maw-dark, #void svg, .anim { animation: none !important; } }
 .ww-qr { width: min(70vw, 260px); background: #fff; padding: 6px; border-radius: 8px; }
@@ -1170,12 +1174,12 @@ body.army-templars[data-foe="guard"] .band::before { content: ""; position: abso
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=86"></script>
-<script src="lib-v18.js?v=86"></script>
-<script src="footfall.js?v=86"></script>
-<script src="data.js?v=86"></script>
-<script src="foes.js?v=86"></script>
-<script src="app.js?v=86"></script>
+<script src="sb.js?v=87"></script>
+<script src="lib-v18.js?v=87"></script>
+<script src="footfall.js?v=87"></script>
+<script src="data.js?v=87"></script>
+<script src="foes.js?v=87"></script>
+<script src="app.js?v=87"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

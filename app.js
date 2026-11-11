@@ -1402,7 +1402,7 @@
         <span class="orb" aria-hidden="true">${homeWorld().img ? `<span class="terra-art home-art"><img src="${homeWorld().img}" alt=""></span>` : `<span class="terra-art">${(() => { const t = poolItem(S.slots.terra); return t ? `<img src="${t.src}" alt="">` : `<svg viewBox="0 0 512 512">${gi('eagle-emblem', 'fill="#E8C766"')}</svg>`; })()}</span>`}</span>
         <span class="w-name">${esc(homeWorld().name)}</span>${FLAG() ? `<span class="w-sub">${B ? 'Board ' + FLAGSHIP() + ' to resume' : 'Board ' + FLAGSHIP() + ' to fight'}</span></div>
       <div class="flag-orbit" aria-hidden="false"><button class="flagship" data-act="terra" aria-label="${FLAGSHIP().replace(/^t/, 'T')}: ${B ? 'resume the battle in progress' : 'battle'}"><img src="${flagSrc || ''}" alt=""></button></div>` : `<span class="w-label">${B ? 'Resume' : 'Battle'}</span>${B ? `<span class="w-sub">Round ${roman(B.round)} vs ${esc(factionInfo(foe().faction).display)} · ${B.vp.me}–${B.vp.foe}</span>` : ''}</button>`}
-      ${world('ulthwe', 'updates', 49, 11, 32, 'Menazoid Epsilon', 'App updates', '', false, (() => { const it = POOL.find((x) => /ulthwe|craftworld/.test(fileKey(x.name))); return it ? it.src : ''; })())}
+      ${world('ulthwe', 'updates', 49, 11, 32, 'Menazoid Epsilon', 'App updates', '', false, 'lib/pmwmz_world.webp')}
       ${world('solemnace', 'hist', 80, 21, 46, 'Solemnace', a.hist, games.length ? `${w} won · ${l} lost${d ? ' · ' + d + ' drawn' : ''}` : 'No battles yet', false)}
       ${world('mars', 'cogitator', 86, 50, 50, 'Mars', 'The Cogitator', '', !UI.cogOK)}
       <a class="world astronomican" data-fx="astronomican" href="https://www.warhammer-community.com/en-gb/" target="_blank" rel="noopener" style="left: 18%; top: 22%; --s: 40px" aria-label="The Astronomican: 40k News, opens Warhammer Community"><span class="orb" aria-hidden="true"></span><span class="w-name">Astronomican</span><span class="w-label">40k News</span></a>
@@ -1685,7 +1685,7 @@
         `<div class="grid2"><button class="btn" data-act="closeAll">CLOSE</button><button class="btn solid" data-act="cogAsk" ${UI.cogBusy ? 'disabled' : ''}>${UI.cogBusy ? 'THINKING…' : 'ASK'}</button></div>`);
     }
     if (o === 'updates') {
-      return sheet('Menazoid Epsilon · App updates', UPDATES.map((u) => `<section class="panel stack" style="padding: 10px 12px; gap: 6px"><span class="eyebrow">${esc(u.d)}</span><ul class="small" style="margin: 0; padding-left: 18px; line-height: 1.5">${u.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`).join(''),
+      return '<div class="mz-sheet"></div>' + sheet('Menazoid Epsilon · App updates', UPDATES.map((u) => `<section class="panel stack" style="padding: 10px 12px; gap: 6px"><span class="eyebrow">${esc(u.d)}</span><ul class="small" style="margin: 0; padding-left: 18px; line-height: 1.5">${u.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`).join(''),
         '<button class="btn solid block" data-act="closeAll">DONE</button>');
     }
     if (o === 'account') {
