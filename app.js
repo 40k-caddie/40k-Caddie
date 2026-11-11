@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
     { d: '11 Nov 2026', items: [
+      'An army with its own look now gets it straight away: paste or send a Dark Angels list (or Space Wolves, Necrons, Aeldari, Deathwatch, Imperial Fists, Orks, Custodes or Astra Militarum) and the app switches to that army\'s frames, words, battle screen and colours. No need to tap "Make it your main army" first.',
       'The app-updates world is now Menazoid Epsilon, the dead world where a Dark Age Standard Template Constructor was found (and destroyed, being corrupted by Chaos). The name Ulthwé is kept for the Aeldari craftworld.',
       'Necrons: choose your dynasty in The Tomb (Sautekh, Szarekhan, Mephrit, Nihilakh, Novokh, Nephrekh or Thokt), then wear its colours or pick your own. The dynasty\'s face is your badge, and the heart of the map takes its crown world\'s name: Mandragora, Dhol VI, Gheden, Aryand, Meghoshta, or the Song of Oblivion for the Szarekhan.',
       'The Astra Militarum can be a main army, and have their own look as an opponent. Pick your regiment in Orders of Battle: Cadian Shock Troops, Catachan Jungle Fighters, Death Korps of Krieg, Vostroyan Firstborn, Mordian Iron Guard, Tallarn Desert Raiders, Valhallan Ice Warriors or Armageddon Steel Legion. Your regiment\'s home world takes Terra\'s place at the heart of the map, its badge and colours run through the app, and the battle cry is its own ("Cadia stands!", "No remorse, no mercy, no forgiveness."). The battle screen is a command hall: the aquila window is the Round, the gantry the Lord General, the blast doors your regiment and the enemy.',
@@ -2579,7 +2580,17 @@
   }
 
   // ---------- render ----------
+  // a list for an army that has its own look gets that look straight away: it joins your armies, no extra step
+  function promoteArmy(say) {
+    if (S.army !== 'other') return false;
+    const L = list(); const k = mainFor(L); if (!k || !L || !ARMY[k]) return false;
+    S.mine = myArmies().filter((x) => x !== k).concat(k); S.lists[k] = L; S.army = k;
+    S.facs = (S.facs || []).filter((x) => !MAINABLE[x.f] || MAINABLE[x.f] !== k); S.facKey = null; S.lists.other = null;
+    toast(say ? ARMY[k].label + ' is now one of your main armies.' : ARMY[k].label + ': your army\'s own look is on.');
+    return true;
+  }
   function render() {
+    if (promoteArmy(false)) save();
     Object.values(S.lists || {}).forEach(cleanList);
     if (S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
     document.body.className = ARMY[S.army].cls; applyArmyTheme(); applyNecronTheme();
@@ -2640,12 +2651,7 @@
     necHue(k) { S.hue = S.hue || {}; S.hue.necron = +k; S.necCol = 'own'; },
     necDyn(k) { S.necDyn = k; },
     necCol(k) { S.necCol = k === 'own' ? 'own' : 'dyn'; if (S.necCol === 'own') { S.hue = S.hue || {}; if (S.hue.necron === undefined) S.hue.necron = necDyn()[3]; } },
-    makeMain() {
-      const L = list(); const k = mainFor(L); if (!k || !L) return;
-      S.mine = myArmies().filter((x) => x !== k).concat(k); S.lists[k] = L; S.army = k;
-      S.facs = (S.facs || []).filter((x) => !MAINABLE[x.f] || MAINABLE[x.f] !== k); S.facKey = null; S.lists.other = null;
-      toast(ARMY[k].label + ' is now one of your main armies.'); window.scrollTo(0, 0); return 'top';
-    },
+    makeMain() { if (!promoteArmy(true)) return; window.scrollTo(0, 0); return 'top'; },
     armyFac(k) { const x = (S.facs || []).find((y) => y.f === k); if (!x) return; S.army = 'other'; S.facKey = k; S.lists.other = x.list; S.facs = [x].concat(S.facs.filter((y) => y !== x)); },
     library(k) { UI.overlay = 'library'; UI.sheet = null; UI.assign = k || null; UI.libPick = null; if (k && k.startsWith('rival:')) stashFoeInputs(); },
     poolPick(k) { if (UI.assign) { assignSlot(UI.assign, k); const back = UI.assign.startsWith('rival:') ? 'foedetail' : UI.assign === 'list:other' ? 'paste' : null; if (UI.assign.startsWith('rival:')) S.foeKey = UI.assign.slice(6); toast('Placed on ' + slotLabel(UI.assign)); UI.assign = null; UI.overlay = back; } else UI.libPick = UI.libPick === k ? null : k; },
@@ -3530,7 +3536,7 @@
       let parsed; try { parsed = parseList(ffText(Dd, ev, L)); } catch (e) { toast('The list could not be carried over.'); return; }
       const short = ffShort(Dd.facName);
       const key = ({ 'Black Templars': 'templars', ...MAINABLE })[short];
-      if (key && myArmies().includes(key)) { S.army = key; S.lists[key] = parsed; }
+      if (key && ARMY[key]) { S.mine = myArmies().filter((x) => x !== key).concat(key); S.army = key; S.lists[key] = parsed; }
       else { S.army = 'other'; S.facKey = null; S.lists.other = parsed; rememberFac(parsed); }
       S.screen = 'muster'; UI.sheet = null; toast(ffSealOf(Dd)[1] + ': ' + L.name + ' is bound for ' + homeWorld().name); window.scrollTo(0, 0); return 'top';
     },
