@@ -286,7 +286,7 @@
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
     { d: '13 Nov 2026', items: [
-      'Aeldari: choose your craftworld or path in The Craftworld (Ulthwé, Biel-Tan, Iyanden, Saim-Hann, Alaitoc, the Harlequins or the Ynnari), then wear its colours or pick your own. Its rune is your badge, and the heart of the map takes its name; the Harlequins guard the Black Library, the Ynnari walk the Path of Ynnead.',
+      'Aeldari: choose your craftworld or path in The Craftworld (Ulthwé, Biel-Tan, Iyanden, Saim-Hann, Alaitoc, the Harlequins or the Ynnari), then wear its colours or pick your own. Its rune is your badge, cut like a gem in its colours (Ulthwé onyx, Biel-Tan emerald, Iyanden topaz, Saim-Hann ruby, Alaitoc sapphire), and the heart of the map takes its name; the Harlequins guard the Black Library, the Ynnari walk the Path of Ynnead.',
       'Tyranids can be a main army, and have their own look as an opponent: the Great Devourer. Pick your hive fleet in The Synapse (Leviathan, Behemoth, Kraken, Gorgon, Jormungandr, Hydra or Kronos) for its badge and colours; the hive ship takes Terra\'s place at the heart of the map, named for your fleet. The battle screen is the swarm descending on the prey: the great bio-ships are the Hive Mind, the Round and your fleet, the lone warrior on the rock below is the Prey. Genestealer Cults keep their own colours.',
     ] },
     { d: '11 Nov 2026', items: [
