@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
     { d: '13 Nov 2026', items: [
+      'Aeldari: choose your craftworld or path in The Craftworld (Ulthwé, Biel-Tan, Iyanden, Saim-Hann, Alaitoc, the Harlequins or the Ynnari), then wear its colours or pick your own. Its rune is your badge, and the heart of the map takes its name; the Harlequins guard the Black Library, the Ynnari walk the Path of Ynnead.',
       'Tyranids can be a main army, and have their own look as an opponent: the Great Devourer. Pick your hive fleet in The Synapse (Leviathan, Behemoth, Kraken, Gorgon, Jormungandr, Hydra or Kronos) for its badge and colours; the hive ship takes Terra\'s place at the heart of the map, named for your fleet. The battle screen is the swarm descending on the prey: the great bio-ships are the Hive Mind, the Round and your fleet, the lone warrior on the rock below is the Prey. Genestealer Cults keep their own colours.',
     ] },
     { d: '11 Nov 2026', items: [
@@ -570,6 +571,7 @@
   function herald(k) {
     const own = poolItem(S.slots['army:' + k]);
     if (own) return `<img src="${own.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
+    if (k === 'asuryani' && aeCw()) return `<img src="lib/pmwae_r_${aeCw()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
     if (k === 'nids') return `<img src="lib/pmwty_f_${tyFleet()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%">`;
     if (k === 'necron') return `<img src="lib/pmwnec_d_${necDyn()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%">`;
     if (k === 'guard') return `<img src="lib/pmwam_c_${amReg()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
@@ -659,7 +661,7 @@
   const XENOS = /necron|aeldari|drukhari|ork|tyranid|genestealer|t'au|votann|harlequin/i;
   // the battle world is your army's home: Templars and Dark Angels live on a ship and a rock, so they keep Terra
   const HOMEWORLDS = { wolves: ['Fenris', 'wolves-storm'], necron: ['The Tomb World', 'necrons-tomb-city'], asuryani: ['The Craftworld', 'aeldari-autarch'], deathwatch: ['Erioch', 'deathwatch-fortress'], orks: ['Da Rok', 'orks-rok'], custodes: ['The Imperial Palace', 'custodes-palace'] };
-  function homeWorld() { if (S.army === 'nids') return { name: 'Hive Fleet ' + tyFleet()[0], img: 'lib/pmwty_w_hiveship.webp' }; if (S.army === 'necron') { const d = necDyn(), it = POOL.find((x) => x.name === HOMEWORLDS.necron[1]); return { name: d[2], img: d[4] || (it ? it.src : '') }; } if (S.army === 'guard') return { name: amReg()[2], img: 'lib/pmwam_w_' + amReg()[1] + '.webp' }; const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
+  function homeWorld() { if (S.army === 'asuryani' && aeCw()) return { name: aeCw()[2], img: 'lib/pmwae_w_' + aeCw()[5] + '.webp' }; if (S.army === 'nids') return { name: 'Hive Fleet ' + tyFleet()[0], img: 'lib/pmwty_w_hiveship.webp' }; if (S.army === 'necron') { const d = necDyn(), it = POOL.find((x) => x.name === HOMEWORLDS.necron[1]); return { name: d[2], img: d[4] || (it ? it.src : '') }; } if (S.army === 'guard') return { name: amReg()[2], img: 'lib/pmwam_w_' + amReg()[1] + '.webp' }; const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
   const OWNER = /^f\.weir88@gmail\.com$/i;
   const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch', 'Imperial Fists': 'fists', Orks: 'orks', 'Adeptus Custodes': 'custodes', 'Astra Militarum': 'guard', Tyranids: 'nids' };
   const myArmies = () => (!Array.isArray(S.mine) ? ['templars'] : S.mine.filter((k) => ARMY[k] && k !== 'carcharodons'));
@@ -709,6 +711,18 @@
     ['Hydra', 'hydra', '#B04A86'],
     ['Kronos', 'kronos', '#8E2232'],
   ];
+  // Aeldari: the five great craftworlds, the Harlequins and the Ynnari: name, key, heart of the map, accent, accent text, centre image
+  const AE_CW = [
+    ['Ulthwé', 'ulthwe', 'Ulthwé', '#9C968A', '#E2DCCD', 'craftworld'],
+    ['Biel-Tan', 'bieltan', 'Biel-Tan', '#2E8B57', '#BDF0CF', 'craftworld'],
+    ['Iyanden', 'iyanden', 'Iyanden', '#D9A916', '#F5D45A', 'craftworld'],
+    ['Saim-Hann', 'saimhann', 'Saim-Hann', '#B8261E', '#F59A80', 'craftworld'],
+    ['Alaitoc', 'alaitoc', 'Alaitoc', '#2A5DB0', '#F2CF3C', 'craftworld'],
+    ['Harlequins', 'harlequins', 'The Black Library', '#B0306E', '#F5A8D2', 'webway'],
+    ['Ynnari', 'ynnari', 'The Path of Ynnead', '#8E1E2E', '#EAC2C2', 'webway'],
+  ];
+  const aeCw = () => AE_CW.find((c) => c[1] === S.aeCw) || null;
+  const aeColMode = () => S.aeCol || 'cw';
   const tyFleet = () => TY_FLEETS.find((f) => f[1] === S.tyFleet) || TY_FLEETS[0];
   const amReg = () => AM_REGS.find((r) => r[1] === S.amReg) || AM_REGS[0];
   const cuHost = () => (CU_HOSTS.includes(S.cuHost) ? S.cuHost : CU_HOSTS[0]);
@@ -1452,7 +1466,7 @@
     return `
     <header class="band wrap" style="padding-block: 10px 8px; text-align: center">
       <button class="icon-btn" data-act="home" aria-label="Main page" style="position: absolute; left: 4px; top: 8px">${ICON.back}</button>
-      <div class="eyebrow">${esc(S.army === 'custodes' ? a.eyebrow + ' · ' + cuHost().toUpperCase() : S.army === 'guard' ? a.eyebrow + ' · ' + amReg()[0].toUpperCase() : S.army === 'necron' ? a.eyebrow + ' · ' + necDyn()[0].toUpperCase() + ' DYNASTY' : S.army === 'nids' ? a.eyebrow + ' · HIVE FLEET ' + tyFleet()[0].toUpperCase() : a.eyebrow)}</div>
+      <div class="eyebrow">${esc(S.army === 'custodes' ? a.eyebrow + ' · ' + cuHost().toUpperCase() : S.army === 'guard' ? a.eyebrow + ' · ' + amReg()[0].toUpperCase() : S.army === 'necron' ? a.eyebrow + ' · ' + necDyn()[0].toUpperCase() + ' DYNASTY' : S.army === 'nids' ? a.eyebrow + ' · HIVE FLEET ' + tyFleet()[0].toUpperCase() : S.army === 'asuryani' && aeCw() ? a.eyebrow + ' · ' + aeCw()[0].toUpperCase() : a.eyebrow)}</div>
       <h1 class="h" style="font-size: calc(${a.muster.length > 15 ? 30 : 38}px * var(--head-size)); padding-inline: 40px">${esc(a.muster)}</h1>
     </header>
     <main class="main wrap stack">
@@ -1463,7 +1477,9 @@
       </nav>
       <section class="stack" style="gap: 6px"><div class="eyebrow">${esc(a.fightingAs)}</div><div style="display: grid; gap: 8px; grid-template-columns: repeat(${myArmies().length + (S.facs || []).length + 1}, minmax(0, 1fr))">${armyBtns}</div>
 </section>
-      ${S.army === 'nids' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your hive fleet</div><div class="row" style="gap: 6px; flex-wrap: wrap">${TY_FLEETS.map(([n, k]) => `<button class="am-reg nec-dyn ${tyFleet()[1] === k ? 'on' : ''}" data-act="tyFleet" data-k="${k}" aria-label="Hive Fleet ${esc(n)}" aria-pressed="${tyFleet()[1] === k}" title="${esc(n)}"><img src="lib/pmwty_f_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">Hive Fleet ${esc(tyFleet()[0])}</p></section>` : ''}${S.army === 'guard' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your regiment</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AM_REGS.map(([n, k]) => `<button class="am-reg ${amReg()[1] === k ? 'on' : ''}" data-act="amReg" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${amReg()[1] === k}" title="${esc(n)}"><img src="lib/pmwam_c_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc(amReg()[0])} · ${esc(amReg()[2])} · "${esc(amReg()[4])}"</p></section>` : ''}${S.army === 'custodes' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Shield Host</div><div class="row" style="gap: 6px; flex-wrap: wrap">${CU_HOSTS.map((h) => `<button class="chip ${cuHost() === h ? 'on' : ''}" data-act="cuHost" data-k="${esc(h)}">${esc(h)}</button>`).join('')}</div></section>` : ''}${S.army === 'orks' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Yer klan</div><div class="row" style="gap: 6px; flex-wrap: wrap">${ORK_CLANS.map(([n, k]) => { const it = POOL.find((x) => x.name === 'orks-clan-' + k); return `<button class="ork-clan ${orkClan()[1] === k ? 'on' : ''}" data-act="orkClan" data-k="${k}" aria-label="${esc(n)}" title="${esc(n)}">${it ? `<img src="${it.src}" alt="">` : esc(n)}</button>`; }).join('')}</div><p class="small muted" style="margin: 0">${esc(orkClan()[0])}</p></section>` : ''}${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your dynasty</div><div class="row" style="gap: 6px; flex-wrap: wrap">${NEC_DYN.map(([n, k]) => `<button class="am-reg nec-dyn ${necDyn()[1] === k ? 'on' : ''}" data-act="necDyn" data-k="${k}" aria-label="${esc(n)} Dynasty" aria-pressed="${necDyn()[1] === k}" title="${esc(n)}"><img src="lib/pmwnec_d_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">The ${esc(necDyn()[0])} Dynasty · ${esc(necDyn()[2])}</p>
+      ${S.army === 'asuryani' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your craftworld or path</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AE_CW.map(([n, k]) => `<button class="am-reg ae-rune ${aeCw() && aeCw()[1] === k ? 'on' : ''}" data-act="aeCw" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${!!(aeCw() && aeCw()[1] === k)}" title="${esc(n)}"><img src="lib/pmwae_r_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${aeCw() ? (aeCw()[5] === 'craftworld' ? 'Craftworld ' + esc(aeCw()[0]) : esc(aeCw()[0]) + ' · ' + esc(aeCw()[2])) : 'None chosen: the Asuryani look'}</p>
+        ${aeCw() ? `<div class="eyebrow">Colours</div><div class="row" style="gap: 6px"><button class="chip ${aeColMode() === 'cw' ? 'on' : ''}" data-act="aeCol" data-k="cw" aria-pressed="${aeColMode() === 'cw'}">${aeCw()[5] === 'craftworld' ? 'Craftworld colours' : 'Their colours'}</button><button class="chip ${aeColMode() === 'own' ? 'on' : ''}" data-act="aeCol" data-k="own" aria-pressed="${aeColMode() === 'own'}">My own</button></div>
+        ${aeColMode() === 'own' ? `<div class="row" style="gap: 8px; flex-wrap: wrap">${NEC_HUES.map(([n, h]) => `<button class="hue-sw ${S.aeHue === h ? 'on' : ''}" data-act="aeHue" data-k="${h}" aria-label="${esc(n.replace(/^(Sautekh|Mephrit|Novokh|Nihilakh) /, ''))}" style="background: hsl(${h} 70% 50%)"></button>`).join('')}</div>` : ''}` : ''}</section>` : ''}${S.army === 'nids' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your hive fleet</div><div class="row" style="gap: 6px; flex-wrap: wrap">${TY_FLEETS.map(([n, k]) => `<button class="am-reg nec-dyn ${tyFleet()[1] === k ? 'on' : ''}" data-act="tyFleet" data-k="${k}" aria-label="Hive Fleet ${esc(n)}" aria-pressed="${tyFleet()[1] === k}" title="${esc(n)}"><img src="lib/pmwty_f_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">Hive Fleet ${esc(tyFleet()[0])}</p></section>` : ''}${S.army === 'guard' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your regiment</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AM_REGS.map(([n, k]) => `<button class="am-reg ${amReg()[1] === k ? 'on' : ''}" data-act="amReg" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${amReg()[1] === k}" title="${esc(n)}"><img src="lib/pmwam_c_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc(amReg()[0])} · ${esc(amReg()[2])} · "${esc(amReg()[4])}"</p></section>` : ''}${S.army === 'custodes' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Shield Host</div><div class="row" style="gap: 6px; flex-wrap: wrap">${CU_HOSTS.map((h) => `<button class="chip ${cuHost() === h ? 'on' : ''}" data-act="cuHost" data-k="${esc(h)}">${esc(h)}</button>`).join('')}</div></section>` : ''}${S.army === 'orks' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Yer klan</div><div class="row" style="gap: 6px; flex-wrap: wrap">${ORK_CLANS.map(([n, k]) => { const it = POOL.find((x) => x.name === 'orks-clan-' + k); return `<button class="ork-clan ${orkClan()[1] === k ? 'on' : ''}" data-act="orkClan" data-k="${k}" aria-label="${esc(n)}" title="${esc(n)}">${it ? `<img src="${it.src}" alt="">` : esc(n)}</button>`; }).join('')}</div><p class="small muted" style="margin: 0">${esc(orkClan()[0])}</p></section>` : ''}${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your dynasty</div><div class="row" style="gap: 6px; flex-wrap: wrap">${NEC_DYN.map(([n, k]) => `<button class="am-reg nec-dyn ${necDyn()[1] === k ? 'on' : ''}" data-act="necDyn" data-k="${k}" aria-label="${esc(n)} Dynasty" aria-pressed="${necDyn()[1] === k}" title="${esc(n)}"><img src="lib/pmwnec_d_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">The ${esc(necDyn()[0])} Dynasty · ${esc(necDyn()[2])}</p>
         <div class="eyebrow">Colours</div><div class="row" style="gap: 6px"><button class="chip ${necColMode() === 'dyn' ? 'on' : ''}" data-act="necCol" data-k="dyn" aria-pressed="${necColMode() === 'dyn'}">Dynasty colours</button><button class="chip ${necColMode() === 'own' ? 'on' : ''}" data-act="necCol" data-k="own" aria-pressed="${necColMode() === 'own'}">My own</button></div>
         ${necColMode() === 'own' ? `<div class="row" style="gap: 8px; flex-wrap: wrap">${NEC_HUES.map(([n, h]) => `<button class="hue-sw ${necHue() === h ? 'on' : ''}" data-act="necHue" data-k="${h}" aria-label="${esc(n)}" title="${esc(n)}" style="background: hsl(${h} 85% 55%)"></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc((NEC_HUES.find((x) => x[1] === necHue()) || ['Custom'])[0])}</p>` : ''}</section>` : ''}<section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}${S.army === 'other' && mainFor(L) && !myArmies().includes(mainFor(L)) ? `<button class="btn block" data-act="makeMain" style="border-color: var(--gold); color: var(--gold)">MAKE ${esc(ARMY[mainFor(L)].label.toUpperCase())} YOUR MAIN ARMY</button><p class="small muted" style="margin: 0">Gives ${esc(ARMY[mainFor(L)].label)} the full treatment on every screen: their own frame, words, battle emblem and button.</p>` : ''}</section>
       <button class="foe-panel row" data-act="overlay" data-k="foe" style="gap: 12px; padding: 10px 12px; text-align: left; color: var(--text); align-items: center">
@@ -1783,7 +1799,7 @@
     }
     if (o === 'coming') {
       // which armies have their full look so far; everything else works fully, with the standard look
-      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons, with seven dynasties)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)', 'Astra Militarum (with eight regiments)', 'Tyranids (with seven hive fleets)'];
+      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons, with seven dynasties)', 'Asuryani (Aeldari, with the five craftworlds, the Harlequins and the Ynnari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)', 'Astra Militarum (with eight regiments)', 'Tyranids (with seven hive fleets)'];
       const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Astra Militarum', 'Tyranids'];
       const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Space Marines (other chapter)', 'Alpha Legion', 'Astra Militarum', 'Tyranids']);
       // the rest, most played first (11th edition games, from the weekly meta numbers), so they get their look in that order
@@ -2625,6 +2641,8 @@
     if (S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
     document.body.className = ARMY[S.army].cls; applyArmyTheme(); applyNecronTheme();
     if (S.army === 'nids') document.body.style.setProperty('--fleet', tyFleet()[2]);
+    if (S.army === 'asuryani' && aeCw()) { const st = document.body.style; const own = aeColMode() === 'own';
+      st.setProperty('--accent', own ? `hsl(${S.aeHue} 70% 45%)` : aeCw()[3]); st.setProperty('--accent-text', own ? `hsl(${S.aeHue} 85% 74%)` : aeCw()[4]); st.setProperty('--line2', own ? `hsl(${S.aeHue} 40% 38%)` : `color-mix(in srgb, ${aeCw()[3]} 60%, #1E4A50)`); }
     if (S.army === 'guard') { document.body.dataset.reg = amReg()[1]; document.body.style.setProperty('--reg', amReg()[3]); } else delete document.body.dataset.reg;
     if (S.army === 'orks') { document.body.dataset.clan = orkClan()[1]; document.body.style.setProperty('--clan', orkClan()[2]); } else delete document.body.dataset.clan;
     if (S.army === 'other' && list()) { const lf = listFaction(list()); if (lf && !FOES[lf]) loadFaction(lf); }
@@ -2832,6 +2850,9 @@
     cuHost(k) { S.cuHost = k; },
     amReg(k) { S.amReg = k; },
     tyFleet(k) { S.tyFleet = k; },
+    aeCw(k) { S.aeCw = k; },
+    aeCol(k) { S.aeCol = k === 'own' ? 'own' : 'cw'; if (S.aeCol === 'own' && S.aeHue === undefined) S.aeHue = 190; },
+    aeHue(k) { S.aeHue = +k; S.aeCol = 'own'; },
     undo() {
       const u = UI.undo.pop(); if (!u) return;
       S.battle = JSON.parse(u.b); toast('Undone: ' + u.label);
