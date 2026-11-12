@@ -285,8 +285,11 @@
 
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
+    { d: '13 Nov 2026', items: [
+      'Tyranids can be a main army, and have their own look as an opponent: the Great Devourer. Pick your hive fleet in The Synapse (Leviathan, Behemoth, Kraken, Gorgon, Jormungandr, Hydra or Kronos) for its badge and colours; the hive ship takes Terra\'s place at the heart of the map, named for your fleet. The battle screen is the swarm descending on the prey: the great bio-ships are the Hive Mind, the Round and your fleet, the lone warrior on the rock below is the Prey. Genestealer Cults keep their own colours.',
+    ] },
     { d: '11 Nov 2026', items: [
-      'An army with its own look now gets it straight away: paste or send a Dark Angels list (or Space Wolves, Necrons, Aeldari, Deathwatch, Imperial Fists, Orks, Custodes or Astra Militarum) and the app switches to that army\'s frames, words, battle screen and colours. No need to tap "Make it your main army" first.',
+      'An army with its own look now gets it straight away: paste or send a Dark Angels list (or Space Wolves, Necrons, Aeldari, Deathwatch, Imperial Fists, Orks, Custodes, Astra Militarum or Tyranids) and the app switches to that army\'s frames, words, battle screen and colours. No need to tap "Make it your main army" first.',
       'The app-updates world is now Menazoid Epsilon, the dead world where a Dark Age Standard Template Constructor was found (and destroyed, being corrupted by Chaos). The name Ulthwé is kept for the Aeldari craftworld.',
       'Necrons: choose your dynasty in The Tomb (Sautekh, Szarekhan, Mephrit, Nihilakh, Novokh, Nephrekh or Thokt), then wear its colours or pick your own. The dynasty\'s face is your badge, and the heart of the map takes its crown world\'s name: Mandragora, Dhol VI, Gheden, Aryand, Meghoshta, or the Song of Oblivion for the Szarekhan.',
       'The Astra Militarum can be a main army, and have their own look as an opponent. Pick your regiment in Orders of Battle: Cadian Shock Troops, Catachan Jungle Fighters, Death Korps of Krieg, Vostroyan Firstborn, Mordian Iron Guard, Tallarn Desert Raiders, Valhallan Ice Warriors or Armageddon Steel Legion. Your regiment\'s home world takes Terra\'s place at the heart of the map, its badge and colours run through the app, and the battle cry is its own ("Cadia stands!", "No remorse, no mercy, no forgiveness."). The battle screen is a command hall: the aquila window is the Round, the gantry the Lord General, the blast doors your regiment and the enemy.',
@@ -340,6 +343,7 @@
     necron: { label: 'The Infinite Empire', short: 'Infinite Empire', cls: 'army-necron', muster: 'The Tomb', eyebrow: 'STASIS ENDED', steps: ['I · The Phalanx', 'II · The Lesser Race', 'III · The Battlefield'], fightingAs: 'Awakened as', cry: 'The stars are ours once more!', counsel: 'The Cryptek', log: 'Dynastic Record', vox: 'Record this', voxShort: 'RECORD', armyQ: 'The Phalanx', foeQ: 'The Lesser Race', results: 'The Reckoning of Ages', emblem: 'monolith', oath: 'Your directive', oathText: 'Reclaim what was ours', roll: 'Count the Legions', end: 'End the engagement', hist: 'The Eternal Archive', lib: 'Necrons' },
     asuryani: { label: 'Asuryani', cls: 'army-asuryani', muster: 'The Craftworld', eyebrow: 'THE SEER COUNCIL GATHERS', steps: ['I · The Warhost', 'II · The Enemy', 'III · The Path of Battle'], fightingAs: 'Walking the path of', cry: 'By the light of Asuryan!', counsel: 'The Farseer', log: 'The Skeins', vox: 'Read the runes', voxShort: 'RUNES', armyQ: 'The Warhost', foeQ: 'The Enemy', results: 'The Weave of Fate', emblem: 'stone', oath: 'Your path', oathText: 'Spend no life that fate does not demand', roll: 'Count the Host', end: 'End the battle', hist: 'The Infinity Circuit', lib: 'Aeldari', libRe: /^eldar$/ },
     fists: { label: 'Imperial Fists', cls: 'army-fists', muster: 'The Phalanx', eyebrow: 'SENTINELS OF TERRA', steps: ['I · The Company', 'II · The Besieger', 'III · The Bastion'], fightingAs: 'Standing as', cry: 'Primarch-Progenitor, to your glory!', counsel: 'The Strategium', log: 'Siege Log', vox: 'Vox to the Phalanx', voxShort: 'VOX', armyQ: 'The Company', foeQ: 'The Besieger', results: 'The Reckoning', emblem: 'phalanx', oath: 'Your duty', oathText: 'Hold the line. Break the siege.', roll: 'Muster the Company', end: 'End the battle', hist: 'Hall of Honour', lib: 'Imperial Fists', libRe: /^ifshoulder/ },
+    nids: { label: 'Tyranids', short: 'Tyranids', cls: 'army-nids', muster: 'The Synapse', eyebrow: 'THE GREAT DEVOURER', steps: ['I · The Swarm', 'II · The Prey', 'III · The Feeding Ground'], fightingAs: 'Devouring as', cry: 'Devour them all.', counsel: 'The Hive Mind', log: 'The Feeding', vox: 'Synaptic pulse', voxShort: 'PULSE', armyQ: 'The Swarm', foeQ: 'The Prey', results: 'Biomass Harvested', emblem: 'swarm', oath: 'Instinct', oathText: 'Consume', roll: 'Gather the Swarm', end: 'End the feeding', hist: 'The Devoured', lib: 'Tyranids' },
     guard: { label: 'Astra Militarum', short: 'Militarum', cls: 'army-guard', muster: 'Orders of Battle', eyebrow: 'THE HAMMER OF THE EMPEROR', steps: ['I · The Regiment', 'II · The Enemy', 'III · The Front'], fightingAs: 'Serving with', cry: 'Cadia stands!', counsel: 'The Lord General', log: 'The War Diary', vox: 'Vox to Command', voxShort: 'VOX', armyQ: 'The Regiment', foeQ: 'The Enemy', results: 'After-Action Report', emblem: 'hall', oath: 'Standing orders', oathText: 'Hold the line', roll: 'Muster the Regiment', end: 'End the battle', hist: 'The Regimental Records', lib: 'Astra Militarum' },
     orks: { label: 'Orks', cls: 'army-orks', muster: 'Da Mob', eyebrow: 'DA WAAAGH! GATHERS', steps: ['I · Da Boyz', 'II · Da Gitz', 'III · Da Fight'], fightingAs: 'Krumpin\' as', cry: 'WAAAGH!', counsel: 'Da Warboss', log: 'Da Tally', vox: 'Shout it', voxShort: 'OI!', armyQ: 'Da Boyz', foeQ: 'Da Gitz', results: 'Who Won?', emblem: 'rok', oath: 'Da plan', oathText: 'Krump \'em all', roll: 'Count da Boyz', end: 'Stop da fight', hist: 'Da Trophy Rack', lib: 'Orks' },
     custodes: { label: 'Adeptus Custodes', short: 'Custodes', cls: 'army-custodes', muster: 'The Tower of Hegemon', eyebrow: 'THE TEN THOUSAND', steps: ['I · The Shield Host', 'II · The Threat', 'III · The Field'], fightingAs: 'Standing vigil as', cry: 'We are the Ten Thousand.', counsel: 'The Captain-General', log: 'The Annals', vox: 'Report to Hegemon', voxShort: 'VOX', armyQ: 'The Shield Host', foeQ: 'The Threat', results: 'Judgement', emblem: 'spires', oath: 'Your vigil', oathText: 'Guard the Emperor\'s will', roll: 'Muster the Host', end: 'End the battle', hist: 'The Annals of Hegemon', lib: 'Adeptus Custodes', libRe: /^adeptuscustodesicon/ },
@@ -370,6 +374,7 @@
     tau: ['#FFF0D6', '#F0C27A', '#C8833A', '#5A3A14', '#160E04', '#F0C27A', '#1A130A', '#8A6A3A'],
     tyranid: ['#F3D6FF', '#C07AE0', '#7A2E9E', '#2E0E40', '#12061A', '#D7A6F0', '#170A1E', '#6B2E8A'],
     guard: ['#E4E2C8', '#B8B27A', '#6F7A45', '#3A4022', '#10120A', '#CFCB98', '#14160E', '#5E6A3A'],
+    gsc: ['#F3D6FF', '#C07AE0', '#7A2E9E', '#2E0E40', '#12061A', '#D7A6F0', '#170A1E', '#6B2E8A'],
     ork: ['#E6F5C8', '#9ED45A', '#4E8A1E', '#22400A', '#0C1604', '#B9E38A', '#111A08', '#4E7A2A']
   };
   const FACTIONS = [
@@ -379,7 +384,7 @@
     ['Adeptus Mechanicus', 'blood'], ['Imperial Knights', 'loyal'], ['Imperial Agents', 'loyal'],
     ['World Eaters', 'khorne'], ['Death Guard', 'nurgle'], ['Thousand Sons', 'tzeentch'], ["Emperor's Children", 'slaanesh'],
     ['Chaos Space Marines', 'chaos'], ['Alpha Legion', 'alpha'], ['Chaos Daemons', 'khorne'], ['Chaos Knights', 'chaos'],
-    ['Orks', 'ork'], ['Tyranids', 'tyranid'], ['Genestealer Cults', 'tyranid'], ["T'au Empire", 'tau'], ['Drukhari', 'slaanesh'], ['Leagues of Votann', 'tau']
+    ['Orks', 'ork'], ['Tyranids', 'tyranid'], ['Genestealer Cults', 'gsc'], ["T'au Empire", 'tau'], ['Drukhari', 'slaanesh'], ['Leagues of Votann', 'tau']
   ];
   const RIVALS = [['necrons', 'Necrons', 'Pink dynasty'], ['darkangels', 'Dark Angels', ''], ['spacewolves', 'Space Wolves', ''], ['aeldari', 'Aeldari', '']];
 
@@ -565,6 +570,7 @@
   function herald(k) {
     const own = poolItem(S.slots['army:' + k]);
     if (own) return `<img src="${own.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
+    if (k === 'nids') return `<img src="lib/pmwty_f_${tyFleet()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%">`;
     if (k === 'necron') return `<img src="lib/pmwnec_d_${necDyn()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%">`;
     if (k === 'guard') return `<img src="lib/pmwam_c_${amReg()[1]}.webp" alt="" style="width: 100%; height: 100%; object-fit: contain">`;
     if (k === 'orks') { const it = POOL.find((x) => x.name === 'orks-clan-' + orkClan()[1]); if (it) return `<img src="${it.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">`; }
@@ -653,9 +659,9 @@
   const XENOS = /necron|aeldari|drukhari|ork|tyranid|genestealer|t'au|votann|harlequin/i;
   // the battle world is your army's home: Templars and Dark Angels live on a ship and a rock, so they keep Terra
   const HOMEWORLDS = { wolves: ['Fenris', 'wolves-storm'], necron: ['The Tomb World', 'necrons-tomb-city'], asuryani: ['The Craftworld', 'aeldari-autarch'], deathwatch: ['Erioch', 'deathwatch-fortress'], orks: ['Da Rok', 'orks-rok'], custodes: ['The Imperial Palace', 'custodes-palace'] };
-  function homeWorld() { if (S.army === 'necron') { const d = necDyn(), it = POOL.find((x) => x.name === HOMEWORLDS.necron[1]); return { name: d[2], img: d[4] || (it ? it.src : '') }; } if (S.army === 'guard') return { name: amReg()[2], img: 'lib/pmwam_w_' + amReg()[1] + '.webp' }; const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
+  function homeWorld() { if (S.army === 'nids') return { name: 'Hive Fleet ' + tyFleet()[0], img: 'lib/pmwty_w_hiveship.webp' }; if (S.army === 'necron') { const d = necDyn(), it = POOL.find((x) => x.name === HOMEWORLDS.necron[1]); return { name: d[2], img: d[4] || (it ? it.src : '') }; } if (S.army === 'guard') return { name: amReg()[2], img: 'lib/pmwam_w_' + amReg()[1] + '.webp' }; const h = HOMEWORLDS[S.army]; if (!h) return { name: 'Terra', img: '' }; const it = POOL.find((x) => x.name === h[1]); return { name: h[0], img: it ? it.src : '' }; }
   const OWNER = /^f\.weir88@gmail\.com$/i;
-  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch', 'Imperial Fists': 'fists', Orks: 'orks', 'Adeptus Custodes': 'custodes', 'Astra Militarum': 'guard' };
+  const MAINABLE = { 'Space Wolves': 'wolves', 'Dark Angels': 'dark', Necrons: 'necron', Aeldari: 'asuryani', Deathwatch: 'deathwatch', 'Imperial Fists': 'fists', Orks: 'orks', 'Adeptus Custodes': 'custodes', 'Astra Militarum': 'guard', Tyranids: 'nids' };
   const myArmies = () => (!Array.isArray(S.mine) ? ['templars'] : S.mine.filter((k) => ARMY[k] && k !== 'carcharodons'));
   const mainFor = (L) => (L ? MAINABLE[listFaction(L)] || MAINABLE[L.subfaction] || MAINABLE[L.faction] || null : null);
   // a list loaded through Other is kept by its army: the last one per army, the two most recent armies
@@ -693,6 +699,17 @@
     ['Valhallan Ice Warriors', 'valhalla', 'Valhalla', '#A9BCC6', 'Things can always get worse.'],
     ['Armageddon Steel Legion', 'armageddon', 'Armageddon', '#9A8258', 'Steel Legion, advance!'],
   ];
+  // hive fleets: name, key, colour (Warhammer Community's painting guides where they give one; Hydra and Kronos from their art)
+  const TY_FLEETS = [
+    ['Leviathan', 'leviathan', '#7A3FA8'],
+    ['Behemoth', 'behemoth', '#B8221E'],
+    ['Kraken', 'kraken', '#C8452A'],
+    ['Gorgon', 'gorgon', '#6E9A2E'],
+    ['Jormungandr', 'jormungandr', '#B88A3A'],
+    ['Hydra', 'hydra', '#B04A86'],
+    ['Kronos', 'kronos', '#8E2232'],
+  ];
+  const tyFleet = () => TY_FLEETS.find((f) => f[1] === S.tyFleet) || TY_FLEETS[0];
   const amReg = () => AM_REGS.find((r) => r[1] === S.amReg) || AM_REGS[0];
   const cuHost = () => (CU_HOSTS.includes(S.cuHost) ? S.cuHost : CU_HOSTS[0]);
   const NEC_HUES = [['Sautekh green', 125], ['Pink', 333], ['Mephrit gold', 45], ['Novokh blood-red', 356], ['Nihilakh verdigris', 168], ['Void blue', 210], ['Purple', 280]];
@@ -760,7 +777,7 @@
     undo: '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L4 10 L9 15"></path><path d="M4 10 H15 A5 5 0 0 1 15 20 H10"></path></svg>',
     list: '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 6 H20 M8 12 H20 M8 18 H20 M4 6 H4.5 M4 12 H4.5 M4 18 H4.5"></path></svg>'
   };
-  const cryIcon = () => (S.army === 'carcharodons' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : S.army === 'fists' ? ICON.blade : S.army === 'orks' ? ICON.tooth : S.army === 'custodes' ? ICON.blade : S.army === 'deathwatch' ? ICON.omega : ICON.cross);
+  const cryIcon = () => (S.army === 'carcharodons' || S.army === 'nids' ? ICON.tooth : S.army === 'wolves' ? ICON.ward : S.army === 'dark' ? ICON.blade : S.army === 'necron' ? ICON.glyph : S.army === 'asuryani' ? ICON.tear : S.army === 'fists' ? ICON.blade : S.army === 'orks' ? ICON.tooth : S.army === 'custodes' ? ICON.blade : S.army === 'deathwatch' ? ICON.omega : ICON.cross);
 
   // ---------- list parser (40k app text export) ----------
   // Any list as plain text (Warhammer app, Warmind, New Recruit, Listforge, BattleScribe, typed by hand):
@@ -1435,7 +1452,7 @@
     return `
     <header class="band wrap" style="padding-block: 10px 8px; text-align: center">
       <button class="icon-btn" data-act="home" aria-label="Main page" style="position: absolute; left: 4px; top: 8px">${ICON.back}</button>
-      <div class="eyebrow">${esc(S.army === 'custodes' ? a.eyebrow + ' · ' + cuHost().toUpperCase() : S.army === 'guard' ? a.eyebrow + ' · ' + amReg()[0].toUpperCase() : S.army === 'necron' ? a.eyebrow + ' · ' + necDyn()[0].toUpperCase() + ' DYNASTY' : a.eyebrow)}</div>
+      <div class="eyebrow">${esc(S.army === 'custodes' ? a.eyebrow + ' · ' + cuHost().toUpperCase() : S.army === 'guard' ? a.eyebrow + ' · ' + amReg()[0].toUpperCase() : S.army === 'necron' ? a.eyebrow + ' · ' + necDyn()[0].toUpperCase() + ' DYNASTY' : S.army === 'nids' ? a.eyebrow + ' · HIVE FLEET ' + tyFleet()[0].toUpperCase() : a.eyebrow)}</div>
       <h1 class="h" style="font-size: calc(${a.muster.length > 15 ? 30 : 38}px * var(--head-size)); padding-inline: 40px">${esc(a.muster)}</h1>
     </header>
     <main class="main wrap stack">
@@ -1446,7 +1463,7 @@
       </nav>
       <section class="stack" style="gap: 6px"><div class="eyebrow">${esc(a.fightingAs)}</div><div style="display: grid; gap: 8px; grid-template-columns: repeat(${myArmies().length + (S.facs || []).length + 1}, minmax(0, 1fr))">${armyBtns}</div>
 </section>
-      ${S.army === 'guard' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your regiment</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AM_REGS.map(([n, k]) => `<button class="am-reg ${amReg()[1] === k ? 'on' : ''}" data-act="amReg" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${amReg()[1] === k}" title="${esc(n)}"><img src="lib/pmwam_c_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc(amReg()[0])} · ${esc(amReg()[2])} · "${esc(amReg()[4])}"</p></section>` : ''}${S.army === 'custodes' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Shield Host</div><div class="row" style="gap: 6px; flex-wrap: wrap">${CU_HOSTS.map((h) => `<button class="chip ${cuHost() === h ? 'on' : ''}" data-act="cuHost" data-k="${esc(h)}">${esc(h)}</button>`).join('')}</div></section>` : ''}${S.army === 'orks' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Yer klan</div><div class="row" style="gap: 6px; flex-wrap: wrap">${ORK_CLANS.map(([n, k]) => { const it = POOL.find((x) => x.name === 'orks-clan-' + k); return `<button class="ork-clan ${orkClan()[1] === k ? 'on' : ''}" data-act="orkClan" data-k="${k}" aria-label="${esc(n)}" title="${esc(n)}">${it ? `<img src="${it.src}" alt="">` : esc(n)}</button>`; }).join('')}</div><p class="small muted" style="margin: 0">${esc(orkClan()[0])}</p></section>` : ''}${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your dynasty</div><div class="row" style="gap: 6px; flex-wrap: wrap">${NEC_DYN.map(([n, k]) => `<button class="am-reg nec-dyn ${necDyn()[1] === k ? 'on' : ''}" data-act="necDyn" data-k="${k}" aria-label="${esc(n)} Dynasty" aria-pressed="${necDyn()[1] === k}" title="${esc(n)}"><img src="lib/pmwnec_d_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">The ${esc(necDyn()[0])} Dynasty · ${esc(necDyn()[2])}</p>
+      ${S.army === 'nids' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your hive fleet</div><div class="row" style="gap: 6px; flex-wrap: wrap">${TY_FLEETS.map(([n, k]) => `<button class="am-reg nec-dyn ${tyFleet()[1] === k ? 'on' : ''}" data-act="tyFleet" data-k="${k}" aria-label="Hive Fleet ${esc(n)}" aria-pressed="${tyFleet()[1] === k}" title="${esc(n)}"><img src="lib/pmwty_f_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">Hive Fleet ${esc(tyFleet()[0])}</p></section>` : ''}${S.army === 'guard' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your regiment</div><div class="row" style="gap: 6px; flex-wrap: wrap">${AM_REGS.map(([n, k]) => `<button class="am-reg ${amReg()[1] === k ? 'on' : ''}" data-act="amReg" data-k="${k}" aria-label="${esc(n)}" aria-pressed="${amReg()[1] === k}" title="${esc(n)}"><img src="lib/pmwam_c_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc(amReg()[0])} · ${esc(amReg()[2])} · "${esc(amReg()[4])}"</p></section>` : ''}${S.army === 'custodes' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Shield Host</div><div class="row" style="gap: 6px; flex-wrap: wrap">${CU_HOSTS.map((h) => `<button class="chip ${cuHost() === h ? 'on' : ''}" data-act="cuHost" data-k="${esc(h)}">${esc(h)}</button>`).join('')}</div></section>` : ''}${S.army === 'orks' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Yer klan</div><div class="row" style="gap: 6px; flex-wrap: wrap">${ORK_CLANS.map(([n, k]) => { const it = POOL.find((x) => x.name === 'orks-clan-' + k); return `<button class="ork-clan ${orkClan()[1] === k ? 'on' : ''}" data-act="orkClan" data-k="${k}" aria-label="${esc(n)}" title="${esc(n)}">${it ? `<img src="${it.src}" alt="">` : esc(n)}</button>`; }).join('')}</div><p class="small muted" style="margin: 0">${esc(orkClan()[0])}</p></section>` : ''}${S.army === 'necron' ? `<section class="stack" style="gap: 6px"><div class="eyebrow">Your dynasty</div><div class="row" style="gap: 6px; flex-wrap: wrap">${NEC_DYN.map(([n, k]) => `<button class="am-reg nec-dyn ${necDyn()[1] === k ? 'on' : ''}" data-act="necDyn" data-k="${k}" aria-label="${esc(n)} Dynasty" aria-pressed="${necDyn()[1] === k}" title="${esc(n)}"><img src="lib/pmwnec_d_${k}.webp" alt=""></button>`).join('')}</div><p class="small muted" style="margin: 0">The ${esc(necDyn()[0])} Dynasty · ${esc(necDyn()[2])}</p>
         <div class="eyebrow">Colours</div><div class="row" style="gap: 6px"><button class="chip ${necColMode() === 'dyn' ? 'on' : ''}" data-act="necCol" data-k="dyn" aria-pressed="${necColMode() === 'dyn'}">Dynasty colours</button><button class="chip ${necColMode() === 'own' ? 'on' : ''}" data-act="necCol" data-k="own" aria-pressed="${necColMode() === 'own'}">My own</button></div>
         ${necColMode() === 'own' ? `<div class="row" style="gap: 8px; flex-wrap: wrap">${NEC_HUES.map(([n, h]) => `<button class="hue-sw ${necHue() === h ? 'on' : ''}" data-act="necHue" data-k="${h}" aria-label="${esc(n)}" title="${esc(n)}" style="background: hsl(${h} 85% 55%)"></button>`).join('')}</div><p class="small muted" style="margin: 0">${esc((NEC_HUES.find((x) => x[1] === necHue()) || ['Custom'])[0])}</p>` : ''}</section>` : ''}<section class="stack" style="gap: 6px"><div class="eyebrow">Your list</div>${listCard}${S.army === 'other' && mainFor(L) && !myArmies().includes(mainFor(L)) ? `<button class="btn block" data-act="makeMain" style="border-color: var(--gold); color: var(--gold)">MAKE ${esc(ARMY[mainFor(L)].label.toUpperCase())} YOUR MAIN ARMY</button><p class="small muted" style="margin: 0">Gives ${esc(ARMY[mainFor(L)].label)} the full treatment on every screen: their own frame, words, battle emblem and button.</p>` : ''}</section>
       <button class="foe-panel row" data-act="overlay" data-k="foe" style="gap: 12px; padding: 10px 12px; text-align: left; color: var(--text); align-items: center">
@@ -1766,9 +1783,9 @@
     }
     if (o === 'coming') {
       // which armies have their full look so far; everything else works fully, with the standard look
-      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons, with seven dynasties)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)', 'Astra Militarum (with eight regiments)'];
-      const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Astra Militarum'];
-      const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Space Marines (other chapter)', 'Alpha Legion', 'Astra Militarum']);
+      const DONE_MAIN = ['Black Templars', 'Vlka Fenryka (Space Wolves)', 'Dark Angels', 'The Infinite Empire (Necrons, with seven dynasties)', 'Asuryani (Aeldari)', 'Deathwatch', 'Imperial Fists', 'Orks (with all seven klans)', 'Adeptus Custodes (with the six Shield Hosts)', 'Astra Militarum (with eight regiments)', 'Tyranids (with seven hive fleets)'];
+      const DONE_FOE = ['Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Astra Militarum', 'Tyranids'];
+      const done = new Set(['Black Templars', 'Space Wolves', 'Dark Angels', 'Necrons', 'Aeldari', 'Deathwatch', 'Imperial Fists', 'Orks', 'Adeptus Custodes', 'Space Marines (other chapter)', 'Alpha Legion', 'Astra Militarum', 'Tyranids']);
       // the rest, most played first (11th edition games, from the weekly meta numbers), so they get their look in that order
       ffMetaLoad();
       const GAMES = { Tyranids: 14375, "T'au Empire": 12428, 'Chaos Space Marines': 11376, 'World Eaters': 11067, "Emperor's Children": 10869, 'Death Guard': 10700, 'Imperial Knights': 10119, 'Chaos Daemons': 9717, 'Leagues of Votann': 8977, 'Astra Militarum': 8718, 'Thousand Sons': 8439, 'Blood Angels': 7337, 'Chaos Knights': 6405, 'Grey Knights': 6390, 'Adepta Sororitas': 6110, 'Adeptus Mechanicus': 6049, Drukhari: 5917, 'Black Templars': 3830, 'Genestealer Cults': 3734, 'Imperial Agents': 893 };
@@ -2098,7 +2115,7 @@
       <div class="unit-actions"><button data-act="hurt" data-k="${u.id}" ${n ? '' : 'disabled'}>−1 WOUND</button><button data-act="kill" data-k="${u.id}" ${n ? '' : 'disabled'}>MODEL LOST</button><button data-act="heal" data-k="${u.id}">UNDO</button></div></div>`;
   }
   // small in-world wording on the opponent's side (their screens keep plain words otherwise)
-  const FOE_WORDS = { sw: { army: 'Law of the Pack', det: 'Saga', spotted: 'Wolves sighted' }, necron: { army: 'Protocol', det: 'Dynastic directive', spotted: 'Phalanxes detected' }, da: { army: 'Rite of the Order', det: 'Edict', spotted: 'Marked by the Watch' }, ae: { army: 'Path', det: 'Host', spotted: 'Seen in the mists' }, if: { army: 'Chapter rule', det: 'Siege doctrine', spotted: 'Sighted on the walls' }, ork: { army: 'Waaagh!', det: 'Da plan', spotted: 'Boyz spotted' }, custodes: { army: 'Martial Ka\'tah', det: 'Shield Host', spotted: 'Custodians sighted' }, guard: { army: 'Standing orders', det: 'Battle plan', spotted: 'Guardsmen sighted' } };
+  const FOE_WORDS = { sw: { army: 'Law of the Pack', det: 'Saga', spotted: 'Wolves sighted' }, necron: { army: 'Protocol', det: 'Dynastic directive', spotted: 'Phalanxes detected' }, da: { army: 'Rite of the Order', det: 'Edict', spotted: 'Marked by the Watch' }, ae: { army: 'Path', det: 'Host', spotted: 'Seen in the mists' }, if: { army: 'Chapter rule', det: 'Siege doctrine', spotted: 'Sighted on the walls' }, ork: { army: 'Waaagh!', det: 'Da plan', spotted: 'Boyz spotted' }, custodes: { army: 'Martial Ka\'tah', det: 'Shield Host', spotted: 'Custodians sighted' }, guard: { army: 'Standing orders', det: 'Battle plan', spotted: 'Guardsmen sighted' }, tyranid: { army: 'Hive instinct', det: 'Swarm strategy', spotted: 'Bioforms detected' } };
   function renderFoeView() {
     const F = foe(), fi = factionInfo(F.faction), B = S.battle; const W = FOE_WORDS[fi.theme] || { army: 'Army rule', det: 'Detachment', spotted: 'Spotted so far' };
     const fd = FD(F.faction); const isNec = !!fd;
@@ -2143,6 +2160,19 @@
       <span class="tnum" style="font-size: 18px; font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span><span class="small" style="color: var(--accent-text); font-weight: 600">${esc(a.oath)}: ${esc(a.oathText)}</span>`;
     const armyQ = `<span class="qt" style="font-size: calc(19px * var(--head-size))">${esc(a.armyQ)}</span><span class="small" style="font-weight: 700">${standing} of ${units.length}</span>`;
     const foeQ = `<span class="qt" style="font-size: calc(19px * var(--head-size)); color: ${t[4]}">${esc(a.foeQ)}</span><span class="small" style="font-weight: 700; color: ${t[4]}">${B.spotted.length} seen<br>${B.cp.foe} CP</span>`;
+    if (a.emblem === 'swarm') {
+      // the swarm over the prey: the great bio-ships are the Hive Mind, the Round and the Swarm, the lone warrior on the rock is the Prey
+      const sp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 4.56).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 4.56).toFixed(2)}%`;
+      const lastS = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
+      const plate = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q cu-door ${foeTint ? 'cu-foe' : ''}" style="${sp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="cu-plq"><span class="cu-t">${esc(top)}</span>${sub ? `<span class="cu-s">${sub}</span>` : ''}</span></button>`;
+      return `<div class="emblem spires ty-swarm"><img class="cu-art" src="lib/pmwty_battle.webp" alt="">
+        <button class="q cu-core" style="${sp(100, 172, 190, 72)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
+        ${plate(18, 70, 112, 64, 'view', 'counsel', 'The Hive Mind', 'counsel')}
+        ${plate(150, 30, 100, 60, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
+        ${plate(266, 70, 112, 64, 'view', 'army', 'Hive Fleet ' + tyFleet()[0], `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
+        ${plate(140, 268, 110, 62, 'view', 'foe', 'The Prey', `${B.cp.foe} CP`, true)}
+        <button class="q cu-log" style="${sp(16, 384, 358, 66)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastS}</button></div>`;
+    }
     if (a.emblem === 'hall') {
       // the command hall: the aquila window is the Round, the gantry the Lord General, the two blast doors your regiment and the enemy,
       // the hololith table in the middle the battle's numbers, and the War Diary along the floor
@@ -2594,6 +2624,7 @@
     Object.values(S.lists || {}).forEach(cleanList);
     if (S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
     document.body.className = ARMY[S.army].cls; applyArmyTheme(); applyNecronTheme();
+    if (S.army === 'nids') document.body.style.setProperty('--fleet', tyFleet()[2]);
     if (S.army === 'guard') { document.body.dataset.reg = amReg()[1]; document.body.style.setProperty('--reg', amReg()[3]); } else delete document.body.dataset.reg;
     if (S.army === 'orks') { document.body.dataset.clan = orkClan()[1]; document.body.style.setProperty('--clan', orkClan()[2]); } else delete document.body.dataset.clan;
     if (S.army === 'other' && list()) { const lf = listFaction(list()); if (lf && !FOES[lf]) loadFaction(lf); }
@@ -2800,6 +2831,7 @@
     orkClan(k) { S.orkClan = k; },
     cuHost(k) { S.cuHost = k; },
     amReg(k) { S.amReg = k; },
+    tyFleet(k) { S.tyFleet = k; },
     undo() {
       const u = UI.undo.pop(); if (!u) return;
       S.battle = JSON.parse(u.b); toast('Undone: ' + u.label);
