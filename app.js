@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
     { d: '13 Nov 2026', items: [
+      'Battle screens: on the Imperial Fists, Orks, Custodes, Astra Militarum, Tyranid and T\'au screens the picture itself is now the controls. Tap the feature: the banners, the aquila, the Ork, the bio-ships, the sept symbols, the envoy\'s hat. Each glows softly in your army\'s colour with its name beside it, and the round, phase, CP and VP are written into the art instead of sitting in boxes.',
       'Lists with curly apostrophes ("T’au Empire", as the Warhammer app and phone keyboards write it) are now recognised, so the army gets its own look.',
       'The T\'au Empire can be a main army, and have their own look as an opponent. Pick your sept in The Sept (T\'au, Vior\'la, Sa\'cea, Bork\'an, Dal\'yth, Fal\'shia, D\'yanoi, T\'olku or Ke\'lshan), then wear its colours or pick your own; its symbol is your badge and its world sits at the heart of the map. The battle screen is an Ethereal\'s council: the shaft of light is the Round, the Ethereal your counsel, the Fire Warriors your cadre. The battle cry: "For the Greater Good!"',
       'Aeldari: choose your craftworld or path in The Craftworld (Ulthwé, Biel-Tan, Iyanden, Saim-Hann, Alaitoc, the Harlequins or the Ynnari), then wear its colours or pick your own. Its rune is your badge, cut like a gem in its colours (Ulthwé onyx, Biel-Tan emerald, Iyanden topaz, Saim-Hann ruby, Alaitoc sapphire), and the heart of the map takes its name; the Harlequins guard the Black Library, the Ynnari walk the Path of Ynnead.',
@@ -2191,95 +2192,75 @@
       <span class="tnum" style="font-size: 18px; font-weight: 700">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span><span class="small" style="color: var(--accent-text); font-weight: 600">${esc(a.oath)}: ${esc(a.oathText)}</span>`;
     const armyQ = `<span class="qt" style="font-size: calc(19px * var(--head-size))">${esc(a.armyQ)}</span><span class="small" style="font-weight: 700">${standing} of ${units.length}</span>`;
     const foeQ = `<span class="qt" style="font-size: calc(19px * var(--head-size)); color: ${t[4]}">${esc(a.foeQ)}</span><span class="small" style="font-weight: 700; color: ${t[4]}">${B.spotted.length} seen<br>${B.cp.foe} CP</span>`;
+    // ---- the art is the controls: a glow on the real feature, an inscription beside it, the numbers written into the picture ----
+    const AP = (x, y, w, h) => `left: ${x}%; top: ${y}%; width: ${w}%; height: ${h}%`;
+    const alive3 = units.filter((u) => alive(u) > 0).length;
+    // hot(x, y, w, h, act, k, label, sub, o): o.shape 'round'|'rect', o.tag 'below'|'above'|'left'|'right'|'in', o.foe for the enemy's colour
+    const hot = (x, y, w, h, act, k, label, sub, o = {}) => `<button class="q ah ${o.shape === 'rect' ? 'ah-rect' : ''} ${o.foe ? 'ah-foe' : ''}" style="${AP(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(label)}${sub ? ': ' + esc(String(sub).replace(/<[^>]+>/g, '')) : ''}"><span class="ah-glow" aria-hidden="true"></span><span class="ah-tag ah-${o.tag || 'below'}">${esc(label)}${sub ? `<small>${sub}</small>` : ''}</span></button>`;
+    // the battle's numbers, written into a patch of the art; ink 'light' on dark stone, 'dark' on bright light
+    const inscr = (x, y, w, h, ink, act = 'view', k = 'counsel') => `<button class="q ah-txt ah-${ink}" style="${AP(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="Round ${B.round}, ${PHASES[B.phase]}, CP ${B.cp.me} to ${B.cp.foe}, VP ${B.vp.me} to ${B.vp.foe}"><span class="ah-l1">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="ah-l2">${PHASES[B.phase]}</span><span class="ah-l3 tnum">CP ${B.cp.me}<i>|${B.cp.foe}</i> · VP ${B.vp.me}<i>|${B.vp.foe}</i></span></button>`;
+    const logStrip = (y = 85) => `<button class="q cu-log ah-log" style="${AP(4, y, 92, 99 - y)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('')}</button>`;
+    const artBox = (cls, src, inner) => `<div class="emblem spires artctl ${cls}"><img class="cu-art" src="${src}" alt="">${inner}</div>`;
+    const libImg = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
     if (a.emblem === 'council') {
-      // the Ethereal council: the shaft of light is the Round and the phase, the Ethereal the counsel, the Fire Warriors your cadre, the cloaked envoy the foe
-      const sp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 4.56).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 4.56).toFixed(2)}%`;
-      const lastS = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
-      const plate = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q cu-door ${foeTint ? 'cu-foe' : ''}" style="${sp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="cu-plq"><span class="cu-t">${esc(top)}</span>${sub ? `<span class="cu-s">${sub}</span>` : ''}</span></button>`;
-      return `<div class="emblem spires tau-council"><img class="cu-art" src="lib/pmwtau_battle.webp" alt="">
-        <button class="q cu-core" style="${sp(100, 300, 190, 72)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
-        ${plate(150, 24, 100, 58, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
-        ${plate(170, 176, 110, 60, 'view', 'counsel', 'The Ethereal', 'counsel')}
-        ${plate(270, 230, 110, 62, 'view', 'army', tauSept()[0] + ' Cadre', `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
-        ${plate(10, 200, 110, 62, 'view', 'foe', 'The Foe', `${B.cp.foe} CP`, true)}
-        <button class="q cu-log" style="${sp(16, 384, 358, 66)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastS}</button></div>`;
+      // the shaft of light holds the numbers, the Ethereal's face is the counsel, the sept symbols on the two Fire Warriors are the Round and your cadre, the envoy's hat the foe
+      return artBox('tau-council', 'lib/pmwtau_battle.webp',
+        inscr(52, 3, 26, 24, 'dark')
+        + hot(54, 33, 16, 18, 'view', 'counsel', 'The Ethereal', '', { tag: 'right' })
+        + hot(26, 51.5, 11, 9.5, 'round', String(B.round), 'Round ' + roman(B.round), 'score')
+        + hot(78.5, 53, 11, 9.5, 'view', 'army', tauSept()[0] + ' Cadre', `${alive3}/${units.length}`, { tag: 'below' })
+        + hot(15, 6, 25, 17, 'view', 'foe', a.foeQ, `${B.cp.foe} CP`, { foe: true, tag: 'in' })
+        + logStrip());
     }
     if (a.emblem === 'swarm') {
-      // the swarm over the prey: the great bio-ships are the Hive Mind, the Round and the Swarm, the lone warrior on the rock is the Prey
-      const sp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 4.56).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 4.56).toFixed(2)}%`;
-      const lastS = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
-      const plate = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q cu-door ${foeTint ? 'cu-foe' : ''}" style="${sp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="cu-plq"><span class="cu-t">${esc(top)}</span>${sub ? `<span class="cu-s">${sub}</span>` : ''}</span></button>`;
-      return `<div class="emblem spires ty-swarm"><img class="cu-art" src="lib/pmwty_battle.webp" alt="">
-        <button class="q cu-core" style="${sp(100, 172, 190, 72)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
-        ${plate(18, 70, 112, 64, 'view', 'counsel', 'The Hive Mind', 'counsel')}
-        ${plate(150, 30, 100, 60, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
-        ${plate(266, 70, 112, 64, 'view', 'army', 'Hive Fleet ' + tyFleet()[0], `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
-        ${plate(140, 268, 110, 62, 'view', 'foe', 'The Prey', `${B.cp.foe} CP`, true)}
-        <button class="q cu-log" style="${sp(16, 384, 358, 66)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastS}</button></div>`;
+      // the great bio-ships are the Hive Mind, the Round and your fleet; the lone warrior on the rock is the prey; the numbers ride the mist between
+      return artBox('ty-swarm', 'lib/pmwty_battle.webp',
+        hot(3, 4, 32, 26, 'view', 'counsel', 'The Hive Mind', '', { tag: 'in' })
+        + hot(38, 0, 24, 22, 'round', String(B.round), 'Round ' + roman(B.round), 'score', { tag: 'in' })
+        + hot(64, 4, 32, 25, 'view', 'army', tyFleet()[0], `your fleet · ${alive3}/${units.length}`, { tag: 'in' })
+        + inscr(24, 31, 52, 13, 'dark')
+        + hot(42, 47, 20, 34, 'view', 'foe', a.foeQ, `${B.cp.foe} CP`, { foe: true, shape: 'rect', tag: 'left' })
+        + logStrip());
     }
     if (a.emblem === 'hall') {
-      // the command hall: the aquila window is the Round, the gantry the Lord General, the two blast doors your regiment and the enemy,
-      // the hololith table in the middle the battle's numbers, and the War Diary along the floor
-      const sp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 4.56).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 4.56).toFixed(2)}%`;
-      const lastS = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
-      const plate = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q cu-door ${foeTint ? 'cu-foe' : ''}" style="${sp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="cu-plq"><span class="cu-t">${esc(top)}</span>${sub ? `<span class="cu-s">${sub}</span>` : ''}</span></button>`;
-      return `<div class="emblem spires am-hall"><img class="cu-art" src="lib/pmwam_hall.webp" alt="">
-        <span class="am-skull" aria-hidden="true"></span>
-        <button class="q cu-core" style="${sp(100, 236, 190, 74)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
-        ${plate(140, 64, 110, 64, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
-        ${plate(150, 150, 120, 60, 'view', 'counsel', 'Lord General', 'counsel')}
-        ${plate(14, 300, 124, 70, 'view', 'army', amReg()[2], `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
-        ${plate(252, 300, 124, 70, 'view', 'foe', 'The Enemy', `${B.cp.foe} CP`, true)}
-        <button class="q cu-log" style="${sp(16, 384, 358, 66)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastS}</button></div>`;
+      // the command hall: the aquila window is the Round, the lit gantry the Lord General, the chevroned blast doors your regiment and the enemy, the dark central doors carry the numbers
+      return artBox('am-hall', 'lib/pmwam_hall.webp',
+        hot(37, 6, 26, 13, 'round', String(B.round), 'Round ' + roman(B.round), 'score', { shape: 'rect', tag: 'below' })
+        + hot(48, 44, 22, 13, 'view', 'counsel', a.counsel, '', { shape: 'rect', tag: 'above' })
+        + inscr(36, 56, 40, 16, 'light')
+        + hot(21, 63, 14, 15, 'view', 'army', amReg()[2], `${alive3}/${units.length}`, { shape: 'rect', tag: 'below' })
+        + hot(86, 63, 14, 15, 'view', 'foe', a.foeQ, `${B.cp.foe} CP`, { shape: 'rect', foe: true, tag: 'belowr' })
+        + logStrip());
     }
     if (a.emblem === 'spires') {
-      // the spires of the Imperial Palace: the golden tower is the Round, the balcony of Custodians your Shield Host,
-      // the great lions the Captain-General and the Threat, the gothic wall below the battle's numbers and the Annals
-      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
-      const sp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 4.56).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 4.56).toFixed(2)}%`;
-      const lastS = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
-      const plate = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q cu-door ${foeTint ? 'cu-foe' : ''}" style="${sp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="cu-plq"><span class="cu-t">${esc(top)}</span>${sub ? `<span class="cu-s">${sub}</span>` : ''}</span></button>`;
-      return `<div class="emblem spires"><img class="cu-art" src="${img('custodes-spires')}" alt="">
-        <svg viewBox="0 0 390 456" aria-hidden="true" class="ch-ov"><defs>${grad}</defs><path d="M190 140 H272 V208 H190 Z" fill="url(#fg)" opacity="0.4" style="mix-blend-mode: color"></path></svg>
-        <span class="cu-glint" aria-hidden="true"></span>
-        <button class="q cu-core" style="${sp(140, 300, 170, 76)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
-        ${plate(40, 120, 84, 74, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
-        ${plate(84, 214, 104, 68, 'view', 'army', 'Shield Host', `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
-        ${plate(190, 140, 82, 68, 'view', 'foe', a.foeQ.replace('The ', ''), `${B.cp.foe} CP`, true)}
-        ${plate(282, 100, 92, 78, 'view', 'counsel', 'Captain-General', 'counsel')}
-        <button class="q cu-log" style="${sp(16, 384, 358, 66)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastS}</button></div>`;
+      // the Palace: the golden tower is the Round, the balcony of Custodians your Shield Host, the great lion the Captain-General, the niche statue the Threat; the numbers are cut into the dark wall
+      return artBox('cu-spires', libImg('custodes-spires'),
+        hot(22, 8, 18, 34, 'round', String(B.round), 'Round ' + roman(B.round), 'score', { shape: 'rect', tag: 'right' })
+        + hot(76, 20, 18, 18, 'view', 'counsel', 'Captain-General', 'counsel', { tag: 'belowr' })
+        + hot(24, 46, 50, 16, 'view', 'army', cuHost(), `${alive3}/${units.length}`, { shape: 'rect', tag: 'above' })
+        + inscr(18, 64, 54, 18, 'light')
+        + hot(80, 76, 14, 16, 'view', 'foe', a.foeQ, `${B.cp.foe} CP`, { shape: 'rect', foe: true, tag: 'left' })
+        + logStrip(86));
     }
     if (a.emblem === 'rok') {
-      // da Rok comin' down: the falling asteroid holds the fight's numbers, its burning hatches are the Boyz and the Round,
-      // the incoming meteor is Da Gitz, the Nob's glyph banner is Da Warboss, and Da Tally is scratched across the battlefield
-      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
-      const rp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.6).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.6).toFixed(2)}%`;
-      const lastR = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
-      const sign = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q rk-sign ${foeTint ? 'rk-foe' : ''}" style="${rp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="rk-plq"><span class="rk-t">${esc(top)}</span>${sub ? `<span class="rk-s">${sub}</span>` : ''}</span></button>`;
-      return `<div class="emblem rok"><img class="rk-art" src="${img('orks-rok-battle')}" alt="">
-        <svg viewBox="0 0 390 560" aria-hidden="true" class="ch-ov"><defs>${grad}</defs><path d="M6 34 H118 V126 H6 Z" fill="url(#fg)" opacity="0.4" style="mix-blend-mode: color"></path></svg>
-        <button class="q rk-core" style="${rp(100, 160, 170, 92)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Yer turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
-        ${sign(6, 34, 112, 92, 'view', 'foe', a.foeQ, `${B.cp.foe} CP`, true)}
-        ${sign(22, 300, 100, 80, 'view', 'army', a.armyQ, `${units.filter((u) => alive(u) > 0).length}/${units.length} standin'`)}
-        ${sign(148, 300, 92, 76, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
-        ${sign(252, 296, 92, 78, 'view', 'counsel', a.counsel, 'wot now?')}
-        <button class="q rk-log" style="${rp(8, 462, 214, 90)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastR}</button></div>`;
+      // da Rok comin' down: the numbers scratched across its face, the burning crater da Round, the Nob's glyph banner da Warboss, the Ork da Boyz, the enemy's lasfire da Gitz
+      return artBox('ork-rok', libImg('orks-rok-battle'),
+        inscr(16, 26, 54, 16, 'light')
+        + hot(3, 14, 13, 11, 'round', String(B.round), 'Round ' + roman(B.round), 'score', { tag: 'below' })
+        + hot(68, 55, 13, 9, 'view', 'counsel', a.counsel, 'wot now?', { tag: 'abover' })
+        + hot(58, 68, 30, 18, 'view', 'army', a.armyQ, `${alive3}/${units.length} standin'`, { tag: 'left' })
+        + hot(2, 68, 26, 12, 'view', 'foe', a.foeQ, `${B.cp.foe} CP`, { shape: 'rect', foe: true, tag: 'above' })
+        + logStrip(87));
     }
     if (a.emblem === 'phalanx') {
-      // the great hall of the Phalanx: the arches are the screen's doors, the aquila above holds the Strategium's counsel
-      const img = (n) => (POOL.find((x) => x.name === n) || {}).src || '';
-      const hp = (x, y, w, h) => `left: ${(x / 3.9).toFixed(2)}%; top: ${(y / 5.81).toFixed(2)}%; width: ${(w / 3.9).toFixed(2)}%; height: ${(h / 5.81).toFixed(2)}%`;
-      const lastP = B.log.slice(-2).reverse().map((e) => `<span class="jw-line">R${e.r} ${esc(e.phase)} · ${esc(e.text)}</span>`).join('');
-      const door = (x, y, w, h, act, k, top, sub, foeTint) => `<button class="q ph-door ${foeTint ? 'ph-foe' : ''}" style="${hp(x, y, w, h)}" data-act="${act}" data-k="${k}" aria-label="${esc(top)}"><span class="ph-plq"><span class="ph-t">${esc(top)}</span>${sub ? `<span class="ph-s">${sub}</span>` : ''}</span></button>`;
-      return `<div class="emblem phalanx"><img class="ph-art" src="${img('if-phalanx-hall')}" alt="">
-        <svg viewBox="0 0 390 581" aria-hidden="true" class="ch-ov"><defs>${grad}</defs><path d="M304 280 H384 V404 H304 Z" fill="url(#fg)" opacity="0.45" style="mix-blend-mode: color"></path></svg>
-        <span class="ph-glow" aria-hidden="true"></span>
-        <button class="q ph-eagle" style="${hp(206, 58, 96, 78)}" data-act="view" data-k="counsel" aria-label="${esc(a.counsel)}"><span class="eyebrow">${esc(a.counsel)}</span></button>
-        <button class="q ph-core" style="${hp(166, 258, 126, 88)}" data-act="view" data-k="counsel"><span class="eyebrow">Round ${roman(B.round)} · ${B.turn === 'me' ? 'Your turn' : 'Their turn'}</span><span class="qt">${PHASES[B.phase]}</span><span class="tnum">CP ${B.cp.me}<span class="foe-ink">|${B.cp.foe}</span> · VP ${B.vp.me}<span class="foe-ink">|${B.vp.foe}</span></span></button>
-        ${door(46, 282, 82, 122, 'view', 'army', a.armyQ.replace('The ', ''), `${units.filter((u) => alive(u) > 0).length}/${units.length}`)}
-        ${door(190, 356, 78, 62, 'round', String(B.round), 'Round ' + roman(B.round), 'score')}
-        ${door(304, 282, 80, 122, 'view', 'foe', a.foeQ.replace('The ', ''), `${B.cp.foe} CP`, true)}
-        <button class="q ph-log" style="${hp(24, 498, 342, 76)}" data-act="view" data-k="log"><span class="eyebrow">${esc(a.log)}</span>${lastP}</button></div>`;
+      // the Phalanx's great hall: the aquila is the Strategium, the two banners your Company and the Besieger, the statue on the pillar the Round, the numbers in the dark of the great arch
+      return artBox('if-hall', libImg('if-phalanx-hall'),
+        hot(51, 8, 18, 12, 'view', 'counsel', 'The Strategium', 'counsel', { shape: 'rect', tag: 'below' })
+        + hot(37, 22, 13, 17, 'view', 'army', 'Company', `${alive3}/${units.length}`, { shape: 'rect', tag: 'left' })
+        + hot(79, 25, 13, 14, 'view', 'foe', 'Besieger', `${B.cp.foe} CP`, { shape: 'rect', foe: true, tag: 'below' })
+        + inscr(44, 43, 32, 18, 'light')
+        + hot(36, 48, 10, 14, 'round', String(B.round), 'Round ' + roman(B.round), 'score', { shape: 'rect', tag: 'left' })
+        + logStrip(86));
     }
     if (a.emblem === 'vault') {
       // the Omega Vault of the Watch Fortress: the sealed door is the screen; its omega seal is the Inquisitor's counsel
@@ -4029,7 +4010,7 @@
     const k = VS.key, V = VES[k], el = VS.el;
     await vwait(50); if (gen !== VS.gen) return;
     const w = el.offsetWidth || V.w, h = el.offsetHeight || 60;
-    if (reduceMotion) { el.style.opacity = '1'; vplace(el, innerWidth - w - 8, Math.round(innerHeight * 0.55)); return; }
+    if (reduceMotion) { el.style.opacity = '1'; vplace(el, innerWidth - w - 4, 4); return; } // parked in the top corner, clear of the controls
     let gate = null;
     if (k === 'eld') { const [gx, gy] = [vrand(60, innerWidth - 60), vrand(120, innerHeight - 160)]; gate = await vgate(gx, gy); [VS.x, VS.y] = await vthrough(el, gx, gy, false); }
     else { VS.x = Math.random() < 0.5 ? -w : innerWidth; VS.y = vrand(90, innerHeight * 0.6); vplace(el, VS.x, VS.y); el.style.opacity = '1'; }

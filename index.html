@@ -1225,8 +1225,6 @@ body.army-tau .sheet { background: #0D1114; }
 body.army-tau .clash .mine { background-image: var(--grime), linear-gradient(100deg, color-mix(in srgb, var(--sept) 75%, #000), #12171B); background-size: 180px 180px, 100% 100%; }
 body.army-tau .fight-btn { background-image: var(--grime), linear-gradient(180deg, #EEF2F4, #A8B4BC); background-size: 180px 180px, 100% 100%; border-color: var(--sept); border-width: 2px; color: #10161A; text-shadow: none; }
 .am-reg.tau-sept { width: 56px; height: 56px; padding: 3px; border-radius: 50%; }
-.emblem.tau-council .cu-core { border-color: rgba(238,242,244,0.5); border-bottom-color: var(--sept, #E8E8E4); }
-.emblem.tau-council .cu-plq { border-color: rgba(238,242,244,0.45); border-top-color: var(--sept, #E8E8E4); }
 body[data-foe="tau"] { --foe-font: 'Oswald', sans-serif; }
 body[data-foe="tau"] .foe-head { animation: none; color: #EEF2F4; text-shadow: 0 1px 3px #000; padding-bottom: 18px !important;
   background-image: linear-gradient(90deg, #C8833A 0 14%, transparent 14% 16%, #C8833A 16% 17%, transparent 17%), linear-gradient(90deg, rgba(10,13,16,0.95) 40%, rgba(10,13,16,0.3) 75%, rgba(10,13,16,0.55)), url("lib/pmwtau_bg1.webp"), var(--grime), linear-gradient(170deg, #1C2228, #0A0D10);
@@ -1238,6 +1236,44 @@ body.army-templars[data-foe="tau"] .band { padding-bottom: 30px !important; }
 body.army-templars[data-foe="tau"] .band::after { right: 50%; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); bottom: 6px; }
 body.army-templars[data-foe="tau"] .band::before { content: ""; position: absolute; left: 50%; right: 0; bottom: 6px; height: 8px; pointer-events: none; background: #C8833A;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%); mask-image: linear-gradient(90deg, transparent, #000 15%); }
+/* ---- battle screens where the art is the controls ---- */
+.emblem.artctl.ork-rok { aspect-ratio: 390 / 560; }
+.emblem.artctl.if-hall { aspect-ratio: 390 / 581; }
+.emblem.artctl { --ah: var(--accent, #E8D2B8); }
+.emblem.artctl .q { position: absolute; border: 0; padding: 0; background: transparent; box-shadow: none; }
+.emblem.artctl .q:focus-visible { outline: 2px solid #F6F2EA; outline-offset: 3px; }
+/* the glow: the feature itself lights up, breathing, in your army's colour (the enemy's for theirs) */
+.emblem.artctl .ah-glow { position: absolute; inset: -8%; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ah) 70%, transparent), color-mix(in srgb, var(--ah) 26%, transparent) 60%, transparent 100%); animation: ahBreathe 4s ease-in-out infinite; }
+.emblem.artctl .ah-rect .ah-glow { inset: -4%; border-radius: 22%; }
+.emblem.artctl .ah-foe { --ah: var(--foe-c, #E05050); }
+.emblem.artctl .ah:hover .ah-glow, .emblem.artctl .ah:active .ah-glow { animation: none; opacity: 1; filter: brightness(1.3); }
+@keyframes ahBreathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+/* the inscription beside each feature: lettering, not a box */
+.emblem.artctl .ah-tag { position: absolute; white-space: nowrap; text-align: center; color: #F7F3EA; font-family: var(--head); font-weight: 700; font-size: clamp(10px, 3.2cqw, 14px); line-height: 1.05;
+  text-transform: uppercase; letter-spacing: 0.05em; text-shadow: 0 1px 2px #000, 0 0 5px #000, 0 0 12px rgba(0,0,0,0.95); pointer-events: none; }
+.emblem.artctl .ah-tag small { display: block; font-family: inherit; font-size: 0.78em; font-weight: 600; letter-spacing: 0.08em; color: color-mix(in srgb, var(--ah) 60%, #fff); }
+.emblem.artctl .ah-below { top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; }
+.emblem.artctl .ah-above { bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 2px; }
+.emblem.artctl .ah-left { right: 100%; top: 50%; transform: translateY(-50%); margin-right: 4px; text-align: right; }
+.emblem.artctl .ah-right { left: 100%; top: 50%; transform: translateY(-50%); margin-left: 4px; text-align: left; }
+.emblem.artctl .ah-belowr { top: 100%; right: 0; margin-top: 2px; text-align: right; }
+.emblem.artctl .ah-abover { bottom: 100%; right: 0; margin-bottom: 2px; text-align: right; }
+.emblem.artctl .ah-in { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+/* the numbers, written into the picture: light ink on dark stone, dark ink on bright light, a soft shadow behind instead of a frame */
+.emblem.artctl .ah-txt { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; text-align: center; }
+.emblem.artctl .ah-txt::before { content: ""; position: absolute; inset: -12% -8%; z-index: -1; border-radius: 50%; }
+.emblem.artctl .ah-light { color: #F7F3EA; text-shadow: 0 1px 2px #000, 0 0 8px rgba(0,0,0,0.9); }
+.emblem.artctl .ah-light::before { background: radial-gradient(closest-side, rgba(0,0,0,0.62), rgba(0,0,0,0.3) 60%, transparent); }
+.emblem.artctl .ah-dark { color: #241405; text-shadow: 0 0 6px rgba(255,240,205,0.95), 0 0 12px rgba(255,230,180,0.8); }
+.emblem.artctl .ah-dark::before { background: radial-gradient(closest-side, rgba(255,244,215,0.62), rgba(255,236,200,0.25) 60%, transparent); }
+.emblem.artctl .ah-l1 { font-size: clamp(7px, 2.3cqw, 10px); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.9; }
+.emblem.artctl .ah-l2 { font-family: var(--head); font-weight: 700; font-size: clamp(16px, 5.6cqw, 24px); line-height: 1; }
+.emblem.artctl .ah-l3 { font-size: clamp(10px, 3.3cqw, 14px); font-weight: 800; }
+.emblem.artctl .ah-l3 i { font-style: normal; color: var(--foe-c, #C04040); }
+.emblem.artctl .ah-dark .ah-l3 i { color: #7A2A10; }
+.emblem.artctl .ah-log { background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.72) 35%) !important; border: 0 !important; }
+@media (prefers-reduced-motion: reduce) { .emblem.artctl .ah-glow { animation: none; opacity: 0.8; } }
 </style>
 </head>
 <body>
@@ -1249,12 +1285,12 @@ body.army-templars[data-foe="tau"] .band::before { content: ""; position: absolu
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=94"></script>
-<script src="lib-v18.js?v=94"></script>
-<script src="footfall.js?v=94"></script>
-<script src="data.js?v=94"></script>
-<script src="foes.js?v=94"></script>
-<script src="app.js?v=94"></script>
+<script src="sb.js?v=95"></script>
+<script src="lib-v18.js?v=95"></script>
+<script src="footfall.js?v=95"></script>
+<script src="data.js?v=95"></script>
+<script src="foes.js?v=95"></script>
+<script src="app.js?v=95"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
