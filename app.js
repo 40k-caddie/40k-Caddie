@@ -286,6 +286,7 @@
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
     { d: '13 Nov 2026', items: [
+      'Lists with curly apostrophes ("T’au Empire", as the Warhammer app and phone keyboards write it) are now recognised, so the army gets its own look.',
       'The T\'au Empire can be a main army, and have their own look as an opponent. Pick your sept in The Sept (T\'au, Vior\'la, Sa\'cea, Bork\'an, Dal\'yth, Fal\'shia, D\'yanoi, T\'olku or Ke\'lshan), then wear its colours or pick your own; its symbol is your badge and its world sits at the heart of the map. The battle screen is an Ethereal\'s council: the shaft of light is the Round, the Ethereal your counsel, the Fire Warriors your cadre. The battle cry: "For the Greater Good!"',
       'Aeldari: choose your craftworld or path in The Craftworld (Ulthwé, Biel-Tan, Iyanden, Saim-Hann, Alaitoc, the Harlequins or the Ynnari), then wear its colours or pick your own. Its rune is your badge, cut like a gem in its colours (Ulthwé onyx, Biel-Tan emerald, Iyanden topaz, Saim-Hann ruby, Alaitoc sapphire), and the heart of the map takes its name; the Harlequins guard the Black Library, the Ynnari walk the Path of Ynnead.',
       'Tyranids can be a main army, and have their own look as an opponent: the Great Devourer. Pick your hive fleet in The Synapse (Leviathan, Behemoth, Kraken, Gorgon, Jormungandr, Hydra or Kronos) for its badge and colours; the hive ship takes Terra\'s place at the heart of the map, named for your fleet. The battle screen is the swarm descending on the prey: the great bio-ships are the Hive Mind, the Round and your fleet, the lone warrior on the rock below is the Prey. Genestealer Cults keep their own colours.',
@@ -819,7 +820,9 @@
   }
   function parseList(text) {
     // "(1,045 points)" and "2,000 pts": drop the thousands comma so every unit and the points limit are read
-    text = String(text || '').replace(/(\d{1,3}),(\d{3})(?=\s*(?:points|pts|pt|p)\b)/gi, '$1$2');
+    // curly apostrophes and quotes from phone keyboards and the Warhammer app ("T’au", "Kay’leth") read as plain ones
+    text = String(text || '').replace(/[\u2018\u2019\u02BC\u2032]/g, "'").replace(/[\u201C\u201D]/g, '"');
+    text = text.replace(/(\d{1,3}),(\d{3})(?=\s*(?:points|pts|pt|p)\b)/gi, '$1$2');
     return cleanList(parseListRaw(text));
   }
   function parseListRaw(text) {
