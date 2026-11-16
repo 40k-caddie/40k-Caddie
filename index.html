@@ -1274,6 +1274,37 @@ body.army-templars[data-foe="tau"] .band::before { content: ""; position: absolu
 .emblem.artctl .ah-dark .ah-l3 i { color: #7A2A10; }
 .emblem.artctl .ah-log { background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.72) 35%) !important; border: 0 !important; }
 @media (prefers-reduced-motion: reduce) { .emblem.artctl .ah-glow { animation: none; opacity: 0.8; } }
+/* Footfall, tidied */
+.ff-main { padding-bottom: 0 !important; }
+.ff-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line2); border-radius: 6px; overflow: hidden; }
+.ff-seg button { min-height: 38px; padding: 4px 4px; border: 0; border-left: 1px solid var(--line); background: rgba(0,0,0,0.25); color: var(--muted); font-weight: 700; font-size: 13px; line-height: 1.1; }
+.ff-seg button:first-child { border-left: 0; }
+.ff-seg button.on { background: var(--accent); color: var(--bg); }
+.ff-seg-wrap { grid-auto-flow: row; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.ff-line { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; align-items: center; column-gap: 8px; text-align: left; width: 100%; padding: 8px 10px; border: 1px solid var(--line2); border-radius: 6px; background: rgba(0,0,0,0.25); color: var(--text); }
+.ff-line > .eyebrow { grid-column: 1; }
+.ff-line > span:not(.eyebrow) { grid-column: 1; font-weight: 600; min-width: 0; }
+.ff-line > svg { grid-column: 2; grid-row: 1 / span 2; width: 18px; height: 18px; opacity: 0.7; }
+.ff-status { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line2); background: rgba(0,0,0,0.3); color: var(--text); font-size: 14px; }
+.ff-status span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ff-status svg { width: 18px; height: 18px; opacity: 0.7; }
+.ff-dot { width: 10px; height: 10px; border-radius: 50%; background: #6FCF8A; box-shadow: 0 0 8px #6FCF8A; }
+.ff-status.bad { border-color: color-mix(in srgb, #E0604A 60%, var(--line2)); }
+.ff-status.bad .ff-dot { background: #E0604A; box-shadow: 0 0 8px #E0604A; }
+.ff-empty { padding: 14px; text-align: center; }
+.ff-tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.ff-tools button { min-height: 44px; padding: 4px; border: 1px solid var(--line); border-radius: 6px; background: rgba(0,0,0,0.25); color: var(--muted); font-size: 12px; font-weight: 600; line-height: 1.15; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.ff-tools button svg { width: 14px; height: 14px; }
+.ff-bar { position: sticky; bottom: 0; z-index: 5; display: grid; gap: 8px; margin-inline: -16px; padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(transparent, var(--bg) 30%); }
+.ff-bar.two { grid-template-columns: 2fr 1fr; }
+.ff-bar .btn { min-height: 48px; }
+.ff-addr { display: flex; align-items: center; gap: 8px; flex: none; }
+.ff-plus { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; font-weight: 700; line-height: 1; color: var(--bg); background: var(--accent); }
+.ff-plus:empty { display: none; }
+.army-slot { position: relative; display: block; min-width: 0; }
+.army-slot > .army-btn { height: 100%; }
+.army-x { position: absolute; z-index: 3; top: -9px; right: -9px; width: 28px; height: 28px; padding: 4px; border-radius: 50%; border: 1px solid var(--line2); background: var(--bg); color: var(--muted); display: grid; place-items: center; }
+.army-x svg { width: 14px; height: 14px; }
 </style>
 </head>
 <body>
@@ -1285,12 +1316,12 @@ body.army-templars[data-foe="tau"] .band::before { content: ""; position: absolu
 
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="vendor/qrcode-1.4.4.js"></script>
-<script src="sb.js?v=95"></script>
-<script src="lib-v18.js?v=95"></script>
-<script src="footfall.js?v=95"></script>
-<script src="data.js?v=95"></script>
-<script src="foes.js?v=95"></script>
-<script src="app.js?v=95"></script>
+<script src="sb.js?v=97"></script>
+<script src="lib-v18.js?v=97"></script>
+<script src="footfall.js?v=97"></script>
+<script src="data.js?v=97"></script>
+<script src="foes.js?v=97"></script>
+<script src="app.js?v=97"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});

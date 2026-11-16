@@ -285,6 +285,12 @@
 
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
+    { d: '16 Nov 2026', items: [
+      'Footfall: add as many units as you like in one go. The add sheet stays open, each unit has a + button, and Done shows how many you added.',
+      'Footfall: Starter box. If your army has a current Combat Patrol box (the boxes that replaced Start Collecting), one tap adds everything in it at the right squad sizes, so you can see what to add to reach 1,000, 2,000 or 3,000 points. Boxes so far: Black Templars, Dark Angels, Space Wolves, Blood Angels, Imperial Fists, Grey Knights, T\'au Empire, Tyranids, Necrons and Orks.',
+      'Footfall looks cleaner: battle size is one switch, the list sits straight under the seal, problems are one line you can tap, the tools are proper buttons, and Add units stays on screen.',
+      'Your armies: your main army plus one more get their own look, then Any other army. A third replaces the second, and the x on the second army removes it (with a yes or no first).',
+    ] },
     { d: '13 Nov 2026', items: [
       'Battle screens: on the Imperial Fists, Orks, Custodes, Astra Militarum, Tyranid and T\'au screens the picture itself is now the controls. Tap the feature: the banners, the aquila, the Ork, the bio-ships, the sept symbols, the envoy\'s hat. Each glows softly in your army\'s colour with its name beside it, and the round, phase, CP and VP are written into the art instead of sitting in boxes.',
       'Lists with curly apostrophes ("T’au Empire", as the Warhammer app and phone keyboards write it) are now recognised, so the army gets its own look.',
@@ -1470,8 +1476,7 @@
     const myDisp = S.field.myDisp || (L && L.force_disposition) || '';
     // your own armies, then the last two factions you loaded, then Other for anything new
     const facOn = (f) => S.army === 'other' && S.facKey === f;
-    const armyBtns = myArmies().map((k) => `<button class="army-btn ${S.army === k ? 'on' : ''}" data-act="army" data-k="${k}" aria-label="${esc(ARMY[k].label)}" aria-pressed="${S.army === k}" title="${esc(ARMY[k].label)}">${herald(k)}</button>`).join('')
-      + (S.facs || []).map((x) => { const pic = POOL.find((it) => nameMatches(fileKey(it.name), x.f)); return `<button class="army-btn ${facOn(x.f) ? 'on' : ''}" data-act="armyFac" data-k="${esc(x.f)}" aria-label="${esc(x.f)}" aria-pressed="${facOn(x.f)}" title="${esc(x.f)}">${pic ? `<img src="${pic.src}" alt="" style="width: 100%; height: 100%; object-fit: contain">` : `<span class="fac-txt">${esc(x.f)}</span>`}</button>`; }).join('')
+    const armyBtns = myArmies().map((k, i) => `<span class="army-slot"><button class="army-btn ${S.army === k ? 'on' : ''}" data-act="army" data-k="${k}" aria-label="${esc(ARMY[k].label)}${i === 0 ? ' (your main army)' : ''}" aria-pressed="${S.army === k}" title="${esc(ARMY[k].label)}">${herald(k)}</button>${i > 0 ? `<button class="army-x" data-act="armyDrop" data-k="${k}" aria-label="Remove ${esc(ARMY[k].label)}">${ICON.close}</button>` : ''}</span>`).join('')
       + `<button class="army-btn ${S.army === 'other' && !S.facKey ? 'on' : ''}" data-act="army" data-k="other" aria-label="Any other army" aria-pressed="${S.army === 'other' && !S.facKey}" title="Any other army">${herald('other')}</button>`;
     const listCard = L
       ? `<div class="panel row" style="justify-content: space-between; padding: 6px 4px 6px 12px">${otherPic() ? `<img src="${otherPic().src}" alt="" style="flex: 0 0 48px; width: 48px; height: 48px; object-fit: contain">` : ''}<div style="min-width: 0; flex: 1"><div style="font-size: 16px; font-weight: 600">${esc(L.name)}</div><div class="small muted">${L.units.length} units · ${L.points_total.toLocaleString()} pts · ${esc(L.detachments.join(', '))}</div></div><button class="btn small" data-act="overlay" data-k="paste">PASTE NEW</button></div>`
@@ -2479,6 +2484,7 @@
   function renderSheet() {
     const sh = UI.sheet; if (!sh) return '';
     if (sh.type && sh.type.indexOf('ff') === 0) return ffSheet(sh);
+    if (sh.type === 'armyDrop') { const A2 = ARMY[sh.k]; if (!A2) return ''; return sheet('Remove army', `<p style="margin: 0">Remove <b>${esc(A2.label)}</b> from your armies?</p><p class="small muted" style="margin: 0">It comes back any time you paste or send a ${esc(A2.label)} list. Your battle history is kept.</p>`, `<div class="grid2"><button class="btn" data-act="closeAll">NO</button><button class="btn red" data-act="armyDropYes" data-k="${sh.k}">YES, REMOVE</button></div>`); }
     if (sh.type === 'feedback') return feedbackSheet();
     const B = S.battle;
     if (sh.type === 'strat') {
@@ -2636,15 +2642,23 @@
 
   // ---------- render ----------
   // a list for an army that has its own look gets that look straight away: it joins your armies, no extra step
+  function joinArmy(k) {
+    const mine = myArmies(); if (mine.includes(k)) return '';
+    let dropped = '';
+    if (mine.length >= 2) { dropped = mine[1]; S.mine = [mine[0], k]; } else S.mine = mine.concat(k);
+    return dropped ? ARMY[k].label + ' replaces ' + ARMY[dropped].label + ' as your second army.' : '';
+  }
   function promoteArmy(say) {
     if (S.army !== 'other') return false;
     const L = list(); const k = mainFor(L); if (!k || !L || !ARMY[k]) return false;
-    S.mine = myArmies().filter((x) => x !== k).concat(k); S.lists[k] = L; S.army = k;
-    S.facs = (S.facs || []).filter((x) => !MAINABLE[x.f] || MAINABLE[x.f] !== k); S.facKey = null; S.lists.other = null;
-    toast(say ? ARMY[k].label + ' is now one of your main armies.' : ARMY[k].label + ': your army\'s own look is on.');
+    const swap = joinArmy(k); S.lists[k] = L; S.army = k;
+    S.facs = []; S.facKey = null; S.lists.other = null;
+    toast(swap || (say ? ARMY[k].label + ' is now one of your armies.' : ARMY[k].label + ': your army\'s own look is on.'));
     return true;
   }
   function render() {
+    if (Array.isArray(S.mine) && S.mine.filter((k) => ARMY[k] && k !== 'carcharodons').length > 2) { const m = myArmies(); S.mine = [m[0], m.includes(S.army) && S.army !== m[0] ? S.army : m[m.length - 1]]; save(); }
+    if (S.facs && S.facs.length) { S.facs = []; save(); }
     if (promoteArmy(false)) save();
     Object.values(S.lists || {}).forEach(cleanList);
     if (S.army !== 'other' && !myArmies().includes(S.army)) { S.army = 'other'; if (!S.facKey) S.lists.other = S.lists.other || null; }
@@ -2706,7 +2720,9 @@
     emTint(k) { stashFoeInputs(); foe().emblemTint = k === '1'; },
     emInvert() { stashFoeInputs(); const R = foe(); R.emblemInvert = !R.emblemInvert; },
     emClear() { stashFoeInputs(); delete foe().emblemId; toast('Image moved back to the library'); },
-    army(k) { S.army = k; if (k === 'other') { S.facKey = null; S.lists.other = null; } if (k === 'other' || !list()) UI.overlay = 'paste'; },
+    army(k) { S.army = k; if (k === 'other') S.facKey = null; if (!list()) UI.overlay = 'paste'; },
+    armyDrop(k) { UI.sheet = { type: 'armyDrop', k }; },
+    armyDropYes(k) { if (k === myArmies()[0]) return; S.mine = myArmies().filter((x) => x !== k); if (S.army === k) S.army = myArmies()[0]; UI.sheet = null; toast((ARMY[k] ? ARMY[k].label : 'Army') + ' removed'); },
     necHue(k) { S.hue = S.hue || {}; S.hue.necron = +k; S.necCol = 'own'; },
     necDyn(k) { S.necDyn = k; },
     necCol(k) { S.necCol = k === 'own' ? 'own' : 'dyn'; if (S.necCol === 'own') { S.hue = S.hue || {}; if (S.hue.necron === undefined) S.hue.necron = necDyn()[3]; } },
@@ -3204,6 +3220,31 @@
   const FFX = { idx: null, data: {}, loading: {}, err: '' };
   const ffState = () => { S.ff = S.ff || { lists: {}, cur: null, owned: {}, ownedOnly: false }; return S.ff; };
   const ffCur = () => { const st = ffState(); return st.cur ? st.lists[st.cur] || null : null; };
+  // starter boxes: the current Combat Patrol box for each army (Combat Patrols replaced the old Start Collecting boxes), contents checked against retailer and news listings
+  const FF_BOXES = {"Black Templars": {"name": "Combat Patrol: Black Templars (2025)", "units": [["Emperor's Champion", 1], ["Bladeguard Veteran Squad", 3], ["Sword Brethren Squad", 5], ["Crusader Squad", 10]]}, "Dark Angels": {"name": "Combat Patrol: Dark Angels (2024)", "units": [["Captain in Gravis Armour", 1], ["Bladeguard Veteran Squad", 3], ["Hellblaster Squad", 5], ["Intercessor Squad", 10]]}, "T'au Empire": {"name": "Combat Patrol: T'au Empire (2024)", "units": [["Commander in Enforcer Battlesuit", 1], ["Devilfish", 1], ["Breacher Team", 10], ["Pathfinder Team", 10]]}, "Grey Knights": {"name": "Combat Patrol: Grey Knights (2025)", "units": [["Castellan Crowe", 1], ["Strike Squad", 10], ["Brotherhood Terminator Squad", 5], ["Venerable Dreadnought", 1]]}, "Space Wolves": {"name": "Combat Patrol: Space Wolves (2025)", "units": [["Wolf Guard Battle Leader", 1], ["Blood Claws", 10], ["Wolf Guard Terminators", 5], ["Wulfen", 5]]}, "Tyranids": {"name": "Combat Patrol: Tyranids, Assault Brood (2025)", "units": [["Parasite of Mortrex", 1], ["Genestealers", 10], ["Tyrant Guard", 3], ["Biovores", 1], ["Spore Mines", 3]]}, "Imperial Fists": {"name": "Combat Patrol: Imperial Fists (2025)", "units": [["Captain", 1], ["Company Heroes", 4], ["Terminator Squad", 5], ["Intercessor Squad", 5], ["Heavy Intercessor Squad", 5]]}, "Blood Angels": {"name": "Combat Patrol: Blood Angels (2024)", "units": [["Captain", 1], ["Sanguinary Guard", 6], ["Assault Intercessor Squad", 10]]}, "Necrons": {"name": "Combat Patrol: Necrons", "units": [["Overlord", 1], ["Necron Warriors", 10], ["Skorpekh Destroyers", 3], ["Canoptek Doomstalker", 1], ["Canoptek Scarab Swarms", 3]]}, "Orks": {"name": "Getting Started with Orks: 'Ard Mob (2026)", "units": [["Warboss", 1], ["Weirdboy", 1], ["Boyz", 10], ["Boyz", 10], ["Gretchin", 10], ["Wartrakks", 1]]}};
+  const boxNorm = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9']/g, '');
+  function ffAddBox(Dd, L, box) {
+    let added = 0;
+    for (const [n, want] of box.units) {
+      let ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, null).find((x) => !x.hidden && !x.group && boxNorm(x.name) === boxNorm(n)); if (!o) continue;
+      const sel = FF.add(Dd, L.roster, null, o.key, o.gids, 1); if (!sel) continue; added++;
+      // squad size as it comes in the box
+      for (let guard = 0; guard < 40; guard++) {
+        ev = FF.evaluate(Dd, L.roster); const node = ev.node(sel.u); if (!node) break;
+        const models = node.kids.filter((k) => k.r.type === 'model'); const have = models.reduce((a, k) => a + k.sel.n, 0);
+        if (!models.length || have === want) break;
+        const opts = FF.options(Dd, ev, sel.u).filter((x) => x.type === 'model' && !x.hidden);
+        if (have < want) {
+          const room = opts.filter((x) => x.max < 0 || x.count < x.max).sort((a, b) => (b.max < 0 ? 99 : b.max) - (a.max < 0 ? 99 : a.max))[0]; if (!room) break;
+          const k = sel.kids.find((x) => x.k === room.key); if (k) k.n += 1; else FF.add(Dd, L.roster, sel.u, room.key, room.gids, 1);
+        } else {
+          const big = sel.kids.filter((k) => models.some((m) => m.sel === k)).sort((a, b) => b.n - a.n)[0]; const o2 = big && opts.find((x) => x.key === big.k);
+          if (!big || (o2 && big.n <= Math.max(1, o2.min))) break; big.n -= 1;
+        }
+      }
+    }
+    return added;
+  }
   const ffShort = (n) => String(n || '').split(' - ').pop();
   const ffGroup = (n) => (/^Imperium/.test(n) ? 'Imperium' : /^Chaos/.test(n) ? 'Chaos' : 'Xenos');
   const CONFIG_CAT = '4ac9-fd30-1e3d-b249';
@@ -3359,25 +3400,28 @@
     units.forEach((s) => { const n = ev.node(s.u); const c = n ? ffCatName(Dd, n.r.primaryCat) : 'Other'; (byCat[c] = byCat[c] || []).push(s); });
     const cats = Object.keys(byCat).sort((a, b) => ffCatRank(a) - ffCatRank(b));
     const errs = ev.errors;
+    const box = FF_BOXES[ffShort(L.facName)];
+    const sizeLbl = (o) => o.name.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)/, '');
+    const metaLine = (() => { ffMetaLoad(); const M = ffMetaFor(Dd); if (!M || !M.f.win) return ''; return `<button class="ff-line ff-meta" data-act="ffMetaOpen"><span class="eyebrow">Chasing the meta</span><span>${esc(M.name)}${M.shared ? ' (all chapters)' : ''} win <b>${M.f.win}%</b> of 11th edition games · rank ${M.f.rank} of ${M.f.of}</span>${ICON.next}</button>`; })();
     return `${head(L.name, ffShort(L.facName).toUpperCase(), 'ffLists')}
-    <main class="main wrap stack">
+    <main class="main wrap stack ff-main">
       <section class="ff-top">${ffSeal(Dd, ev)}
-        <div class="stack" style="gap: 6px; min-width: 0; flex: 1">
-          <div class="row" style="gap: 6px; flex-wrap: wrap">${sizes.map((o) => `<button class="chip ${sizeOn.includes(o.key) ? 'on' : ''}" data-act="ffSize" data-k="${esc(o.key)}">${esc(o.name.replace(/^\d+\.\s*/, '').replace(/\s*\(.*\)/, ''))}</button>`).join('')}</div>
-          <button class="ff-line" data-act="ffDetOpen"><span class="eyebrow">Detachments · ${ev.dp}${ev.dpMax !== null ? ' of ' + ev.dpMax : ''} pts</span><span>${dets.length ? esc(dets.join(', ')) : 'Choose a detachment'}</span></button>
-          ${fdOpts.length > 1 || (fdOpts.length && !fdOn.length) ? `<div class="stack" style="gap: 4px"><span class="eyebrow">Force disposition</span><div class="row" style="gap: 6px; flex-wrap: wrap">${fdOpts.map((o) => `<button class="chip ${fdOn.includes(o.key) ? 'on' : ''}" data-act="ffFD" data-k="${esc(o.key)}">${esc(o.name)}</button>`).join('')}</div></div>` : fdOn.length ? `<span class="small muted">Force disposition: ${esc((ev.node(fd.u).kids[0] || { eff: { name: '' } }).eff.name)}</span>` : ''}
-          ${ev.enhMax !== null ? `<span class="small muted">Enhancements ${ev.enh} of ${ev.enhMax}</span>` : ''}
+        <div class="stack" style="gap: 8px; min-width: 0; flex: 1">
+          <div class="ff-seg" role="group" aria-label="Battle size">${sizes.map((o) => `<button class="${sizeOn.includes(o.key) ? 'on' : ''}" data-act="ffSize" data-k="${esc(o.key)}" aria-pressed="${sizeOn.includes(o.key)}">${esc(sizeLbl(o))}</button>`).join('')}</div>
+          <button class="ff-line" data-act="ffDetOpen"><span class="eyebrow">Detachment · ${ev.dp}${ev.dpMax !== null ? ' of ' + ev.dpMax : ''} pts</span><span>${dets.length ? esc(dets.join(', ')) : 'Choose a detachment'}</span>${ICON.next}</button>
+          ${fdOpts.length > 1 || (fdOpts.length && !fdOn.length) ? `<div class="ff-seg ff-seg-wrap" role="group" aria-label="Force disposition">${fdOpts.map((o) => `<button class="${fdOn.includes(o.key) ? 'on' : ''}" data-act="ffFD" data-k="${esc(o.key)}">${esc(o.name)}</button>`).join('')}</div>` : ''}
+          <span class="small muted">${fdOn.length && !(fdOpts.length > 1) ? esc((ev.node(fd.u).kids[0] || { eff: { name: '' } }).eff.name) + ' · ' : ''}${ev.enhMax !== null ? `Enhancements ${ev.enh} of ${ev.enhMax}` : ''}</span>
         </div>
       </section>
-      ${(() => { ffMetaLoad(); const M = ffMetaFor(Dd); if (!M || !M.f.win) return ''; return `<button class="ff-line ff-meta" data-act="ffMetaOpen"><span class="eyebrow">Chasing the meta</span><span>${esc(M.name)}${M.shared ? ' (all chapters)' : ''} win <b>${M.f.win}%</b> of games in 11th edition · ${M.f.games.toLocaleString()} games · rank ${M.f.rank} of ${M.f.of}</span></button>`; })()}
-      ${errs.length ? `<section class="panel ff-errs stack" style="gap: 4px; padding: 10px 12px"><span class="eyebrow" style="color: var(--accent-text)">To fix</span>${errs.slice(0, 4).map((e) => `<span class="small">${esc(e.msg)}</span>`).join('')}${errs.length > 4 ? `<span class="small muted">and ${errs.length - 4} more</span>` : ''}
-        <div class="row" style="gap: 8px; margin-top: 4px">${errs.length > 4 ? '<button class="btn small" data-act="ffErrs">SEE ALL</button>' : ''}<button class="btn small" data-act="ffCogWhy">ASK THE COGITATOR WHY</button></div></section>` : ''}
+      ${errs.length ? `<button class="ff-status bad" data-act="ffErrs"><span class="ff-dot" aria-hidden="true"></span><span><b>${errs.length} to fix</b> · ${esc(errs[0].msg)}</span>${ICON.next}</button>` : `<div class="ff-status ok"><span class="ff-dot" aria-hidden="true"></span><span><b>Legal.</b> Tap the seal to send it to ${esc(homeWorld().name)}.</span></div>`}
+      ${units.length ? cats.map((c) => `<section class="stack" style="gap: 6px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((s) => { const bad = errs.some((e) => e.u === s.u); return `<button class="strat ff-unit ${bad ? 'bad' : ''}" data-act="ffUnit" data-k="${esc(s.u)}"><span style="min-width: 0"><span class="nm">${esc(ev.name(s.u))}</span><br><span class="ds">${esc(ffSummary(Dd, ev, s))}</span></span><b class="ff-pts">${ev.ptsOf(s.u)}</b></button>`; }).join('')}</section>`).join('')
+        : `<div class="panel ff-empty stack" style="gap: 6px"><b>No units yet.</b><span class="small muted">Tap Add units below and pick as many as you like${box ? ', or start from your ' + esc(box.name.replace(/\s*\(.*\)/, '')) + ' box' : ''}.</span></div>`}
       ${sugg.length ? `<section class="stack" style="gap: 6px"><span class="eyebrow">${(ev.limit - ev.pts).toLocaleString()} pts spare · could fit</span><div class="row" style="gap: 6px; flex-wrap: wrap">${sugg.map((o) => `<button class="chip" data-act="ffAddKey" data-k="${esc(o.key)}">+ ${esc(o.name)} · ${o.pts}</button>`).join('')}</div></section>` : ''}
-      ${cats.map((c) => `<section class="stack" style="gap: 6px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((s) => { const bad = errs.some((e) => e.u === s.u); return `<button class="strat ff-unit ${bad ? 'bad' : ''}" data-act="ffUnit" data-k="${esc(s.u)}"><span style="min-width: 0"><span class="nm">${esc(ev.name(s.u))}</span><br><span class="ds">${esc(ffSummary(Dd, ev, s))}</span></span><b class="ff-pts">${ev.ptsOf(s.u)}</b></button>`; }).join('')}</section>`).join('')}
-      <button class="btn solid block" data-act="ffAddOpen">ADD A UNIT</button>
-      <div class="row" style="justify-content: center; gap: 14px; flex-wrap: wrap">
-        <button class="dim ff-link" data-act="ffCog">Ask the Cogitator</button><button class="dim ff-link" data-act="ffOwnOpen">My collection</button><button class="dim ff-link" data-act="ffCopy">Copy as text</button><button class="dim ff-link" data-act="ffMore">Rename or delete</button>
+      ${metaLine}
+      <div class="ff-tools">
+        <button data-act="ffCog">${ICON.cog || ''}<span>Cogitator</span></button><button data-act="ffOwnOpen"><span>My collection</span></button><button data-act="ffCopy"><span>Copy text</span></button><button data-act="ffMore"><span>Rename / delete</span></button>
       </div>
+      <div class="ff-bar ${box ? 'two' : ''}"><button class="btn solid" data-act="ffAddOpen">+ ADD UNITS</button>${box ? `<button class="btn" data-act="ffBoxOpen">STARTER BOX</button>` : ''}</div>
     </main>`;
   }
   // the options under a selection, grouped as the data groups them
@@ -3449,10 +3493,19 @@
         .filter((o, i, l) => l.findIndex((x) => x.name === o.name) === i);
       const byCat = {}; opts.forEach((o) => { const c = ffCatName(Dd, o.primaryCat); (byCat[c] = byCat[c] || []).push(o); });
       const cats = Object.keys(byCat).sort((a, b) => ffCatRank(a) - ffCatRank(b) || a.localeCompare(b));
-      return sheet('Add a unit', `<label class="field"><span class="eyebrow">Search</span><input type="search" id="ff-q" value="${esc(UI.ffQ || '')}" placeholder="Unit name" autocomplete="off"></label>
+      return sheet('Add units', `<label class="field"><span class="eyebrow">Search</span><input type="search" id="ff-q" value="${esc(UI.ffQ || '')}" placeholder="Unit name" autocomplete="off"></label>
         <button class="ff-pick ${st.ownedOnly ? 'on' : ''}" data-act="ffOwnedOnly" aria-pressed="${st.ownedOnly}"><span class="ff-box" aria-hidden="true">${st.ownedOnly ? '✓' : ''}</span><span class="ff-nm">Only units I own <span class="small muted">(set them in My collection)</span></span></button>
         ${cats.map((c) => `<div class="stack" style="gap: 4px"><span class="eyebrow">${esc(c)}</span>${byCat[c].map((o) => { const id = ffOwnedKey(Dd, o.key); const have = ffInList(ev, id); const owned = ffOwnCount(Dd, o); const full = o.max >= 0 && o.count >= o.max; const noOwn = st.ownedOnly && owned <= have; const ml = ffMetaLine(M, o.name); const info = [have ? have + ' in list' : '', o.max >= 0 ? 'max ' + o.max : '', owned ? owned + ' owned' : ''].filter(Boolean).join(' · ');
-          return `<button class="strat" data-act="ffAddKey" data-k="${esc(o.key)}" ${full || noOwn ? 'disabled' : ''} style="min-height: 46px"><span style="min-width: 0"><span class="nm">${esc(o.name)}</span>${info ? `<br><span class="ds">${esc(info)}</span>` : ''}${ml ? `<br><span class="ds ff-ml">${esc(ml)}</span>` : ''}</span><b class="ff-pts">${o.pts}</b></button>`; }).join('')}</div>`).join('') || '<p class="small muted">Nothing matches.</p>'}`, '');
+          return `<button class="strat" data-act="ffAddKey" data-k="${esc(o.key)}" ${full || noOwn ? 'disabled' : ''} style="min-height: 46px"><span style="min-width: 0"><span class="nm">${esc(o.name)}</span>${info ? `<br><span class="ds">${esc(info)}</span>` : ''}${ml ? `<br><span class="ds ff-ml">${esc(ml)}</span>` : ''}</span><span class="ff-addr"><b class="ff-pts">${o.pts}</b><span class="ff-plus" aria-hidden="true">${full || noOwn ? '' : '+'}</span></span></button>`; }).join('')}</div>`).join('') || '<p class="small muted">Nothing matches.</p>'}`, `<button class="btn solid block" data-act="closeAll">DONE${UI.ffAdded ? ' · ' + UI.ffAdded + ' ADDED' : ''}</button>`);
+    }
+    if (sh.type === 'ffBox') {
+      const box = FF_BOXES[ffShort(L.facName)]; if (!box) return '';
+      const nm = (n) => { const o = FF.options(Dd, ev, null).find((x) => !x.hidden && !x.group && boxNorm(x.name) === boxNorm(n)); return o ? o.pts : null; };
+      const pts = box.units.reduce((a, [n]) => a + (nm(n) || 0), 0);
+      return sheet('Starter box', `<p style="margin: 0"><b>${esc(box.name)}</b></p><p class="small muted" style="margin: 0">Got this box? Add everything in it in one go, at the squad sizes it comes with, then build out from there. (Combat Patrol boxes replaced the old Start Collecting boxes.)</p>
+        <div class="stack" style="gap: 4px">${box.units.map(([n, c]) => `<div class="ff-row"><span class="ff-nm">${c > 1 ? c + ' × ' : ''}${esc(n)}</span></div>`).join('')}</div>
+        <p class="small muted" style="margin: 0">About ${pts} pts at minimum size, before wargear. Points are set as the box goes in.</p>`,
+        `<div class="grid2"><button class="btn" data-act="closeAll">CANCEL</button><button class="btn solid" data-act="ffBoxAdd">ADD THE BOX</button></div>`);
     }
     if (sh.type === 'ffDet') {
       const det = ffConfigSel(Dd, L, /^detachment$/i); if (!det) return '';
@@ -3602,17 +3655,20 @@
       let parsed; try { parsed = parseList(ffText(Dd, ev, L)); } catch (e) { toast('The list could not be carried over.'); return; }
       const short = ffShort(Dd.facName);
       const key = ({ 'Black Templars': 'templars', ...MAINABLE })[short];
-      if (key && ARMY[key]) { S.mine = myArmies().filter((x) => x !== key).concat(key); S.army = key; S.lists[key] = parsed; }
+      if (key && ARMY[key]) { const swap = joinArmy(key); if (swap) setTimeout(() => toast(swap), 2400); S.army = key; S.lists[key] = parsed; }
       else { S.army = 'other'; S.facKey = null; S.lists.other = parsed; rememberFac(parsed); }
       S.screen = 'muster'; UI.sheet = null; toast(ffSealOf(Dd)[1] + ': ' + L.name + ' is bound for ' + homeWorld().name); window.scrollTo(0, 0); return 'top';
     },
     ffUnit(u) { UI.sheet = { type: 'ffUnit', u }; },
-    ffAddOpen() { UI.sheet = { type: 'ffAdd' }; UI.ffQ = ''; },
+    ffAddOpen() { UI.sheet = { type: 'ffAdd' }; UI.ffQ = ''; UI.ffAdded = 0; },
     ffAddKey(k) {
       let made = null;
       ffMutate((Dd, L) => { const ev = FF.evaluate(Dd, L.roster); const o = FF.options(Dd, ev, null).find((x) => x.key === k); if (o) made = FF.add(Dd, L.roster, null, o.key, o.gids, 1); });
-      if (made) { UI.sheet = { type: 'ffUnit', u: made.u }; }
+      if (made) { UI.ffAdded = (UI.ffAdded || 0) + 1; const L = ffCur(); const Dd = L && FFX.data[L.file]; const o = Dd && FF.R(Dd, k); toast('Added ' + ((o && o.name) || 'unit')); }
+      return 'keep';
     },
+    ffBoxOpen() { UI.sheet = { type: 'ffBox' }; },
+    ffBoxAdd() { let n = 0; const L = ffCur(); const box = L && FF_BOXES[ffShort(L.facName)]; if (!box) return; ffMutate((Dd, L2) => { n = ffAddBox(Dd, L2, box); }); UI.sheet = null; toast(n ? box.name.split(' (')[0] + ' added: ' + n + ' units' : 'Could not add the box'); },
     ffN(k) {
       const [pu, key, d] = k.split('|');
       ffMutate((Dd, L) => {
