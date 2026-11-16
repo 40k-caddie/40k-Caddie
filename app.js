@@ -286,6 +286,8 @@
   // what's new, newest first (shown on Menazoid Epsilon)
   const UPDATES = [
     { d: '16 Nov 2026', items: [
+      'Footfall is now checked every week: after the new data arrives, every unit in every army is added, grown to full size, given each of its options and priced, so a data change that would break the list builder is caught before you hit it. The result shows on the Footfall screen.',
+      'Choose your main army: it holds the first spot until you remove it. Tap the x on your second army to make it your main.',
       'Footfall: add as many units as you like in one go. The add sheet stays open, each unit has a + button, and Done shows how many you added.',
       'Footfall: Starter box. If your army has a current Combat Patrol box (the boxes that replaced Start Collecting), one tap adds everything in it at the right squad sizes, so you can see what to add to reach 1,000, 2,000 or 3,000 points. Boxes so far: Black Templars, Dark Angels, Space Wolves, Blood Angels, Imperial Fists, Grey Knights, T\'au Empire, Tyranids, Necrons and Orks.',
       'Footfall looks cleaner: battle size is one switch, the list sits straight under the seal, problems are one line you can tap, the tools are proper buttons, and Add units stays on screen.',
@@ -3388,6 +3390,7 @@
         ${lists.length ? lists.map((x) => `<button class="strat" data-act="ffOpenList" data-k="${esc(x.id)}"><span style="min-width: 0"><span class="nm">${esc(x.name)}</span><br><span class="ds">${esc(ffShort(x.facName))} · ${(x.pts || 0).toLocaleString()} of ${(x.limit || 0).toLocaleString()} pts · ${x.ok ? 'legal' : 'not legal yet'}</span></span>${ICON.next}</button>`).join('') : '<div class="panel small muted" style="padding: 12px">No lists yet.</div>'}
         <button class="btn solid block" data-act="ffNew">NEW LIST</button>
         ${FFX.idx && FFX.idx.source ? `<p class="small muted" style="margin: 0">Data from the BSData community project, ${esc(FFX.idx.source.date)}. Unofficial.</p>` : ''}
+        ${(() => { if (!FFX.checkTried) { FFX.checkTried = true; fetch('footfall/check.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((c) => { if (c) { FFX.check = c; render(); } }).catch(() => {}); } const c = FFX.check; if (!c || !c.totals) return ''; const d = new Date(c.built).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }); const bad = c.totals.crashes; return `<p class="small ${bad ? '' : 'muted'}" style="margin: 0${bad ? '; color: var(--accent-text)' : ''}">${bad ? '⚠ ' : '✓ '}Engine checked ${esc(d)}: every unit in all ${c.armies.length} armies added, grown to full size, given each option and priced (${c.totals.units.toLocaleString()} units, ${c.totals.options.toLocaleString()} options). ${bad ? bad + ' problem' + (bad > 1 ? 's' : '') + ' found and being looked at.' : 'No problems found.'}</p>`; })()}
       </main>`;
     }
     const Dd = FFX.data[L.file];
