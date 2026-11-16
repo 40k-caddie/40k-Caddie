@@ -289,7 +289,7 @@
       'Footfall: add as many units as you like in one go. The add sheet stays open, each unit has a + button, and Done shows how many you added.',
       'Footfall: Starter box. If your army has a current Combat Patrol box (the boxes that replaced Start Collecting), one tap adds everything in it at the right squad sizes, so you can see what to add to reach 1,000, 2,000 or 3,000 points. Boxes so far: Black Templars, Dark Angels, Space Wolves, Blood Angels, Imperial Fists, Grey Knights, T\'au Empire, Tyranids, Necrons and Orks.',
       'Footfall looks cleaner: battle size is one switch, the list sits straight under the seal, problems are one line you can tap, the tools are proper buttons, and Add units stays on screen.',
-      'Your armies: your main army plus one more get their own look, then Any other army. A third replaces the second, and the x on the second army removes it (with a yes or no first).',
+      'Your armies: a main army (marked MAIN) plus one more get their own look, then Any other army. A new army only ever replaces your second one, never your main. Tap the x on either to make the second your main army, or to remove one (with a yes or no first).',
     ] },
     { d: '13 Nov 2026', items: [
       'Battle screens: on the Imperial Fists, Orks, Custodes, Astra Militarum, Tyranid and T\'au screens the picture itself is now the controls. Tap the feature: the banners, the aquila, the Ork, the bio-ships, the sept symbols, the envoy\'s hat. Each glows softly in your army\'s colour with its name beside it, and the round, phase, CP and VP are written into the art instead of sitting in boxes.',
@@ -1476,7 +1476,7 @@
     const myDisp = S.field.myDisp || (L && L.force_disposition) || '';
     // your own armies, then the last two factions you loaded, then Other for anything new
     const facOn = (f) => S.army === 'other' && S.facKey === f;
-    const armyBtns = myArmies().map((k, i) => `<span class="army-slot"><button class="army-btn ${S.army === k ? 'on' : ''}" data-act="army" data-k="${k}" aria-label="${esc(ARMY[k].label)}${i === 0 ? ' (your main army)' : ''}" aria-pressed="${S.army === k}" title="${esc(ARMY[k].label)}">${herald(k)}</button>${i > 0 ? `<button class="army-x" data-act="armyDrop" data-k="${k}" aria-label="Remove ${esc(ARMY[k].label)}">${ICON.close}</button>` : ''}</span>`).join('')
+    const armyBtns = myArmies().map((k, i) => `<span class="army-slot"><button class="army-btn ${S.army === k ? 'on' : ''}" data-act="army" data-k="${k}" aria-label="${esc(ARMY[k].label)}${i === 0 ? ' (your main army)' : ''}" aria-pressed="${S.army === k}" title="${esc(ARMY[k].label)}">${herald(k)}</button>${i === 0 && myArmies().length ? `<span class="army-main" aria-hidden="true" title="Main army">MAIN</span>` : ''}<button class="army-x" data-act="armyDrop" data-k="${k}" aria-label="${i === 0 ? 'Main army options' : 'Options for ' + esc(ARMY[k].label)}">${ICON.close}</button></span>`).join('')
       + `<button class="army-btn ${S.army === 'other' && !S.facKey ? 'on' : ''}" data-act="army" data-k="other" aria-label="Any other army" aria-pressed="${S.army === 'other' && !S.facKey}" title="Any other army">${herald('other')}</button>`;
     const listCard = L
       ? `<div class="panel row" style="justify-content: space-between; padding: 6px 4px 6px 12px">${otherPic() ? `<img src="${otherPic().src}" alt="" style="flex: 0 0 48px; width: 48px; height: 48px; object-fit: contain">` : ''}<div style="min-width: 0; flex: 1"><div style="font-size: 16px; font-weight: 600">${esc(L.name)}</div><div class="small muted">${L.units.length} units · ${L.points_total.toLocaleString()} pts · ${esc(L.detachments.join(', '))}</div></div><button class="btn small" data-act="overlay" data-k="paste">PASTE NEW</button></div>`
@@ -2484,7 +2484,12 @@
   function renderSheet() {
     const sh = UI.sheet; if (!sh) return '';
     if (sh.type && sh.type.indexOf('ff') === 0) return ffSheet(sh);
-    if (sh.type === 'armyDrop') { const A2 = ARMY[sh.k]; if (!A2) return ''; return sheet('Remove army', `<p style="margin: 0">Remove <b>${esc(A2.label)}</b> from your armies?</p><p class="small muted" style="margin: 0">It comes back any time you paste or send a ${esc(A2.label)} list. Your battle history is kept.</p>`, `<div class="grid2"><button class="btn" data-act="closeAll">NO</button><button class="btn red" data-act="armyDropYes" data-k="${sh.k}">YES, REMOVE</button></div>`); }
+    if (sh.type === 'armyDrop') {
+      const A2 = ARMY[sh.k]; if (!A2) return ''; const m = myArmies(); const isMain = m[0] === sh.k; const other = m.find((x) => x !== sh.k);
+      if (UI.dropSure !== sh.k) return sheet(A2.label, `<p style="margin: 0">${isMain ? `<b>${esc(A2.label)}</b> is your main army. It always holds the first spot, and a new army only ever replaces your second one.` : `<b>${esc(A2.label)}</b> is your second army.`}</p>`,
+        `<div class="stack" style="gap: 8px">${isMain ? '' : `<button class="btn solid block" data-act="armyMain" data-k="${sh.k}">MAKE IT MY MAIN ARMY</button>`}<button class="btn block" data-act="armyDropAsk" data-k="${sh.k}" style="color: var(--accent-text)">REMOVE ${esc(A2.label.toUpperCase())}</button><button class="btn block" data-act="closeAll">CANCEL</button></div>`);
+      return sheet('Remove army', `<p style="margin: 0">Remove <b>${esc(A2.label)}</b> from your armies?</p><p class="small muted" style="margin: 0">${isMain && other ? esc(ARMY[other].label) + ' becomes your main army. ' : ''}It comes back any time you paste or send a ${esc(A2.label)} list. Your battle history is kept.</p>`, `<div class="grid2"><button class="btn" data-act="closeAll">NO</button><button class="btn red" data-act="armyDropYes" data-k="${sh.k}">YES, REMOVE</button></div>`);
+    }
     if (sh.type === 'feedback') return feedbackSheet();
     const B = S.battle;
     if (sh.type === 'strat') {
@@ -2721,8 +2726,10 @@
     emInvert() { stashFoeInputs(); const R = foe(); R.emblemInvert = !R.emblemInvert; },
     emClear() { stashFoeInputs(); delete foe().emblemId; toast('Image moved back to the library'); },
     army(k) { S.army = k; if (k === 'other') S.facKey = null; if (!list()) UI.overlay = 'paste'; },
-    armyDrop(k) { UI.sheet = { type: 'armyDrop', k }; },
-    armyDropYes(k) { if (k === myArmies()[0]) return; S.mine = myArmies().filter((x) => x !== k); if (S.army === k) S.army = myArmies()[0]; UI.sheet = null; toast((ARMY[k] ? ARMY[k].label : 'Army') + ' removed'); },
+    armyDrop(k) { UI.dropSure = null; UI.sheet = { type: 'armyDrop', k }; },
+    armyDropAsk(k) { UI.dropSure = k; },
+    armyMain(k) { const m = myArmies(); if (!m.includes(k)) return; S.mine = [k].concat(m.filter((x) => x !== k)); UI.sheet = null; toast(ARMY[k].label + ' is now your main army'); },
+    armyDropYes(k) { S.mine = myArmies().filter((x) => x !== k); if (S.army === k) S.army = myArmies()[0]; UI.sheet = null; toast((ARMY[k] ? ARMY[k].label : 'Army') + ' removed'); },
     necHue(k) { S.hue = S.hue || {}; S.hue.necron = +k; S.necCol = 'own'; },
     necDyn(k) { S.necDyn = k; },
     necCol(k) { S.necCol = k === 'own' ? 'own' : 'dyn'; if (S.necCol === 'own') { S.hue = S.hue || {}; if (S.hue.necron === undefined) S.hue.necron = necDyn()[3]; } },
